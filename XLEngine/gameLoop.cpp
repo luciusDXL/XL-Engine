@@ -6,7 +6,7 @@
 #include "input.h"
 #include "Sound/sound.h"
 #include "PluginFramework/PluginManager.h"
-#include "Clock.h"
+#include "clock.h"
 #include "log.h"
 
 #ifdef _WIN32
@@ -35,7 +35,7 @@ namespace GameLoop
 	{
 		XLSettings* settings = Settings::get();
 		Log::open("Logs/log.txt");
-		Clock::Init();
+		Clock::init();
 		Input::init(win_param[0]);
 
 		#ifdef _WIN32
@@ -72,7 +72,7 @@ namespace GameLoop
 		UISystem::destroy();
 		Draw2D::destroy();
 		TextSystem::destroy();
-		Clock::Destroy();
+		Clock::destroy();
 		MemoryPool::destroy();
 		PluginManager::Destroy();
 		Sound::Free();
@@ -90,7 +90,7 @@ namespace GameLoop
 		Settings::setGameID(gameID);
 		s_gameRunning  = gameID;
 
-		Services::setTime( Clock::GetDeltaTime_uS() );
+		Services::setTime( Clock::getTime_uS() );
 		GameUI::enableCursor(false);
 		s_hGameThread  = CreateThread(NULL, 0, GameLoop, (LPVOID)gameID, 0, NULL);
 

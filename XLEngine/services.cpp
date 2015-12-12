@@ -1,6 +1,6 @@
 #include "services.h"
 #include "gameUI.h"
-#include "Clock.h"
+#include "clock.h"
 #include "memoryPool.h"
 #include "settings.h"
 #include "input.h"
@@ -91,7 +91,7 @@ namespace Services
 	{
 		if (!GameUI::getShowUI())
 		{
-			u64 delta = Clock::GetTime_uS() - s_lastRealTime;
+			u64 delta = Clock::getTime_uS() - s_lastRealTime;
 			//1000000 = 1 second...
 			//8333.3333333333333333333333333333 = 1/120 second.
 			double tics = (double)delta / 8333.3333333333333333333333333333;
@@ -100,7 +100,7 @@ namespace Services
 		else
 		{
 			s_clockTicsBase = s_clockTics;
-			s_lastRealTime = Clock::GetTime_uS();
+			s_lastRealTime = Clock::getTime_uS();
 		}
 
 		return s_clockTics;
@@ -108,14 +108,14 @@ namespace Services
 
 	void xlSetClock(int newValue)
 	{
-		s_lastRealTime = Clock::GetTime_uS();
+		s_lastRealTime = Clock::getTime_uS();
 		s_clockTics = newValue;
 		s_clockTicsBase = newValue;
 	}
 
 	void xlResetClock(void)
 	{
-		s_lastRealTime = Clock::GetTime_uS();
+		s_lastRealTime = Clock::getTime_uS();
 		s_clockTics = 0;
 		s_clockTicsBase = 0;
 	}

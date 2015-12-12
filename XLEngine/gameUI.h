@@ -9,10 +9,10 @@ typedef void (*StopGameFunc)();
 namespace GameUI
 {
 	void init(StartGameFunc startGame, StopGameFunc stopGame);
-	void update(Driver3D_IPlatform* gdev, int winWidth, int winHeight, s32& gameRunning);
+	void update(GraphicsDevice* gdev, int winWidth, int winHeight, s32& gameRunning);
 
 	bool getShowUI();
-	void setShowUI(bool show, Driver3D_IPlatform* gdev);
+	void setShowUI(bool show, GraphicsDevice* gdev);
 
 	void enableCursor(bool enable);
 };

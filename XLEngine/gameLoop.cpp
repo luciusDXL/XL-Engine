@@ -12,7 +12,7 @@
 #ifdef _WIN32
 	#define WIN32_LEAN_AND_MEAN 1
 	#include <Windows.h>
-	#include "Driver3D_OGL_Win.h"
+	#include "Graphics/win32/graphicsDeviceOGL_Win32.h"
 #endif
 
 namespace GameLoop
@@ -24,14 +24,14 @@ namespace GameLoop
 	
 #ifdef _WIN32
 	static HANDLE s_hGameThread;
-	static Driver3D_OGL_Win* s_gdev;
+	static GraphicsDevice* s_gdev;
 
 	DWORD WINAPI GameLoop(LPVOID lpParameter);
 #endif
 	void exitGame();
 
 
-	bool init(void* win_param[])
+	bool init(void* win_param[], GraphicsDeviceID deviceID)
 	{
 		XLSettings* settings = Settings::get();
 		Log::open("Logs/log.txt");
@@ -39,15 +39,17 @@ namespace GameLoop
 		Input::init(win_param[0]);
 
 		#ifdef _WIN32
-			s_gdev = new Driver3D_OGL_Win();
+			GraphicsDevicePlatform* platform = new GraphicsDeviceOGL_Win32();
 		#endif
+
+		s_gdev = GraphicsDevice::createDevice(deviceID, platform);
 		if (!s_gdev)
 		{
 			return false;
 		}
 
-		s_gdev->SetWindowData(1, win_param);
-		s_gdev->Init(settings->windowWidth, settings->windowHeight, settings->gameWidth, settings->gameHeight);
+		s_gdev->setWindowData(1, win_param);
+		s_gdev->init(settings->windowWidth, settings->windowHeight, settings->gameWidth, settings->gameHeight);
 
 		GameUI::init(startGame, stopGame);
 		s_launchGameID = Settings::get()->launchGameID;
@@ -76,7 +78,7 @@ namespace GameLoop
 		Sound::Free();
 		Log::close();
 		
-		delete s_gdev;
+		GraphicsDevice::destroyDevice(s_gdev);
 	}
 
 	bool startGame(s32 gameID)
@@ -144,10 +146,10 @@ namespace GameLoop
 			GameUI::update(s_gdev, settings->windowWidth, settings->windowHeight, s_gameRunning);
 			if (s_gameRunning >= 0)
 			{
-				s_gdev->DrawVirtualScreen();
+				s_gdev->drawVirtualScreen();
 			}
 			Draw2D::draw();
-		s_gdev->Present();
+		s_gdev->present();
 
 		Input::finish();
 	}

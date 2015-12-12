@@ -5,8 +5,8 @@
 #include "settings.h"
 #include "input.h"
 #include "Sound/sound.h"
+#include "Graphics/graphicsDevice.h"
 #include "log.h"
-#include "Driver3D_IPlatform.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <memory.h>
@@ -24,7 +24,7 @@ namespace Services
 	int s_clockTicsBase = 0;
 	u64 s_lastRealTime = 0;
 
-	Driver3D_IPlatform* s_gdev = NULL;
+	GraphicsDevice* s_gdev = NULL;
 
 	void xlSetPalette(u8* palette, int mode)
 	{
@@ -62,7 +62,7 @@ namespace Services
 
 	void xlCopyToFramebuffer(u8* buffer)
 	{
-		s_gdev->ConvertFrameBufferTo32bpp(buffer, s_palette);
+		s_gdev->convertFrameBufferTo32bpp(buffer, s_palette);
 	}
 
 	void setTime(u64 time)
@@ -163,7 +163,7 @@ namespace Services
 		return info;
 	}
 
-	void setup(int gameWidth, int gameHeight, Driver3D_IPlatform* gdev)
+	void setup(int gameWidth, int gameHeight, GraphicsDevice* gdev)
 	{
 		s_gameScreenWidth  = gameWidth;
 		s_gameScreenHeight = gameHeight;

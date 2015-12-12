@@ -8,6 +8,7 @@
 #include "../../XLEngine/settings.h"
 #include "../../XLEngine/gameLoop.h"
 #include "../../XLEngine/gameUI.h"
+#include "../../XLEngine/log.h"
 #include <stdio.h>
 
 #define MAX_LOADSTRING 100
@@ -57,7 +58,11 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 
 	// initialize the game loop
 	void *win_param[] = { (void *)hWnd };
-	GameLoop::init(win_param);
+	if ( !GameLoop::init(win_param, Settings::getGraphicsDeviceID()) )
+	{
+		LOG( LOG_ERROR, "Engine initialization failed! Could not create a graphics device." );
+		return 0;
+	}
 
 	// main message loop:
 	while (true)

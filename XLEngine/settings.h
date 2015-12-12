@@ -1,6 +1,7 @@
 #pragma once
 #include "types.h"
 #include "xlServices.h"
+#include "Graphics/graphicsDeviceList.h"
 
 enum XLSettingsFlags
 {
@@ -40,4 +41,7 @@ namespace Settings
 
 	void setGameID(s32 id);
 	s32  getGameID();
+
+	GraphicsDeviceID getGraphicsDeviceID();
+	void setGraphicsDeviceID(GraphicsDeviceID deviceID);
 };

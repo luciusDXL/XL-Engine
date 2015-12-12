@@ -48,7 +48,7 @@ namespace GameUI
 		return s_showUI;
 	}
 
-	void setShowUI(bool show, Driver3D_IPlatform* gdev)
+	void setShowUI(bool show, GraphicsDevice* gdev)
 	{
 		s_showUI = show;
 		if (!show)
@@ -87,7 +87,7 @@ namespace GameUI
 		UISystem::buttonIcon(CTRL_ICON_TOOLS, 0, ICON_TOOLS,         4, 240 );
 	}
 
-	void handleGameSelection(Driver3D_IPlatform* gdev, int winWidth, int winHeight, s32& gameRunning)
+	void handleGameSelection(GraphicsDevice* gdev, int winWidth, int winHeight, s32& gameRunning)
 	{
 		int gx = 100, gy = 64;
 		for (int g=0; g<Settings::getGameCount(); g++)
@@ -144,7 +144,7 @@ namespace GameUI
 		}
 	}
 
-	void handleVideoMenu(Driver3D_IPlatform* gdev, int winWidth, int winHeight, s32& gameRunning)
+	void handleVideoMenu(GraphicsDevice* gdev, int winWidth, int winHeight, s32& gameRunning)
 	{
 		char msg[512];
 		XLSettings* settings = Settings::get();
@@ -183,7 +183,7 @@ namespace GameUI
 		}
 	}
 
-	void handleSettingsMenu(Driver3D_IPlatform* gdev, int winWidth, int winHeight, s32& gameRunning)
+	void handleSettingsMenu(GraphicsDevice* gdev, int winWidth, int winHeight, s32& gameRunning)
 	{
 		char msg[512];
 		XLSettings* settings = Settings::get();
@@ -209,7 +209,7 @@ namespace GameUI
 		}
 	}
 
-	void update(Driver3D_IPlatform* gdev, int winWidth, int winHeight, s32& gameRunning)
+	void update(GraphicsDevice* gdev, int winWidth, int winHeight, s32& gameRunning)
 	{
 		if (!s_showUI)
 			return;

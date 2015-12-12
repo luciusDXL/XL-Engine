@@ -2,11 +2,11 @@
 #include "types.h"
 #include "xlServices.h"
 
-class Driver3D_IPlatform;
+class GraphicsDevice;
 
 namespace Services
 {
-	void setup(int gameWidth, int gameHeight, Driver3D_IPlatform* gdev);
+	void setup(int gameWidth, int gameHeight, GraphicsDevice* gdev);
 	XLEngineServices* get();
 
 	void setTime(u64 time);

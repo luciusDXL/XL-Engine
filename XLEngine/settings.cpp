@@ -38,6 +38,9 @@ namespace Settings
 	static bool s_setDefaultMapping = false;
 	static GameInfo s_games[MAX_GAME_COUNT];
 
+	//Hard coded for now, later auto-detect at startup and/or read from the settings file.
+	static GraphicsDeviceID s_graphicsDeviceID = GDEV_OPENGL_1_3;
+
 	const char* getVersion()
 	{
 		return s_xlEngineVersion;
@@ -68,6 +71,16 @@ namespace Settings
 	s32  getGameID()
 	{
 		return s_gameID;
+	}
+	
+	GraphicsDeviceID getGraphicsDeviceID()
+	{
+		return s_graphicsDeviceID;
+	}
+
+	void setGraphicsDeviceID(GraphicsDeviceID deviceID)
+	{
+		s_graphicsDeviceID = deviceID;
 	}
 
 	void chooseDefaultResolution(int monitorWidth, int monitorHeight)

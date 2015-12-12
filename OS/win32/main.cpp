@@ -1,8 +1,8 @@
 // game.cpp : Defines the entry point for the application.
 //
 
-#include "../../stdafx.h"
 #include "main.h"
+#include "../../stdafx.h"
 #include "../../XLEngine/input.h"
 #include "../../XLEngine/services.h"
 #include "../../XLEngine/settings.h"
@@ -10,19 +10,19 @@
 #include "../../XLEngine/gameUI.h"
 #include <stdio.h>
 
-HWND _hwnd;
-
 #define MAX_LOADSTRING 100
 
 // Global Variables:
-HINSTANCE hInst;								// current instance
-TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
-TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
+HINSTANCE s_hInst;								// current instance
+TCHAR s_title[MAX_LOADSTRING];					// The title bar text
+TCHAR s_windowClass[MAX_LOADSTRING];			// the main window class name
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
-BOOL				InitInstance(HINSTANCE, int);
+BOOL				InitInstance(HWND& hWnd, HINSTANCE hInstance, int nCmdShow);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
+
+int win32MapShiftAndControl( int vkey );
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPTSTR lpCmdLine, _In_ int nCmdShow)
 {
@@ -33,17 +33,21 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	MSG msg;
 	HACCEL hAccelTable;
 
+	//read the settings from disk or apply the defaults and generate a new settings file.
 	int monitorWidth  = GetSystemMetrics(SM_CXSCREEN);
 	int monitorHeight = GetSystemMetrics(SM_CYSCREEN);
 	Settings::read(monitorWidth, monitorHeight);
-	XLSettings* settings = Settings::get();
-	sprintf(szTitle, "XL Engine %s", Settings::getVersion());
 
-	LoadString(hInstance, IDC_XLENGINE, szWindowClass, MAX_LOADSTRING);
+	//get the engine version for display
+	XLSettings* settings = Settings::get();
+	sprintf(s_title, "XL Engine %s", Settings::getVersion());
+
+	LoadString(hInstance, IDC_XLENGINE, s_windowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
 
-	// Perform application initialization:
-	if (!InitInstance(hInstance, nCmdShow))
+	// perform application initialization:
+	HWND hWnd;
+	if (!InitInstance(hWnd, hInstance, nCmdShow))
 	{
 		Services::xlDebugMessage("InitInstance() failed.");
 		return FALSE;
@@ -51,10 +55,11 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_XLENGINE));
 
-	void *win_param[] = { (void *)_hwnd };
+	// initialize the game loop
+	void *win_param[] = { (void *)hWnd };
 	GameLoop::init(win_param);
 
-	// Main message loop:
+	// main message loop:
 	while (true)
 	{
 		if ( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) )
@@ -104,7 +109,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
 	wcex.lpszMenuName	= 0;
-	wcex.lpszClassName	= szWindowClass;
+	wcex.lpszClassName	= s_windowClass;
 	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
 	return RegisterClassEx(&wcex);
@@ -120,17 +125,16 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //        In this function, we save the instance handle in a global variable and
 //        create and display the main program window.
 //
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
+BOOL InitInstance(HWND& hWnd, HINSTANCE hInstance, int nCmdShow)
 {
-	HWND hWnd;
-	hInst = hInstance; // Store instance handle in our global variable
+	s_hInst = hInstance; // Store instance handle in our global variable
 
 	//The window style.
 	DWORD dwStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_BORDER | WS_MINIMIZEBOX;
 	XLSettings* settings = Settings::get();
 	if ( settings->flags&XL_FLAG_FULLSCREEN )
 	{
-		dwStyle = WS_POPUP;
+		dwStyle = WS_POPUP;	//for fullscreen just display the client area.
 		settings->windowWidth  = GetSystemMetrics(SM_CXSCREEN);
 		settings->windowHeight = GetSystemMetrics(SM_CYSCREEN);
 	}
@@ -143,13 +147,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	desiredSize.bottom = settings->windowHeight;
 	AdjustWindowRect(&desiredSize, dwStyle, FALSE);
 
-	hWnd = CreateWindow(szWindowClass, szTitle, dwStyle, 0, 0, desiredSize.right-desiredSize.left, desiredSize.bottom-desiredSize.top, NULL, NULL, hInstance, NULL);
+	hWnd = CreateWindow(s_windowClass, s_title, dwStyle, 0, 0, desiredSize.right-desiredSize.left, desiredSize.bottom-desiredSize.top, NULL, NULL, hInstance, NULL);
 	if (!hWnd)
 	{
 		return FALSE;
 	}
-
-	_hwnd = hWnd;
 
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
@@ -174,6 +176,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;
 	HDC hdc;
 
+	XLEngineServices* services = Services::get();
+
 	switch (message)
 	{
 	case WM_COMMAND:
@@ -191,109 +195,58 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		// TODO: Add any drawing code here...
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_KEYDOWN:
-	{
-		if (wParam >= 0 && wParam < 256)
-		{
-			Input::setKeyState(u32(wParam), true);
-		}
-
-		int keyCode = (int)wParam;
-		if ( wParam == VK_SHIFT )
-		{
-			if ( GetAsyncKeyState(VK_LSHIFT) < 0 )
-			{
-				keyCode = VK_LSHIFT;
-			}
-			else if ( GetAsyncKeyState(VK_RSHIFT) < 0 )
-			{
-				keyCode = VK_RSHIFT;
-			}
-		}
-		else if ( wParam == VK_CONTROL )
-		{
-			if ( GetAsyncKeyState(VK_LCONTROL) < 0 )
-			{
-				keyCode = VK_LCONTROL;
-			}
-			else if ( GetAsyncKeyState(VK_RCONTROL) < 0 )
-			{
-				keyCode = VK_RCONTROL;
-			}
-		}
-		if (Services::get()->keyEvent)
-		{
-			keyCode = Input::mapVirtualKey(keyCode);
-			if (keyCode > 0)
-			{
-				Services::get()->keyEvent(0, keyCode, 1);
-			}
-		}
-	}
-		break;
 	case WM_KEYUP:
-	{
-		if (wParam >= 0 && wParam < 256)
 		{
-			Input::setKeyState(u32(wParam), false);
-		}
-		int keyCode = (int)wParam;
-		if (Services::get()->keyEvent)
-		{
-			keyCode = Input::mapVirtualKey(keyCode);
-			if (keyCode > 0)
+			if (wParam >= 0 && wParam < 256)
 			{
-				Services::get()->keyEvent(0, keyCode, 0);
+				Input::setKeyState(u32(wParam), (message==WM_KEYDOWN));
+			}
+
+			int keyCode = win32MapShiftAndControl( (int)wParam );
+			if (services->keyEvent)
+			{
+				keyCode = Input::mapVirtualKey(keyCode);
+				if (keyCode > 0)
+				{
+					services->keyEvent(0, keyCode, (message==WM_KEYDOWN) ? 1 : 0);
+				}
 			}
 		}
-	}
 		break;
 	case WM_LBUTTONDOWN:
-		Input::setMouseButtonState(Input::MouseLeft, true);
+	case WM_LBUTTONUP:
+		Input::setMouseButtonState(Input::MouseLeft,  (message==WM_LBUTTONDOWN));
 		break;
 	case WM_RBUTTONDOWN:
-		Input::setMouseButtonState(Input::MouseRight, true);
+	case WM_RBUTTONUP:
+		Input::setMouseButtonState(Input::MouseRight,  (message==WM_RBUTTONDOWN));
 		break;
 	case WM_MBUTTONDOWN:
-		Input::setMouseButtonState(Input::MouseMiddle, true);
+	case WM_MBUTTONUP:
+		Input::setMouseButtonState(Input::MouseMiddle, (message==WM_MBUTTONDOWN));
 		break;
 	case WM_XBUTTONDOWN:
-		//to-do
-		break;
-	case WM_LBUTTONUP:
-		Input::setMouseButtonState(Input::MouseLeft, false);
-		break;
-	case WM_RBUTTONUP:
-		Input::setMouseButtonState(Input::MouseRight, false);
-		break;
-	case WM_MBUTTONUP:
-		Input::setMouseButtonState(Input::MouseMiddle, false);
-		break;
 	case WM_XBUTTONUP:
 		//to-do
 		break;
 	case WM_MOUSEMOVE:
-		{
-			Input::setMousePos( s16(lParam), s16(lParam >> 16) );
-		}
+		Input::setMousePos( s16(lParam), s16(lParam >> 16) );
 		break;
 	case WM_MOUSEWHEEL:
 		Input::incMouseWheel( ((short)HIWORD(wParam)) > 0 ? 1 : -1 );
 		break;
 	case WM_CHAR:
+		if (wParam > 0 && wParam < 128)
 		{
-			if (wParam > 0 && wParam < 128)
-			{
-				Input::addChar( char(wParam) );
-			}
+			Input::addChar( char(wParam) );
+		}
 
-			if (Services::get()->keyEvent)
-			{
-				Services::get()->keyEvent(wParam&0x7f, 0, 1);
-			}
+		if (services->keyEvent)
+		{
+			services->keyEvent(wParam&0x7f, 0, 1);
 		}
 		break;
 	case WM_DESTROY:
@@ -303,4 +256,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	return 0;
+}
+
+int win32MapShiftAndControl( int vkey )
+{
+	if ( vkey == VK_SHIFT )
+	{
+		if ( GetAsyncKeyState(VK_LSHIFT) < 0 )
+		{
+			vkey = VK_LSHIFT;
+		}
+		else if ( GetAsyncKeyState(VK_RSHIFT) < 0 )
+		{
+			vkey = VK_RSHIFT;
+		}
+	}
+	else if ( vkey == VK_CONTROL )
+	{
+		if ( GetAsyncKeyState(VK_LCONTROL) < 0 )
+		{
+			vkey = VK_LCONTROL;
+		}
+		else if ( GetAsyncKeyState(VK_RCONTROL) < 0 )
+		{
+			vkey = VK_RCONTROL;
+		}
+	}
+	return vkey;
 }

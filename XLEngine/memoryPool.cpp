@@ -183,7 +183,7 @@ namespace MemoryPool
 	{
 		if (ptr == NULL || size == 0) { return NULL; }
 
-		Header* header = (Header*)( (u8*)ptr - c_headerSize );
+		Header* header = GET_HEADER(ptr);
 		if (GET_SIZE(header) >= size)
 		{
 			return ptr;

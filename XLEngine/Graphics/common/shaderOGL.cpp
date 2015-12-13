@@ -205,13 +205,7 @@ void ShaderOGL::uploadData(GraphicsDevice* device)
 s32  ShaderOGL::getParameter(const char* name) const
 {
 	const u32 nameHash = CRC32::get( (u8*)name, strlen(name) );
-
-	const ParameterMap::const_iterator iparam = m_paramMap.find(nameHash);
-	if (iparam != m_paramMap.end())
-	{
-		return iparam->second;
-	}
-	return -1;
+	return getParameter(nameHash);
 }
 
 s32  ShaderOGL::getParameter(u32 nameHash) const

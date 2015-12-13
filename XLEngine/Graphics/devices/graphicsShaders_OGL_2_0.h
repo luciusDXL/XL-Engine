@@ -5,13 +5,6 @@
 
 class GraphicsShadersOGL_2_0
 {
-	public:
-		enum ShaderID
-		{
-			SHADER_QUAD_UI = 0,
-			SHADER_COUNT
-		};
-
     public:
         GraphicsShadersOGL_2_0();
         ~GraphicsShadersOGL_2_0();

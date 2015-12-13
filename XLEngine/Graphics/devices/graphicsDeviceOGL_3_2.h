@@ -10,6 +10,9 @@ class GraphicsDeviceOGL_3_2 : public GraphicsDeviceOGL
 
 		bool init(int w, int h, int vw, int vh);
 
+		bool supportsShaders();
+		void setShader(ShaderID shader);
+
 		TextureHandle createTextureRGBA(int width, int height, u32* data);
 		void setShaderResource(TextureHandle handle, u32 nameHash);
 		void drawQuad(const Quad& quad);

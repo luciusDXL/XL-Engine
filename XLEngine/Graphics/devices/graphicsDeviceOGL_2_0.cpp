@@ -41,6 +41,8 @@ GraphicsDeviceOGL_2_0::GraphicsDeviceOGL_2_0(GraphicsDevicePlatform* platform) :
 {
 	m_deviceID = GDEV_OPENGL_2_0;
 	m_textureEnabled = true;
+	m_curShaderID = SHADER_COUNT;
+	m_curShader = NULL;
 }
 
 GraphicsDeviceOGL_2_0::~GraphicsDeviceOGL_2_0()
@@ -62,9 +64,8 @@ void GraphicsDeviceOGL_2_0::drawVirtualScreen()
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, m_FrameWidth, m_FrameHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, m_pFrameBuffer_32bpp);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	ShaderOGL* shader = m_shaders->getShader( GraphicsShadersOGL_2_0::SHADER_QUAD_UI );
-	s32 baseTex = shader->getParameter("baseTex");
-	shader->updateParameter(baseTex, m_VideoFrameBuffer, 0);
+	s32 baseTex = m_curShader->getParameter("baseTex");
+	m_curShader->updateParameter(baseTex, m_VideoFrameBuffer, 0, true);	//we have to force the update since the texture itself has changed.
 
 	drawFullscreenQuad();
 
@@ -160,6 +161,24 @@ bool GraphicsDeviceOGL_2_0::init(int w, int h, int vw, int vh)
 	return true;
 }
 
+bool GraphicsDeviceOGL_2_0::supportsShaders()
+{
+	return true;
+}
+
+void GraphicsDeviceOGL_2_0::setShader(ShaderID shader)
+{
+	if (m_curShaderID != shader)
+	{
+		m_curShader = m_shaders->getShader( shader );
+		if (m_curShader)
+		{
+			m_curShader->bind();
+		}
+	}
+	m_curShaderID = shader;
+}
+
 TextureHandle GraphicsDeviceOGL_2_0::createTextureRGBA(int width, int height, unsigned int* data)
 {
 	GLuint texHandle = 0;
@@ -179,9 +198,8 @@ TextureHandle GraphicsDeviceOGL_2_0::createTextureRGBA(int width, int height, un
 
 void GraphicsDeviceOGL_2_0::setShaderResource(TextureHandle handle, u32 nameHash)
 {
-	ShaderOGL* shader = m_shaders->getShader( GraphicsShadersOGL_2_0::SHADER_QUAD_UI );
-	s32 parmID = shader->getParameter(nameHash);
-	shader->updateParameter(parmID, handle, 0);
+	s32 parmID = m_curShader->getParameter(nameHash);
+	m_curShader->updateParameter(parmID, handle, 0);
 }
 
 void GraphicsDeviceOGL_2_0::setTexture(TextureHandle handle, int slot/*=0*/)
@@ -236,12 +254,9 @@ void GraphicsDeviceOGL_2_0::drawQuad(const Quad& quad)
 		{ posScale[0], posScale[3], 0.0f, uvTop[0], uvBot[1], quad.color },
 	};
 	m_quadVB->update(sizeof(QuadVertex)*4, (void*)vertex);
+	m_curShader->uploadData(this);
 
-	ShaderOGL* shader = m_shaders->getShader( GraphicsShadersOGL_2_0::SHADER_QUAD_UI );
-	shader->bind();
-	shader->uploadData(this);
-
-	m_quadVB->bind( shader->getRequiredVertexAttrib() );
+	m_quadVB->bind( m_curShader->getRequiredVertexAttrib() );
 	m_quadIB->bind();
 
 	glDrawRangeElements(GL_TRIANGLES, 0, 6, 6, (m_quadIB->m_stride==2)?GL_UNSIGNED_SHORT:GL_UNSIGNED_INT, 0);
@@ -263,12 +278,9 @@ void GraphicsDeviceOGL_2_0::drawFullscreenQuad()
 		{ -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0xffffffff },
 	};
 	m_quadVB->update(sizeof(QuadVertex)*4, (void*)vertex);
+	m_curShader->uploadData(this);
 
-	ShaderOGL* shader = m_shaders->getShader( GraphicsShadersOGL_2_0::SHADER_QUAD_UI );
-	shader->bind();
-	shader->uploadData(this);
-
-	m_quadVB->bind( shader->getRequiredVertexAttrib() );
+	m_quadVB->bind( m_curShader->getRequiredVertexAttrib() );
 	m_quadIB->bind();
 
 	glDrawRangeElements(GL_TRIANGLES, 0, 6, 6, (m_quadIB->m_stride==2)?GL_UNSIGNED_SHORT:GL_UNSIGNED_INT, 0);

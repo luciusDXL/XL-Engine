@@ -237,13 +237,18 @@ void ShaderOGL::updateParameter(s32 id, void* data, u32 size)
 	m_stateDirty |= ( 1ULL << u64(id) );
 }
 
-void ShaderOGL::updateParameter(s32 id, TextureHandle texture, u32 slot)
+void ShaderOGL::updateParameter(s32 id, TextureHandle texture, u32 slot, bool force/*=false*/)
 {
 	if (id < 0) { return; }
+	ShaderParam& param = m_param[id];
+
+	//nothing to change.
+	if (param.texHandle == texture && !force)
+	{
+		return;
+	}
 
 	updateParameter(id, &slot, sizeof(slot));
-
-	ShaderParam& param = m_param[id];
 	param.texHandle = texture;
 }
 

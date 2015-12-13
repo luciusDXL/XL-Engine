@@ -65,6 +65,7 @@ namespace Draw2D
 	{
 		s_gdev->enableBlending(true);
 		s_gdev->setBlendMode( BLEND_OVER );
+		s_gdev->setShader( SHADER_QUAD_UI );
 
 		int curLayer = 255;
 		if (s_rectIndex > 0)

@@ -19,6 +19,9 @@ class GraphicsDeviceOGL : public GraphicsDevice
 		virtual void convertFrameBufferTo32bpp(u8 *pSource, u32 *pal);
 
 		//left to specific implementations.
+		virtual bool supportsShaders()=0;
+		virtual void setShader(ShaderID shader)=0;
+
         virtual bool init(int w, int h, int vw, int vh)=0;
 		virtual void drawVirtualScreen()=0;
 		

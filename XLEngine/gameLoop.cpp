@@ -146,6 +146,7 @@ namespace GameLoop
 			GameUI::update(s_gdev, settings->windowWidth, settings->windowHeight, s_gameRunning);
 			if (s_gameRunning >= 0)
 			{
+				s_gdev->setShader( SHADER_QUAD_UI );
 				s_gdev->drawVirtualScreen();
 			}
 			Draw2D::draw();

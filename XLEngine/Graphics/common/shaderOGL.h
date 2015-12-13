@@ -7,7 +7,7 @@ enum ShaderStage
 {
 	SHADER_VERTEX = 0,
 	SHADER_PIXEL,
-	SHADER_COUNT
+	SHADER_STAGE_COUNT
 };
 
 struct ShaderParam
@@ -38,7 +38,7 @@ class ShaderOGL
 		s32  getParameter(const char* name) const;
 		s32  getParameter(u32 nameHash) const;
 		void updateParameter(s32 id, void* data, u32 size);
-		void updateParameter(s32 id, TextureHandle texture, u32 slot);
+		void updateParameter(s32 id, TextureHandle texture, u32 slot, bool force=false);
 
 		u32  getRequiredVertexAttrib() const { return m_requiredVtxAttrib; }
 

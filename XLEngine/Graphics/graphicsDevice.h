@@ -37,6 +37,12 @@ enum BlendMode
 	BLEND_COUNT
 };
 
+enum ShaderID
+{
+	SHADER_QUAD_UI = 0,
+	SHADER_COUNT
+};
+
 class GraphicsDevice
 {
     public:
@@ -55,6 +61,9 @@ class GraphicsDevice
 		virtual void drawVirtualScreen()=0;
         virtual void present()=0;
 		virtual void clear()=0;
+
+		virtual bool supportsShaders()=0;
+		virtual void setShader(ShaderID shader)=0;
 
 		virtual void convertFrameBufferTo32bpp(u8 *pSource, u32 *pal)=0;
 		virtual void setBlendMode(BlendMode mode)=0;

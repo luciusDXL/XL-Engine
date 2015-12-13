@@ -34,6 +34,15 @@ bool GraphicsDeviceOGL_3_2::init(int w, int h, int vw, int vh)
 	return false;
 }
 
+bool GraphicsDeviceOGL_3_2::supportsShaders()
+{
+	return true;
+}
+
+void GraphicsDeviceOGL_3_2::setShader(ShaderID shader)
+{
+}
+
 TextureHandle GraphicsDeviceOGL_3_2::createTextureRGBA(int width, int height, unsigned int* data)
 {
 	return INVALID_TEXTURE_HANDLE;

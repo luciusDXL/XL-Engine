@@ -4,6 +4,8 @@
 
 class GraphicsDeviceOGL : public GraphicsDevice
 {
+	friend class ShaderOGL;
+
     public:
         GraphicsDeviceOGL(GraphicsDevicePlatform* platform);
 		virtual ~GraphicsDeviceOGL();
@@ -21,11 +23,15 @@ class GraphicsDeviceOGL : public GraphicsDevice
 		virtual void drawVirtualScreen()=0;
 		
 		virtual TextureHandle createTextureRGBA(int width, int height, u32* data)=0;
-		virtual void setTexture(TextureHandle handle, int slot=0)=0;
+		virtual void setShaderResource(TextureHandle handle, u32 nameHash)=0;
+
 		virtual void drawQuad(const Quad& quad)=0;
+		virtual void drawFullscreenQuad()=0;
 
 		virtual void setVirtualViewport(bool reset, int x, int y, int w, int h)=0;
     protected:
+		virtual void setTexture(TextureHandle handle, int slot=0)=0;
+
 		s32  m_nWindowWidth;
 		s32  m_nWindowHeight;
 		s32  m_FrameWidth;

@@ -32,24 +32,7 @@ void GraphicsDeviceOGL_1_3::drawVirtualScreen()
 	glBindTexture(GL_TEXTURE_2D, m_VideoFrameBuffer);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_FrameWidth, m_FrameHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, m_pFrameBuffer_32bpp);
 	
-	//scale and display.
-	float posScale[] = {-1.0f, -1.0f, 2.0f, 2.0f};
-	float uvTop[] = { 0, 1 };
-	float uvBot[] = { 1, 0 };
-
-	glBegin(GL_QUADS);
-		glColor4ub(0xff, 0xff, 0xff, 0xff);
-
-		glTexCoord2f(uvTop[0], uvTop[1]);
-		glVertex3f(posScale[0], posScale[1], -1.0f);
-		glTexCoord2f(uvBot[0], uvTop[1]);
-		glVertex3f(posScale[0]+posScale[2], posScale[1], -1.0f);
-
-		glTexCoord2f(uvBot[0], uvBot[1]);
-		glVertex3f(posScale[0]+posScale[2], posScale[1]+posScale[3], -1.0f);
-		glTexCoord2f(uvTop[0], uvBot[1]);
-		glVertex3f(posScale[0], posScale[1]+posScale[3], -1.0f);
-	glEnd();
+	drawFullscreenQuad();
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glViewport( m_fullViewport[0], m_fullViewport[1], m_fullViewport[2], m_fullViewport[3] );
@@ -148,8 +131,15 @@ TextureHandle GraphicsDeviceOGL_1_3::createTextureRGBA(int width, int height, u3
 	return TextureHandle(texHandle);
 }
 
+void GraphicsDeviceOGL_1_3::setShaderResource(TextureHandle handle, u32 nameHash)
+{
+	setTexture(handle);
+}
+
 void GraphicsDeviceOGL_1_3::setTexture(TextureHandle handle, int slot/*=0*/)
 {
+	glActiveTexture(GL_TEXTURE0 + slot);
+
 	if (handle != INVALID_TEXTURE_HANDLE)
 	{
 		glBindTexture(GL_TEXTURE_2D, GLuint(handle));
@@ -200,5 +190,23 @@ void GraphicsDeviceOGL_1_3::drawQuad(const Quad& quad)
 		glVertex3f(posScale[2], posScale[3], -1.0f);
 		glTexCoord2f(uvTop[0], uvBot[1]);
 		glVertex3f(posScale[0], posScale[3], -1.0f);
+	glEnd();
+}
+
+void GraphicsDeviceOGL_1_3::drawFullscreenQuad()
+{
+	u32 white = 0xffffffff;
+	glBegin(GL_QUADS);
+		glColor4ubv((GLubyte*)&white);
+
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3f(-1.0f, 1.0f, -1.0f);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3f( 1.0f, 1.0f, -1.0f);
+
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3f( 1.0f, -1.0f, -1.0f);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3f(-1.0f, -1.0f, -1.0f);
 	glEnd();
 }

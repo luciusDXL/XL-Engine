@@ -7,13 +7,13 @@
 #include <math.h>
 
 #include <GL/glew.h>
+#include <GL/wglew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 
 //WGL Extension crap... fortunately only on Windows.
 typedef BOOL (WINAPI * PFNWGLSWAPINTERVALEXTPROC)(int interval);
 typedef const char * (WINAPI * PFNWGLGETEXTENSIONSSTRINGEXTPROC)(void);
-PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = NULL;
 
 static HGLRC m_hRC;
 static HDC   m_hDC;
@@ -21,7 +21,6 @@ static HWND  m_hWnd;
 
 static WORD m_GammaRamp_Default[3][256];
 static WORD m_GammaRamp[3][256];
-
 
 bool wglExtensionSupported(const char *extension_name)
 {
@@ -73,7 +72,7 @@ float clamp(float x, float a, float b)
 	return x;
 }
 
-void GraphicsDeviceOGL_Win32::setWindowData(int nParam, void **param, bool exclFullscreen/*=false*/)
+void GraphicsDeviceOGL_Win32::setWindowData(int nParam, void **param, GraphicsDeviceID deviceID, bool exclFullscreen/*=false*/)
 {
 	m_exclusiveFullscreen = exclFullscreen;
 

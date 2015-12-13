@@ -60,7 +60,7 @@ class GraphicsDevice
 		virtual void setBlendMode(BlendMode mode)=0;
 		virtual void enableBlending(bool enable)=0;
 		virtual TextureHandle createTextureRGBA(int width, int height, u32* data)=0;
-		virtual void setTexture(TextureHandle handle, int slot=0)=0;
+		virtual void setShaderResource(TextureHandle handle, u32 nameHash)=0;
 		virtual void drawQuad(const Quad& quad)=0;
 
 		virtual void setVirtualViewport(bool reset, int x, int y, int w, int h)=0;
@@ -69,6 +69,8 @@ class GraphicsDevice
 		static void destroyDevice(GraphicsDevice* device);
 
     protected:
+		virtual void setTexture(TextureHandle handle, int slot=0)=0;
+
 		GraphicsDevicePlatform* m_platform;
 		GraphicsDeviceID        m_deviceID;
     private:

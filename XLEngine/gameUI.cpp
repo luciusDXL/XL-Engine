@@ -203,7 +203,7 @@ namespace GameUI
 			sprintf(msg, "[%c] Exit Application on game exit", (settings->flags&XL_FLAG_IMMEDIATE_EXIT) ? 'X' : ' ');
 			UISystem::staticText(1, msg, 40, 100);
 
-			GameInfo* info = Settings::getGameInfo(settings->launchGameID);
+			GameInfo* info = settings->launchGameID > -1 ? Settings::getGameInfo(settings->launchGameID) : NULL;
 			sprintf(msg, "[%c] Launch Game on Startup: \"%s\"", (settings->launchGameID > -1) ? 'X' : ' ', (settings->launchGameID > -1) ? info->name : "None");
 			UISystem::staticText(1, msg, 40, 120);
 		}

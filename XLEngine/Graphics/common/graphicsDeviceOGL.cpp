@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "../../log.h"
 #include "graphicsDeviceOGL.h"
+#include "shaderOGL.h"
 
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -8,10 +9,12 @@
 
 GraphicsDeviceOGL::GraphicsDeviceOGL(GraphicsDevicePlatform* platform) : GraphicsDevice(platform)
 {
+	ShaderOGL::init();
 }
 
 GraphicsDeviceOGL::~GraphicsDeviceOGL()
 {
+	ShaderOGL::destroy();
 }
 
 void GraphicsDeviceOGL::present()
@@ -21,7 +24,7 @@ void GraphicsDeviceOGL::present()
 
 void GraphicsDeviceOGL::setWindowData(int nParam, void** param)
 {
-	m_platform->setWindowData(nParam, param);
+	m_platform->setWindowData(nParam, param, m_deviceID);
 	glClearColor(0, 0, 0, 0);
 
 	//default vsync to off for now.

@@ -39,10 +39,18 @@ TextureHandle GraphicsDeviceOGL_3_2::createTextureRGBA(int width, int height, un
 	return INVALID_TEXTURE_HANDLE;
 }
 
+void GraphicsDeviceOGL_3_2::setShaderResource(TextureHandle handle, u32 nameHash)
+{
+}
+
 void GraphicsDeviceOGL_3_2::setTexture(TextureHandle handle, int slot/*=0*/)
 {
 }
 
 void GraphicsDeviceOGL_3_2::drawQuad(const Quad& quad)
+{
+}
+
+void GraphicsDeviceOGL_3_2::drawFullscreenQuad()
 {
 }

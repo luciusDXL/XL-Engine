@@ -11,6 +11,7 @@
 
 #pragma once
 #include "../types.h"
+#include "graphicsDeviceList.h"
 
 class GraphicsDevicePlatform
 {
@@ -18,7 +19,7 @@ class GraphicsDevicePlatform
         GraphicsDevicePlatform() {}
         virtual ~GraphicsDevicePlatform() {}
 
-        virtual void setWindowData(int nParam, void **param, bool exclFullscreen=false)=0;
+        virtual void setWindowData(int nParam, void **param, GraphicsDeviceID deviceID, bool exclFullscreen=false)=0;
 		virtual bool init()=0;
         virtual void present()=0;
 

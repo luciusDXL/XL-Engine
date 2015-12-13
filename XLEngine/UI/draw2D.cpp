@@ -1,5 +1,7 @@
 #include "Draw2D.h"
+#include "../crc32.h"
 #include <stdlib.h>
+#include <string.h>
 
 namespace Draw2D
 {
@@ -10,12 +12,15 @@ namespace Draw2D
 	static DrawTextBuf s_textPool[DRAW_POOL_SIZE];
 	static int s_rectIndex = 0;
 	static int s_textIndex = 0;
+	static u32 s_textureHash;
 
 	void clearDraw();
 
 	bool init(GraphicsDevice* gdev)
 	{
 		s_gdev = gdev;
+		const char* texName = "baseTex";
+		s_textureHash = CRC32::get( (u8*)texName, strlen(texName) );
 		return true;
 	}
 
@@ -94,7 +99,7 @@ namespace Draw2D
 					{ rect.u+rect.du,  1.0f-(rect.v+rect.dv) },
 					rect.color
 				};
-				s_gdev->setTexture( rect.texture );
+				s_gdev->setShaderResource( rect.texture, s_textureHash );
 				s_gdev->drawQuad( quad );
 			}
 

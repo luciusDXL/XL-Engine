@@ -1,4 +1,5 @@
 #include "textSystem.h"
+#include "../crc32.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <vector>
@@ -42,6 +43,7 @@ namespace TextSystem
 	static GraphicsDevice* s_gdev;
 	static Font* s_curFont = NULL;
 	static Color s_currentColor = 0xffffffff;
+	static u32   s_textureHash = 0;
 
 	u32 nextPow2(u32 x);
 
@@ -53,6 +55,9 @@ namespace TextSystem
 			fprintf(stderr, "Could not init freetype library\n");
 			return false;
 		}
+		
+		const char* texName = "baseTex";
+		s_textureHash = CRC32::get( (u8*)texName, strlen(texName) );
 		return true;
 	}
 
@@ -238,7 +243,7 @@ namespace TextSystem
 		va_end(arg);
 
 		//set the texture.
-		s_gdev->setTexture( s_curFont->texture );
+		s_gdev->setShaderResource( s_curFont->texture, s_textureHash );
 
 		//now draw each quad...
 		const char* text = outMsg;

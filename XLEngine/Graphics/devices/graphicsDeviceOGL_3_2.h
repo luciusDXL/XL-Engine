@@ -11,12 +11,15 @@ class GraphicsDeviceOGL_3_2 : public GraphicsDeviceOGL
 		bool init(int w, int h, int vw, int vh);
 
 		TextureHandle createTextureRGBA(int width, int height, u32* data);
-		void setTexture(TextureHandle handle, int slot=0);
+		void setShaderResource(TextureHandle handle, u32 nameHash);
 		void drawQuad(const Quad& quad);
+		void drawFullscreenQuad();
 
 		void drawVirtualScreen();
 		void setVirtualViewport(bool reset, int x, int y, int w, int h);
     protected:
+		void setTexture(TextureHandle handle, int slot=0);
+
 		bool m_textureEnabled;
     private:
 };

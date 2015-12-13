@@ -30,7 +30,7 @@ class GraphicsDevice
 		virtual bool supportsShaders()=0;
 		virtual void setShader(ShaderID shader)=0;
 
-		virtual void convertFrameBufferTo32bpp(u8 *pSource, u32 *pal)=0;
+		virtual void convertFrameBufferTo32bpp(u8* source, u32 *pal)=0;
 		virtual void setBlendMode(BlendMode mode)=0;
 		virtual void enableBlending(bool enable)=0;
 		virtual TextureHandle createTextureRGBA(int width, int height, u32* data)=0;

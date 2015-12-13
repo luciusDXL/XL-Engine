@@ -1,7 +1,3 @@
-/////////////////////////
-// This is only a stub
-// TO-DO: implement
-/////////////////////////
 #include <stdlib.h>
 #include "shaderOGL.h"
 #include "vertexBufferOGL.h"

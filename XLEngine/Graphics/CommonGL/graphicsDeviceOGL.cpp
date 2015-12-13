@@ -56,15 +56,15 @@ void GraphicsDeviceOGL::enableBlending(bool enable)
 	}
 }
 
-void GraphicsDeviceOGL::convertFrameBufferTo32bpp(u8* pSource, u32* pal)
+void GraphicsDeviceOGL::convertFrameBufferTo32bpp(u8* source, u32* pal)
 {
-	u32 *pDest = m_pFrameBuffer_32bpp;
+	u32 *dest = m_frameBuffer_32bpp;
 
-	u32 uPixelCount = m_FrameWidth*m_FrameHeight;
-	for (u32 p=0; p<uPixelCount; p++)
+	u32 pixelCount = m_frameWidth*m_frameHeight;
+	for (u32 p=0; p<pixelCount; p++)
 	{
-		*pDest = pal[ *pSource ];
-		pDest++;
-		pSource++;
+		*dest = pal[ *source ];
+		dest++;
+		source++;
 	}
 }

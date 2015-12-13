@@ -15,7 +15,7 @@ GraphicsDeviceOGL_1_3::GraphicsDeviceOGL_1_3(GraphicsDevicePlatform* platform) :
 GraphicsDeviceOGL_1_3::~GraphicsDeviceOGL_1_3()
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glDeleteTextures(1, &m_VideoFrameBuffer);
+	glDeleteTextures(1, &m_videoFrameBuffer);
 }
 
 void GraphicsDeviceOGL_1_3::drawVirtualScreen()
@@ -29,8 +29,8 @@ void GraphicsDeviceOGL_1_3::drawVirtualScreen()
 	}
 
 	//update the video memory framebuffer.
-	glBindTexture(GL_TEXTURE_2D, m_VideoFrameBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_FrameWidth, m_FrameHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, m_pFrameBuffer_32bpp);
+	glBindTexture(GL_TEXTURE_2D, m_videoFrameBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_frameWidth, m_frameHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, m_frameBuffer_32bpp);
 	
 	drawFullscreenQuad();
 
@@ -86,20 +86,20 @@ bool GraphicsDeviceOGL_1_3::init(int w, int h, int vw, int vh)
 	m_fullViewport[2] = w;
 	m_fullViewport[3] = h;
 
-	m_nWindowWidth  = w;
-	m_nWindowHeight = h;
+	m_windowWidth  = w;
+	m_windowHeight = h;
 	
 	//frame size - this is the 32 bit version of the framebuffer. The 8 bit framebuffer, rendered by the software renderer, 
 	//is converted to 32 bit (using the current palette) - this buffer - before being uploaded to the video card.
-	m_FrameWidth  = vw;
-	m_FrameHeight = vh;
-	m_pFrameBuffer_32bpp = new u32[ m_FrameWidth*m_FrameHeight ];
+	m_frameWidth  = vw;
+	m_frameHeight = vh;
+	m_frameBuffer_32bpp = new u32[ m_frameWidth*m_frameHeight ];
 
 	glActiveTexture(GL_TEXTURE0);
 
 	//Create a copy of the framebuffer on the GPU so we can upload the results there.
-	glGenTextures(1, &m_VideoFrameBuffer);
-	glBindTexture(GL_TEXTURE_2D, m_VideoFrameBuffer);
+	glGenTextures(1, &m_videoFrameBuffer);
+	glBindTexture(GL_TEXTURE_2D, m_videoFrameBuffer);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -177,11 +177,11 @@ void GraphicsDeviceOGL_1_3::drawQuad(const Quad& quad)
 	float uvTop[] = { 0, 1 };
 	float uvBot[] = { 1, 0 };
 
-	posScale[0] =  2.0f * float(quad.p0.x) / float(m_nWindowWidth)  - 1.0f;
-	posScale[1] = -2.0f * float(quad.p0.y) / float(m_nWindowHeight) + 1.0f;
+	posScale[0] =  2.0f * float(quad.p0.x) / float(m_windowWidth)  - 1.0f;
+	posScale[1] = -2.0f * float(quad.p0.y) / float(m_windowHeight) + 1.0f;
 
-	posScale[2] =  2.0f * float(quad.p1.x) / float(m_nWindowWidth)  - 1.0f;
-	posScale[3] = -2.0f * float(quad.p1.y) / float(m_nWindowHeight) + 1.0f;
+	posScale[2] =  2.0f * float(quad.p1.x) / float(m_windowWidth)  - 1.0f;
+	posScale[3] = -2.0f * float(quad.p1.y) / float(m_windowHeight) + 1.0f;
 
 	uvTop[0] = quad.uv0.x;
 	uvTop[1] = quad.uv0.y;

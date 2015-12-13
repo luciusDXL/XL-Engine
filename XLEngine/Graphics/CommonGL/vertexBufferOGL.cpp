@@ -1,7 +1,3 @@
-/////////////////////////
-// This is only a stub
-// TO-DO: implement
-/////////////////////////
 #include <stdlib.h>
 #include "vertexBufferOGL.h"
 #include "../../log.h"
@@ -9,8 +5,6 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-
-#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 const char* VertexBufferOGL::c_vertexAttrib[]=
 {

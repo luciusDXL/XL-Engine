@@ -1,7 +1,3 @@
-/////////////////////////
-// This is only a stub
-// TO-DO: implement
-/////////////////////////
 #include <stdlib.h>
 #include <memory.h>
 #include "indexBufferOGL.h"
@@ -12,8 +8,6 @@
 #include <GL/glu.h>
 
 #include <algorithm>
-
-#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 IndexBufferOGL::IndexBufferOGL()
 {

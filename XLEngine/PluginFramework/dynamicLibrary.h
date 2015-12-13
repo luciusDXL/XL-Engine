@@ -1,5 +1,4 @@
-#ifndef DYNAMIC_LIBRARY_H
-#define DYNAMIC_LIBRARY_H
+#pragma once
 
 #include <string>
 using namespace std;
@@ -22,5 +21,3 @@ private:
 private:
   void *m_handle;
 };
-
-#endif

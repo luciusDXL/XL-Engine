@@ -1,5 +1,4 @@
-#ifndef PLUGIN_MANAGER_H
-#define PLUGIN_MANAGER_H
+#pragma once
 
 #include <string>
 #include "../xlServices.h"
@@ -23,5 +22,3 @@ private:
 	static DynamicLibrary *m_gameLib;
 	static XL_RunFunc m_runFunc;
 };
-
-#endif //PLUGIN_MANAGER_H

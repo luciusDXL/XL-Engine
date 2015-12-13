@@ -1,6 +1,13 @@
+/******************************************************************************************************
+ Common OpenGL functionality between all OpenGL based Graphics Devices.
+ Anything that can be pulled into common code will reduce the amount of code duplication and the
+ potential for errors.
+ ******************************************************************************************************/
 #pragma once
 
 #include "../graphicsDevice.h"
+
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 class GraphicsDeviceOGL : public GraphicsDevice
 {
@@ -10,15 +17,15 @@ class GraphicsDeviceOGL : public GraphicsDevice
         GraphicsDeviceOGL(GraphicsDevicePlatform* platform);
 		virtual ~GraphicsDeviceOGL();
 
-		//shared
-		virtual void setWindowData(int nParam, void **param);
+		//common functionality implemented by this class.
+		virtual void setWindowData(int nParam, void** param);
         virtual void present();
 		virtual void clear();
 		virtual void setBlendMode(BlendMode mode);
 		virtual void enableBlending(bool enable);
-		virtual void convertFrameBufferTo32bpp(u8 *pSource, u32 *pal);
+		virtual void convertFrameBufferTo32bpp(u8* source, u32* pal);
 
-		//left to specific implementations.
+		//functionality that must be implemented by specific OpenGL based Graphics Devices.
 		virtual bool supportsShaders()=0;
 		virtual void setShader(ShaderID shader)=0;
 
@@ -35,12 +42,12 @@ class GraphicsDeviceOGL : public GraphicsDevice
     protected:
 		virtual void setTexture(TextureHandle handle, int slot=0)=0;
 
-		s32  m_nWindowWidth;
-		s32  m_nWindowHeight;
-		s32  m_FrameWidth;
-		s32  m_FrameHeight;
-		u32  m_VideoFrameBuffer;
-		u32* m_pFrameBuffer_32bpp;
+		s32  m_windowWidth;
+		s32  m_windowHeight;
+		s32  m_frameWidth;
+		s32  m_frameHeight;
+		u32  m_videoFrameBuffer;
+		u32* m_frameBuffer_32bpp;
 
 		s32  m_virtualViewport[4];
 		s32  m_virtualViewportNoUI[4];

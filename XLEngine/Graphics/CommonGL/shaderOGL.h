@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../common/graphicsDeviceOGL.h"
+#include "graphicsDeviceOGL.h"
 #include <map>
 
 enum ShaderStage

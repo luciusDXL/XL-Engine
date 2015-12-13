@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../common/graphicsDeviceOGL.h"
+#include "../CommonGL/graphicsDeviceOGL.h"
 
 class GraphicsShadersOGL_2_0;
 class VertexBufferOGL;

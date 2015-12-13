@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdlib.h>
-#include "../common/graphicsDeviceOGL.h"
+#include "graphicsDeviceOGL.h"
 
 class IndexBufferOGL
 {

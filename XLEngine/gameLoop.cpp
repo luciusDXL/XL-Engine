@@ -12,7 +12,7 @@
 #ifdef _WIN32
 	#define WIN32_LEAN_AND_MEAN 1
 	#include <Windows.h>
-	#include "Graphics/win32/graphicsDeviceOGL_Win32.h"
+	#include "Graphics/Win32/graphicsDeviceOGL_Win32.h"
 #endif
 
 namespace GameLoop
@@ -61,7 +61,7 @@ namespace GameLoop
 		Settings::initGameData();
 		Sound::Init();
 		
-		PluginManager::Init();
+		PluginManager::init();
 		s_gdev->setVirtualViewport(false, 100, settings->windowHeight-250, 320, 200);
 
 		return true;
@@ -74,7 +74,7 @@ namespace GameLoop
 		TextSystem::destroy();
 		Clock::destroy();
 		MemoryPool::destroy();
-		PluginManager::Destroy();
+		PluginManager::destroy();
 		Sound::Free();
 		Log::close();
 		
@@ -197,7 +197,7 @@ namespace GameLoop
 		char libPath[4096];
 		sprintf(libPath, "Games/%s", info->lib);
 
-		XL_RunFunc runGame = PluginManager::InitGame(libPath);
+		XL_RunFunc runGame = PluginManager::initGame(libPath);
 		if (!runGame)
 		{
 			LOG( LOG_ERROR, "The game library \"%s\" is not valid, game \"%s\" cannot be run.", libPath, info->name );

@@ -13,9 +13,9 @@
 #include "graphicsShaders_OGL_2_0.h"
 #include "../../log.h"
 #include "../../memoryPool.h"
-#include "../common/shaderOGL.h"
-#include "../common/vertexBufferOGL.h"
-#include "../common/indexBufferOGL.h"
+#include "../CommonGL/shaderOGL.h"
+#include "../CommonGL/vertexBufferOGL.h"
+#include "../CommonGL/indexBufferOGL.h"
 
 #include <GL/glew.h>
 #include <GL/gl.h>

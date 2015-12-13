@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../common/graphicsDeviceOGL.h"
+#include "../CommonGL/graphicsDeviceOGL.h"
 
 class GraphicsDeviceOGL_3_2 : public GraphicsDeviceOGL
 {

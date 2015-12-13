@@ -1,61 +1,26 @@
+/************************************************************************************************************
+ Graphics Device interface.
+
+ There are 2 components to the device:
+	- The platform (graphicsDevice_Platform) which handles OS and platform specific implementations.
+	- The API "level" such as OpenGL 1.3, OpenGL 2.0 or DirectX 9, DirectX 11 if DirectX is ever supported.
+ By seperating the two and ensuring the platform implementation is as small as possible, the amount
+	of per-platform code is reduced, the majority of the code goes into supporting the various
+	features and improvements with each API "level" which is where it should go.
+
+ It create a device, pass in the deviceID and platform implementation to the static createDevice()
+ Similarly destroy the device using the static destroy()
+ Graphics Devices can be changed at runtime, allowing the user to pick the API level or even API itself
+	depending on driver compatibility (or just to test).
+ **************************************************************************************************************/
 #pragma once
-#include "../types.h"
 #include "graphicsDevice_Platform.h"
 #include "graphicsDeviceList.h"
-
-typedef u32 Color;
-
-struct iPoint
-{
-	s32 x;
-	s32 y;
-};
-
-struct fPoint
-{
-	f32 x;
-	f32 y;
-};
-
-struct Quad
-{
-	iPoint p0;
-	iPoint p1;
-	fPoint uv0;
-	fPoint uv1;
-	Color color;
-};
-
-typedef u32 TextureHandle;
-#define INVALID_TEXTURE_HANDLE 0xffffffff
-
-enum BlendMode
-{
-	BLEND_OVER = 0,	//standard alpha blending
-	BLEND_ALPHA_ADD,
-	BLEND_ADD,
-	BLEND_COUNT
-};
-
-enum ShaderID
-{
-	SHADER_QUAD_UI = 0,
-	SHADER_COUNT
-};
+#include "graphicsTypes.h"
 
 class GraphicsDevice
 {
     public:
-        GraphicsDevice(GraphicsDevicePlatform* platform) 
-		{
-			m_platform = platform;
-			m_deviceID = GDEV_INVALID;
-		}
-        virtual ~GraphicsDevice() 
-		{
-			delete m_platform;
-		}
-
         virtual void setWindowData(int nParam, void **param)=0;
 		virtual bool init(int w, int h, int vw, int vh)=0;
 		virtual void drawVirtualScreen()=0;
@@ -78,6 +43,16 @@ class GraphicsDevice
 		static void destroyDevice(GraphicsDevice* device);
 
     protected:
+		GraphicsDevice(GraphicsDevicePlatform* platform) 
+		{
+			m_platform = platform;
+			m_deviceID = GDEV_INVALID;
+		}
+        virtual ~GraphicsDevice() 
+		{
+			delete m_platform;
+		}
+
 		virtual void setTexture(TextureHandle handle, int slot=0)=0;
 
 		GraphicsDevicePlatform* m_platform;

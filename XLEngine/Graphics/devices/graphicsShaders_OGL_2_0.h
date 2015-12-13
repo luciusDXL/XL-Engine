@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../common/graphicsDeviceOGL.h"
-#include "../common/shaderOGL.h"
+#include "../CommonGL/graphicsDeviceOGL.h"
+#include "../CommonGL/shaderOGL.h"
 
 class GraphicsShadersOGL_2_0
 {

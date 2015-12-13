@@ -3,9 +3,9 @@
 #include "../log.h"
 
 //specific implementations of this interface.
-#include "devices/graphicsDeviceOGL_1_3.h"
-#include "devices/graphicsDeviceOGL_2_0.h"
-#include "devices/graphicsDeviceOGL_3_2.h"
+#include "Devices/graphicsDeviceOGL_1_3.h"
+#include "Devices/graphicsDeviceOGL_2_0.h"
+#include "Devices/graphicsDeviceOGL_3_2.h"
 
 GraphicsDevice* GraphicsDevice::createDevice(GraphicsDeviceID deviceID, GraphicsDevicePlatform* platform)
 {

@@ -1,7 +1,7 @@
 #pragma once
 #include "types.h"
-#include "UI/UISystem.h"
-#include "UI/Draw2D.h"
+#include "UI/uiSystem.h"
+#include "UI/draw2D.h"
 
 typedef bool (*StartGameFunc)(s32);
 typedef void (*StopGameFunc)();

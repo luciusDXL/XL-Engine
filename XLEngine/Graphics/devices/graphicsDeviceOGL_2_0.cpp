@@ -52,6 +52,9 @@ GraphicsDeviceOGL_2_0::~GraphicsDeviceOGL_2_0()
 
 	delete m_quadVB;
 	delete m_quadIB;
+
+	delete [] m_frameBuffer_32bpp[0];
+	delete [] m_frameBuffer_32bpp[1];
 }
 
 void GraphicsDeviceOGL_2_0::drawVirtualScreen()
@@ -60,9 +63,14 @@ void GraphicsDeviceOGL_2_0::drawVirtualScreen()
 
 	//update the video memory framebuffer.
 	//TO-DO: This device should support PBOs which should allow for much faster transfers.
-	glBindTexture(GL_TEXTURE_2D, m_videoFrameBuffer);
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, m_frameWidth, m_frameHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, m_frameBuffer_32bpp);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	lockBuffer();
+		if (m_writeFrame > m_renderFrame)
+		{
+			glBindTexture(GL_TEXTURE_2D, m_videoFrameBuffer);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_frameWidth, m_frameHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, m_frameBuffer_32bpp[m_writeBufferIndex]);
+		}
+		m_renderFrame = m_writeFrame;
+	unlockBuffer();
 
 	s32 baseTex = m_curShader->getParameter("baseTex");
 	m_curShader->updateParameter(baseTex, m_videoFrameBuffer, 0, true);	//we have to force the update since the texture itself has changed.
@@ -138,7 +146,8 @@ bool GraphicsDeviceOGL_2_0::init(int w, int h, int vw, int vh)
 	//is converted to 32 bit (using the current palette) - this buffer - before being uploaded to the video card.
 	m_frameWidth  = vw;
 	m_frameHeight = vh;
-	m_frameBuffer_32bpp = new u32[ m_frameWidth*m_frameHeight ];
+	m_frameBuffer_32bpp[0] = new u32[ m_frameWidth*m_frameHeight ];
+	m_frameBuffer_32bpp[1] = new u32[ m_frameWidth*m_frameHeight ];
 
 	glActiveTexture(GL_TEXTURE0);
 	glDisable(GL_DEPTH_TEST); // disable depth buffering

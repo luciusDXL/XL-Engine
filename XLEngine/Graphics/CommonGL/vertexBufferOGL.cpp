@@ -217,7 +217,7 @@ void VertexBufferOGL::update(u32 size, void* data)
 	void* mem = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 	if ( mem )
 	{
-		memcpy(mem, data, std::min(size, m_size));
+		memcpy(mem, data, min(size, m_size));
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 

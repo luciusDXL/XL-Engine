@@ -93,7 +93,7 @@ bool ShaderOGL::load(const char* vsShader, const char* psShader)
 			param[usedCount].nameHash = CRC32::get( (u8*)paramName, nameLen );
 			param[usedCount].glID = p;
 			param[usedCount].type = paramType;
-			param[usedCount].size = std::max( bufferSize, 4 );
+			param[usedCount].size = max( bufferSize, 4 );
 
 			usedCount++;
 		}
@@ -219,7 +219,7 @@ void ShaderOGL::updateParameter(s32 id, void* data, u32 size)
 	if (id < 0) { return; }
 
 	ShaderParam& param = m_param[id];
-	u32 copySize = std::min( size, param.size );
+	u32 copySize = min( size, param.size );
 
 	memcpy(param.data, data, copySize);
 	param.texHandle = 0;

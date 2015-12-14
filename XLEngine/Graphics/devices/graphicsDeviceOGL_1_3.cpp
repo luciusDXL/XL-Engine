@@ -16,6 +16,9 @@ GraphicsDeviceOGL_1_3::~GraphicsDeviceOGL_1_3()
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glDeleteTextures(1, &m_videoFrameBuffer);
+
+	delete [] m_frameBuffer_32bpp[0];
+	delete [] m_frameBuffer_32bpp[1];
 }
 
 void GraphicsDeviceOGL_1_3::drawVirtualScreen()
@@ -29,9 +32,15 @@ void GraphicsDeviceOGL_1_3::drawVirtualScreen()
 	}
 
 	//update the video memory framebuffer.
-	glBindTexture(GL_TEXTURE_2D, m_videoFrameBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_frameWidth, m_frameHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, m_frameBuffer_32bpp);
-	
+	lockBuffer();
+		glBindTexture(GL_TEXTURE_2D, m_videoFrameBuffer);
+		if (m_writeFrame > m_renderFrame)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_frameWidth, m_frameHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, m_frameBuffer_32bpp[m_writeBufferIndex]);
+		}
+		m_renderFrame = m_writeFrame;
+	unlockBuffer();
+
 	drawFullscreenQuad();
 
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -93,7 +102,8 @@ bool GraphicsDeviceOGL_1_3::init(int w, int h, int vw, int vh)
 	//is converted to 32 bit (using the current palette) - this buffer - before being uploaded to the video card.
 	m_frameWidth  = vw;
 	m_frameHeight = vh;
-	m_frameBuffer_32bpp = new u32[ m_frameWidth*m_frameHeight ];
+	m_frameBuffer_32bpp[0] = new u32[ m_frameWidth*m_frameHeight ];
+	m_frameBuffer_32bpp[1] = new u32[ m_frameWidth*m_frameHeight ];
 
 	glActiveTexture(GL_TEXTURE0);
 

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "../graphicsDevice.h"
+#include "../../Threads/mutex.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -42,15 +43,25 @@ class GraphicsDeviceOGL : public GraphicsDevice
     protected:
 		virtual void setTexture(TextureHandle handle, int slot=0)=0;
 
+		void lockBuffer();
+		void unlockBuffer();
+
 		s32  m_windowWidth;
 		s32  m_windowHeight;
 		s32  m_frameWidth;
 		s32  m_frameHeight;
 		u32  m_videoFrameBuffer;
-		u32* m_frameBuffer_32bpp;
+		u32* m_frameBuffer_32bpp[2];
 
-		s32  m_virtualViewport[4];
-		s32  m_virtualViewportNoUI[4];
-		s32  m_fullViewport[4];
+		s32 m_bufferIndex;
+		s32 m_writeBufferIndex;
+		s32 m_writeFrame;
+		s32 m_renderFrame;
+
+		s32 m_virtualViewport[4];
+		s32 m_virtualViewportNoUI[4];
+		s32 m_fullViewport[4];
+
+		Mutex* m_bufferMutex;
     private:
 };

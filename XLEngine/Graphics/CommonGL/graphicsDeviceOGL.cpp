@@ -10,11 +10,20 @@
 GraphicsDeviceOGL::GraphicsDeviceOGL(GraphicsDevicePlatform* platform) : GraphicsDevice(platform)
 {
 	ShaderOGL::init();
+	m_bufferIndex = 0;
+	m_writeFrame  = 0;
+	m_renderFrame = 0;
+
+	m_frameBuffer_32bpp[0] = NULL;
+	m_frameBuffer_32bpp[1] = NULL;
+
+	m_bufferMutex = new Mutex();
 }
 
 GraphicsDeviceOGL::~GraphicsDeviceOGL()
 {
 	ShaderOGL::destroy();
+	delete m_bufferMutex;
 }
 
 void GraphicsDeviceOGL::present()
@@ -56,15 +65,31 @@ void GraphicsDeviceOGL::enableBlending(bool enable)
 	}
 }
 
+void GraphicsDeviceOGL::lockBuffer()
+{
+	m_bufferMutex->Lock();
+}
+
+void GraphicsDeviceOGL::unlockBuffer()
+{
+	m_bufferMutex->Unlock();
+}
+
 void GraphicsDeviceOGL::convertFrameBufferTo32bpp(u8* source, u32* pal)
 {
-	u32 *dest = m_frameBuffer_32bpp;
+	lockBuffer();
+		const s32 curIndex = m_bufferIndex;
+		u32 *dest = m_frameBuffer_32bpp[curIndex];
 
-	u32 pixelCount = m_frameWidth*m_frameHeight;
-	for (u32 p=0; p<pixelCount; p++)
-	{
-		*dest = pal[ *source ];
-		dest++;
-		source++;
-	}
+		u32 pixelCount = m_frameWidth*m_frameHeight;
+		for (u32 p=0; p<pixelCount; p++)
+		{
+			*dest = pal[ *source ];
+			dest++;
+			source++;
+		}
+		m_writeBufferIndex = m_bufferIndex;
+		m_bufferIndex = (m_bufferIndex+1)&1;
+		m_writeFrame++;
+	unlockBuffer();
 }

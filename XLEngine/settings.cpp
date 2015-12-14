@@ -12,7 +12,7 @@ namespace Settings
 {
 	#define MAX_GAME_COUNT 256
 
-	static const char* c_versionName = "(Beta)";
+	static const char* c_versionName = "(Beta 1)";
 	static const u32 c_xlEngineMajorVersion = 0;	//Major version - version 1 will be the first full release, 0 is Beta
 	static const u32 c_xlEngineMinorVersion = 2;	//Minor version
 

@@ -103,9 +103,8 @@ void GraphicsDeviceOGL::convertFrameBufferTo32bpp(u8* source, u32* pal)
 
 TextureHandle GraphicsDeviceOGL::createTextureRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic)
 {
-	TextureHandle id = TextureHandle( m_textures.size() );
 	TextureOGL* texture = createTextureRGBA_Internal(width, height, data, initSamplerState, dynamic);
-	return texture ? id : INVALID_TEXTURE_HANDLE;
+	return texture ? texture->getHandle() : INVALID_TEXTURE_HANDLE;
 }
 
 TextureOGL* GraphicsDeviceOGL::createTextureRGBA_Internal(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic/*=false*/)

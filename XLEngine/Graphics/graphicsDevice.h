@@ -17,6 +17,7 @@
 #include "graphicsDevice_Platform.h"
 #include "graphicsDeviceList.h"
 #include "graphicsTypes.h"
+#include "samplerState.h"
 
 class GraphicsDevice
 {
@@ -33,7 +34,8 @@ class GraphicsDevice
 		virtual void convertFrameBufferTo32bpp(u8* source, u32 *pal)=0;
 		virtual void setBlendMode(BlendMode mode)=0;
 		virtual void enableBlending(bool enable)=0;
-		virtual TextureHandle createTextureRGBA(int width, int height, u32* data)=0;
+		virtual void enableTexturing(bool enable)=0;
+		virtual TextureHandle createTextureRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerStat, bool dynamic=false)=0;
 		virtual void setShaderResource(TextureHandle handle, u32 nameHash)=0;
 		virtual void drawQuad(const Quad& quad)=0;
 

@@ -185,7 +185,15 @@ namespace TextSystem
 			}
 			font.charMap[c] = m;
 		}
-		font.texture = s_gdev->createTextureRGBA(texwidth, texheight, (u32*)font.imageCache);
+
+		const SamplerState samplerState=
+		{
+			WM_CLAMP, WM_CLAMP, WM_CLAMP,							//clamp on every axis
+			TEXFILTER_POINT, TEXFILTER_POINT, TEXFILTER_POINT,		//filtering
+			false													//no mipmapping
+		};
+
+		font.texture = s_gdev->createTextureRGBA(texwidth, texheight, (u32*)font.imageCache, samplerState);
 		FontHandle handle = FontHandle( s_fonts.size() );
 
 		s_fonts.push_back(font);

@@ -7,8 +7,10 @@
 
 #include "../graphicsDevice.h"
 #include "../../Threads/mutex.h"
+#include <vector>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
+class TextureOGL;
 
 class GraphicsDeviceOGL : public GraphicsDevice
 {
@@ -24,7 +26,9 @@ class GraphicsDeviceOGL : public GraphicsDevice
 		virtual void clear();
 		virtual void setBlendMode(BlendMode mode);
 		virtual void enableBlending(bool enable);
+		virtual void enableTexturing(bool enable);
 		virtual void convertFrameBufferTo32bpp(u8* source, u32* pal);
+		virtual TextureHandle createTextureRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic=false);
 
 		//functionality that must be implemented by specific OpenGL based Graphics Devices.
 		virtual bool supportsShaders()=0;
@@ -33,7 +37,6 @@ class GraphicsDeviceOGL : public GraphicsDevice
         virtual bool init(int w, int h, int vw, int vh)=0;
 		virtual void drawVirtualScreen()=0;
 		
-		virtual TextureHandle createTextureRGBA(int width, int height, u32* data)=0;
 		virtual void setShaderResource(TextureHandle handle, u32 nameHash)=0;
 
 		virtual void drawQuad(const Quad& quad)=0;
@@ -41,7 +44,10 @@ class GraphicsDeviceOGL : public GraphicsDevice
 
 		virtual void setVirtualViewport(bool reset, int x, int y, int w, int h)=0;
     protected:
-		virtual void setTexture(TextureHandle handle, int slot=0)=0;
+		typedef std::vector<TextureOGL*> TextureList;
+
+		virtual void setTexture(TextureHandle handle, int slot=0);
+		TextureOGL* createTextureRGBA_Internal(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic=false);
 
 		void lockBuffer();
 		void unlockBuffer();
@@ -50,7 +56,6 @@ class GraphicsDeviceOGL : public GraphicsDevice
 		s32  m_windowHeight;
 		s32  m_frameWidth;
 		s32  m_frameHeight;
-		u32  m_videoFrameBuffer;
 		u32* m_frameBuffer_32bpp[2];
 
 		s32 m_bufferIndex;
@@ -61,6 +66,9 @@ class GraphicsDeviceOGL : public GraphicsDevice
 		s32 m_virtualViewport[4];
 		s32 m_virtualViewportNoUI[4];
 		s32 m_fullViewport[4];
+
+		TextureOGL* m_videoFrameBuffer;
+		TextureList m_textures;
 
 		Mutex* m_bufferMutex;
     private:

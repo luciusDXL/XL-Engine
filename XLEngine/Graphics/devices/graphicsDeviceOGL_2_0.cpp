@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include "graphicsDeviceOGL_2_0.h"
 #include "graphicsShaders_OGL_2_0.h"
+#include "../CommonGL/textureOGL.h"
 #include "../../log.h"
 #include "../../memoryPool.h"
 #include "../CommonGL/shaderOGL.h"
@@ -40,16 +41,12 @@ const VertexElement c_quadVertexDecl[]=
 GraphicsDeviceOGL_2_0::GraphicsDeviceOGL_2_0(GraphicsDevicePlatform* platform) : GraphicsDeviceOGL(platform)
 {
 	m_deviceID = GDEV_OPENGL_2_0;
-	m_textureEnabled = true;
 	m_curShaderID = SHADER_COUNT;
 	m_curShader = NULL;
 }
 
 GraphicsDeviceOGL_2_0::~GraphicsDeviceOGL_2_0()
 {
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDeleteTextures(1, &m_videoFrameBuffer);
-
 	delete m_quadVB;
 	delete m_quadIB;
 
@@ -66,14 +63,13 @@ void GraphicsDeviceOGL_2_0::drawVirtualScreen()
 	lockBuffer();
 		if (m_writeFrame > m_renderFrame)
 		{
-			glBindTexture(GL_TEXTURE_2D, m_videoFrameBuffer);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_frameWidth, m_frameHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, m_frameBuffer_32bpp[m_writeBufferIndex]);
+			m_videoFrameBuffer->update( m_frameBuffer_32bpp[m_writeBufferIndex] );
 		}
 		m_renderFrame = m_writeFrame;
 	unlockBuffer();
 
 	s32 baseTex = m_curShader->getParameter("baseTex");
-	m_curShader->updateParameter(baseTex, m_videoFrameBuffer, 0, true);	//we have to force the update since the texture itself has changed.
+	m_curShader->updateParameter(baseTex, m_videoFrameBuffer->getHandle(), 0, true);	//we have to force the update since the texture itself has changed.
 
 	drawFullscreenQuad();
 
@@ -149,21 +145,18 @@ bool GraphicsDeviceOGL_2_0::init(int w, int h, int vw, int vh)
 	m_frameBuffer_32bpp[0] = new u32[ m_frameWidth*m_frameHeight ];
 	m_frameBuffer_32bpp[1] = new u32[ m_frameWidth*m_frameHeight ];
 
-	glActiveTexture(GL_TEXTURE0);
 	glDisable(GL_DEPTH_TEST); // disable depth buffering
 	glDisable(GL_CULL_FACE);
 
 	//Create a copy of the framebuffer on the GPU so we can upload the results there.
-	glGenTextures(1, &m_videoFrameBuffer);
-	glBindTexture(GL_TEXTURE_2D, m_videoFrameBuffer);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glEnable(GL_TEXTURE_2D);
-	m_textureEnabled = true;
+	const SamplerState samplerState=
+	{
+		WM_CLAMP, WM_CLAMP, WM_CLAMP,							//clamp on every axis
+		TEXFILTER_LINEAR, TEXFILTER_POINT, TEXFILTER_POINT,		//filtering
+		false													//no mipmapping
+	};
+	m_videoFrameBuffer = createTextureRGBA_Internal(m_frameWidth, m_frameHeight, NULL, samplerState);
+	enableTexturing(true);
 	
 	glFlush();
 
@@ -188,51 +181,10 @@ void GraphicsDeviceOGL_2_0::setShader(ShaderID shader)
 	m_curShaderID = shader;
 }
 
-TextureHandle GraphicsDeviceOGL_2_0::createTextureRGBA(int width, int height, unsigned int* data)
-{
-	GLuint texHandle = 0;
-	glGenTextures(1, &texHandle);
-	glBindTexture(GL_TEXTURE_2D, texHandle);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, data);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	return TextureHandle(texHandle);
-}
-
 void GraphicsDeviceOGL_2_0::setShaderResource(TextureHandle handle, u32 nameHash)
 {
 	s32 parmID = m_curShader->getParameter(nameHash);
 	m_curShader->updateParameter(parmID, handle, 0);
-}
-
-void GraphicsDeviceOGL_2_0::setTexture(TextureHandle handle, int slot/*=0*/)
-{
-	glActiveTexture(GL_TEXTURE0 + slot);
-
-	if (handle != INVALID_TEXTURE_HANDLE)
-	{
-		glBindTexture(GL_TEXTURE_2D, GLuint(handle));
-		if (!m_textureEnabled)
-		{
-			glEnable(GL_TEXTURE_2D);
-			m_textureEnabled = true;
-		}
-	}
-	else
-	{
-		glBindTexture(GL_TEXTURE_2D, 0);
-		if (m_textureEnabled)
-		{
-			glDisable(GL_TEXTURE_2D);
-			m_textureEnabled = false;
-		}
-	}
 }
 
 void GraphicsDeviceOGL_2_0::drawQuad(const Quad& quad)

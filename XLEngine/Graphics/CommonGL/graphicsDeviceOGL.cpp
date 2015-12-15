@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "../../log.h"
 #include "graphicsDeviceOGL.h"
+#include "textureOGL.h"
 #include "shaderOGL.h"
 
 #include <GL/glew.h>
@@ -22,6 +23,12 @@ GraphicsDeviceOGL::GraphicsDeviceOGL(GraphicsDevicePlatform* platform) : Graphic
 
 GraphicsDeviceOGL::~GraphicsDeviceOGL()
 {
+	for (size_t t=0; t<m_textures.size(); t++)
+	{
+		delete m_textures[t];
+	}
+	m_textures.clear();
+
 	ShaderOGL::destroy();
 	delete m_bufferMutex;
 }
@@ -92,4 +99,53 @@ void GraphicsDeviceOGL::convertFrameBufferTo32bpp(u8* source, u32* pal)
 		m_bufferIndex = (m_bufferIndex+1)&1;
 		m_writeFrame++;
 	unlockBuffer();
+}
+
+TextureHandle GraphicsDeviceOGL::createTextureRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic)
+{
+	TextureHandle id = TextureHandle( m_textures.size() );
+	TextureOGL* texture = createTextureRGBA_Internal(width, height, data, initSamplerState, dynamic);
+	return texture ? id : INVALID_TEXTURE_HANDLE;
+}
+
+TextureOGL* GraphicsDeviceOGL::createTextureRGBA_Internal(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic/*=false*/)
+{
+	TextureOGL* texture = new TextureOGL(m_textures.size(), dynamic);
+	if (!texture)
+	{
+		return NULL;
+	}
+
+	if (!texture->createRGBA(width, height, data, initSamplerState))
+	{
+		delete texture;
+		return NULL;
+	}
+
+	m_textures.push_back( texture );
+	return texture;
+}
+
+void GraphicsDeviceOGL::setTexture(TextureHandle handle, int slot/*=0*/)
+{
+	if (handle == INVALID_TEXTURE_HANDLE)
+	{
+		TextureOGL::clear(slot);
+		return;
+	}
+
+	const u32 index = u32( handle );
+	m_textures[index]->bind(slot);
+}
+
+void GraphicsDeviceOGL::enableTexturing(bool enable)
+{
+	if (enable)
+	{
+		glEnable(GL_TEXTURE_2D);
+	}
+	else
+	{
+		glDisable(GL_TEXTURE_2D);
+	}
 }

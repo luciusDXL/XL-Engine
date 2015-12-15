@@ -81,20 +81,27 @@ namespace UISystem
 		createIcon(ICON_SEARCH, 32);
 		createIcon(ICON_TOOLS, 32);
 
+		const SamplerState samplerState=
+		{
+			WM_CLAMP, WM_CLAMP, WM_CLAMP,							//clamp on every axis
+			TEXFILTER_LINEAR, TEXFILTER_POINT, TEXFILTER_POINT,		//filtering
+			false													//no mipmapping
+		};
+
 		s_imageLoader->loadImage("UI/background.png");
 		s_background = new Icon;
-		s_background->texture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData());
+		s_background->texture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData(), samplerState);
 		s_background->width  = s_imageLoader->getWidth();
 		s_background->height = s_imageLoader->getHeight();
 
 		s_imageLoader->loadImage("UI/XL_Engine_2.png");
 		s_logo = new Icon;
-		s_logo->texture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData());
+		s_logo->texture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData(), samplerState);
 		s_logo->width   = s_imageLoader->getWidth();
 		s_logo->height  = s_imageLoader->getHeight();
 
 		s_imageLoader->loadImage("UI/UI.png");
-		s_uiTexture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData());
+		s_uiTexture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData(), samplerState);
 
 		s_clearState = false;
 		clear();
@@ -145,8 +152,15 @@ namespace UISystem
 		sprintf(fullpath, "%s%s", s_iconPath, imageName);
 		s_imageLoader->loadImage(fullpath);
 
+		const SamplerState samplerState=
+		{
+			WM_CLAMP, WM_CLAMP, WM_CLAMP,							//clamp on every axis
+			TEXFILTER_LINEAR, TEXFILTER_POINT, TEXFILTER_POINT,		//filtering
+			false													//no mipmapping
+		};
+
 		Icon* icon = new Icon;
-		icon->texture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData());
+		icon->texture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData(), samplerState);
 		icon->width   = s_imageLoader->getWidth();
 		icon->height  = s_imageLoader->getHeight();
 		s_icons.push_back(icon);
@@ -212,8 +226,15 @@ namespace UISystem
 		sprintf(fullpath, "%s%d/%s", s_iconPath, size, c_iconFiles[id]);
 		s_imageLoader->loadImage(fullpath);
 
+		const SamplerState samplerState=
+		{
+			WM_CLAMP, WM_CLAMP, WM_CLAMP,							//clamp on every axis
+			TEXFILTER_LINEAR, TEXFILTER_POINT, TEXFILTER_POINT,		//filtering
+			false													//no mipmapping
+		};
+
 		Icon* icon = new Icon;
-		icon->texture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData());
+		icon->texture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData(), samplerState);
 		icon->width   = s_imageLoader->getWidth();
 		icon->height  = s_imageLoader->getHeight();
 

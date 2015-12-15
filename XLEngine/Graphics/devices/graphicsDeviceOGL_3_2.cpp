@@ -14,7 +14,6 @@
 GraphicsDeviceOGL_3_2::GraphicsDeviceOGL_3_2(GraphicsDevicePlatform* platform) : GraphicsDeviceOGL(platform)
 {
 	m_deviceID = GDEV_OPENGL_3_2;
-	m_textureEnabled = true;
 }
 
 GraphicsDeviceOGL_3_2::~GraphicsDeviceOGL_3_2()
@@ -43,16 +42,7 @@ void GraphicsDeviceOGL_3_2::setShader(ShaderID shader)
 {
 }
 
-TextureHandle GraphicsDeviceOGL_3_2::createTextureRGBA(int width, int height, unsigned int* data)
-{
-	return INVALID_TEXTURE_HANDLE;
-}
-
 void GraphicsDeviceOGL_3_2::setShaderResource(TextureHandle handle, u32 nameHash)
-{
-}
-
-void GraphicsDeviceOGL_3_2::setTexture(TextureHandle handle, int slot/*=0*/)
 {
 }
 

@@ -1,7 +1,7 @@
 #include "settings.h"
 #include "iniReader.h"
 #include "iniWriter.h"
-#include "UI/UISystem.h"
+#include "UI/uiSystem.h"
 #include "filestream.h"
 #include <string.h>
 #include <stdlib.h>

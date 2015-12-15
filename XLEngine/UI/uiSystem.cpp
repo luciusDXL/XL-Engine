@@ -1,8 +1,8 @@
 #include "../Text/textSystem.h"
 #include "../imageLoader.h"
 #include "../input.h"
-#include "UISystem.h"
-#include "Draw2D.h"
+#include "uiSystem.h"
+#include "draw2D.h"
 #include <vector>
 
 using namespace std;

@@ -1,12 +1,12 @@
 #include <stdlib.h>
-#include "textureOGL.h"
+#include "textureGL.h"
 #include "../../log.h"
 
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-TextureOGL::TextureOGL(TextureHandle handle, bool dynamic)
+TextureGL::TextureGL(TextureHandle handle, bool dynamic)
 {
 	m_dynamic = dynamic;
 	m_glID = 0;
@@ -15,7 +15,7 @@ TextureOGL::TextureOGL(TextureHandle handle, bool dynamic)
 	m_handle = handle;
 }
 
-TextureOGL::~TextureOGL()
+TextureGL::~TextureGL()
 {
 	if (m_glID)
 	{
@@ -23,19 +23,19 @@ TextureOGL::~TextureOGL()
 	}
 }
 
-void TextureOGL::bind(u32 slot)
+void TextureGL::bind(u32 slot)
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, GLuint(m_glID));
 }
 
-void TextureOGL::clear(u32 slot)
+void TextureGL::clear(u32 slot)
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-bool TextureOGL::createRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState)
+bool TextureGL::createRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState)
 {
 	glGenTextures(1, &m_glID);
 	glBindTexture(GL_TEXTURE_2D, m_glID);
@@ -51,21 +51,21 @@ bool TextureOGL::createRGBA(u32 width, u32 height, const u32* data, const Sample
 	return true;
 }
 
-void TextureOGL::setSamplerState(const SamplerState& state)
+void TextureGL::setSamplerState(const SamplerState& state)
 {
 	glBindTexture(GL_TEXTURE_2D, m_glID);
 	setGLSamplerState(state);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void TextureOGL::update(const u32* data)
+void TextureGL::update(const u32* data)
 {
 	glBindTexture(GL_TEXTURE_2D, m_glID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, data);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void TextureOGL::setGLSamplerState(const SamplerState& state)
+void TextureGL::setGLSamplerState(const SamplerState& state)
 {
 	//ignore the mip filter for now and anisotropic filtering for now.
 

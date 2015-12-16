@@ -9,14 +9,14 @@
 // actual game view runs at the same speed.
 ////////////////////////////////////////////////////////////////////
 #include <stdlib.h>
-#include "graphicsDeviceOGL_2_0.h"
-#include "graphicsShaders_OGL_2_0.h"
-#include "../CommonGL/textureOGL.h"
+#include "graphicsDeviceGL_2_0.h"
+#include "graphicsShaders_GL_2_0.h"
+#include "../CommonGL/textureGL.h"
 #include "../../log.h"
 #include "../../memoryPool.h"
-#include "../CommonGL/shaderOGL.h"
-#include "../CommonGL/vertexBufferOGL.h"
-#include "../CommonGL/indexBufferOGL.h"
+#include "../CommonGL/shaderGL.h"
+#include "../CommonGL/vertexBufferGL.h"
+#include "../CommonGL/indexBufferGL.h"
 
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -38,14 +38,14 @@ const VertexElement c_quadVertexDecl[]=
 };
 
 
-GraphicsDeviceOGL_2_0::GraphicsDeviceOGL_2_0(GraphicsDevicePlatform* platform) : GraphicsDeviceOGL(platform)
+GraphicsDeviceGL_2_0::GraphicsDeviceGL_2_0(GraphicsDevicePlatform* platform) : GraphicsDeviceGL(platform)
 {
 	m_deviceID = GDEV_OPENGL_2_0;
 	m_curShaderID = SHADER_COUNT;
 	m_curShader = NULL;
 }
 
-GraphicsDeviceOGL_2_0::~GraphicsDeviceOGL_2_0()
+GraphicsDeviceGL_2_0::~GraphicsDeviceGL_2_0()
 {
 	delete m_quadVB;
 	delete m_quadIB;
@@ -54,7 +54,7 @@ GraphicsDeviceOGL_2_0::~GraphicsDeviceOGL_2_0()
 	delete [] m_frameBuffer_32bpp[1];
 }
 
-void GraphicsDeviceOGL_2_0::drawVirtualScreen()
+void GraphicsDeviceGL_2_0::drawVirtualScreen()
 {
 	glViewport( m_virtualViewport[0], m_virtualViewport[1], m_virtualViewport[2], m_virtualViewport[3] );
 
@@ -76,7 +76,7 @@ void GraphicsDeviceOGL_2_0::drawVirtualScreen()
 	glViewport( m_fullViewport[0], m_fullViewport[1], m_fullViewport[2], m_fullViewport[3] );
 }
 
-void GraphicsDeviceOGL_2_0::setVirtualViewport(bool reset, int x, int y, int w, int h)
+void GraphicsDeviceGL_2_0::setVirtualViewport(bool reset, int x, int y, int w, int h)
 {
 	if (reset)
 	{
@@ -91,18 +91,18 @@ void GraphicsDeviceOGL_2_0::setVirtualViewport(bool reset, int x, int y, int w, 
 	}
 }
 
-bool GraphicsDeviceOGL_2_0::init(int w, int h, int vw, int vh)
+bool GraphicsDeviceGL_2_0::init(int w, int h, int vw, int vh)
 {
 	m_platform->init();
 
-	m_shaders = new GraphicsShadersOGL_2_0();
+	m_shaders = new GraphicsShadersGL_2_0();
 	if (!m_shaders)
 	{
 		return false;
 	}
 	m_shaders->loadShaders();
 
-	m_quadVB = new VertexBufferOGL(true);
+	m_quadVB = new VertexBufferGL(true);
 	m_quadVB->allocate( sizeof(QuadVertex), 4 );
 	m_quadVB->setVertexDecl( c_quadVertexDecl, arraysize(c_quadVertexDecl) );
 
@@ -111,7 +111,7 @@ bool GraphicsDeviceOGL_2_0::init(int w, int h, int vw, int vh)
 		0, 1, 2,
 		0, 2, 3
 	};
-	m_quadIB = new IndexBufferOGL();
+	m_quadIB = new IndexBufferGL();
 	m_quadIB->allocate( sizeof(u16), 6, indices );
 
 	/* establish initial viewport */
@@ -163,12 +163,12 @@ bool GraphicsDeviceOGL_2_0::init(int w, int h, int vw, int vh)
 	return true;
 }
 
-bool GraphicsDeviceOGL_2_0::supportsShaders()
+bool GraphicsDeviceGL_2_0::supportsShaders()
 {
 	return true;
 }
 
-void GraphicsDeviceOGL_2_0::setShader(ShaderID shader)
+void GraphicsDeviceGL_2_0::setShader(ShaderID shader)
 {
 	if (m_curShaderID != shader)
 	{
@@ -181,13 +181,13 @@ void GraphicsDeviceOGL_2_0::setShader(ShaderID shader)
 	m_curShaderID = shader;
 }
 
-void GraphicsDeviceOGL_2_0::setShaderResource(TextureHandle handle, u32 nameHash)
+void GraphicsDeviceGL_2_0::setShaderResource(TextureHandle handle, u32 nameHash)
 {
 	s32 parmID = m_curShader->getParameter(nameHash);
 	m_curShader->updateParameter(parmID, handle, 0);
 }
 
-void GraphicsDeviceOGL_2_0::drawQuad(const Quad& quad)
+void GraphicsDeviceGL_2_0::drawQuad(const Quad& quad)
 {
 	//scale and display.
 	float posScale[] = {-1.0f, -1.0f, 2.0f, 2.0f};
@@ -223,7 +223,7 @@ void GraphicsDeviceOGL_2_0::drawQuad(const Quad& quad)
 	glDrawRangeElements(GL_TRIANGLES, 0, 6, 6, (m_quadIB->m_stride==2)?GL_UNSIGNED_SHORT:GL_UNSIGNED_INT, 0);
 }
 
-void GraphicsDeviceOGL_2_0::drawFullscreenQuad()
+void GraphicsDeviceGL_2_0::drawFullscreenQuad()
 {
 	//scale and display.
 	const float uvTop[] = { 0, 1 };

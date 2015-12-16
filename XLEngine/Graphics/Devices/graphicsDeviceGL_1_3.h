@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../CommonGL/graphicsDeviceOGL.h"
+#include "../CommonGL/graphicsDeviceGL.h"
 
-class GraphicsDeviceOGL_1_3 : public GraphicsDeviceOGL
+class GraphicsDeviceGL_1_3 : public GraphicsDeviceGL
 {
     public:
-        GraphicsDeviceOGL_1_3(GraphicsDevicePlatform* platform);
-        virtual ~GraphicsDeviceOGL_1_3();
+        GraphicsDeviceGL_1_3(GraphicsDevicePlatform* platform);
+        virtual ~GraphicsDeviceGL_1_3();
 
 		bool init(int w, int h, int vw, int vh);
 

@@ -1,6 +1,6 @@
 #include <stdlib.h>
-#include "shaderOGL.h"
-#include "vertexBufferOGL.h"
+#include "shaderGL.h"
+#include "vertexBufferGL.h"
 #include "../../log.h"
 #include "../../filestream.h"
 #include "../../crc32.h"
@@ -22,19 +22,19 @@ void freeWorkBuffer();
 //////////////////////////
 // Static Functions
 //////////////////////////
-void ShaderOGL::init()
+void ShaderGL::init()
 {
 	s_workBufferSize = 0;
 	s_workBuffer     = NULL;
 }
 
-void ShaderOGL::destroy()
+void ShaderGL::destroy()
 {
 	s_workBufferSize = 0;
 	free(s_workBuffer);
 }
 
-void ShaderOGL::clear()
+void ShaderGL::clear()
 {
 	glUseProgram(0);
 }
@@ -42,7 +42,7 @@ void ShaderOGL::clear()
 //////////////////////////
 // Implementation
 //////////////////////////
-ShaderOGL::ShaderOGL()
+ShaderGL::ShaderGL()
 {
 	m_glShaderID        = 0;
 	m_shaderParamCount  = 0;
@@ -52,7 +52,7 @@ ShaderOGL::ShaderOGL()
 	m_stateDirty = 0xffffffffffffffffULL;	//everything is dirty initially.
 }
 
-ShaderOGL::~ShaderOGL()
+ShaderGL::~ShaderGL()
 {
 	glDeleteShader( m_glShaderID );
 	m_glShaderID = 0;
@@ -64,7 +64,7 @@ ShaderOGL::~ShaderOGL()
 	delete [] m_param;
 }
 
-bool ShaderOGL::load(const char* vsShader, const char* psShader)
+bool ShaderGL::load(const char* vsShader, const char* psShader)
 {
 	bool success = compileShader(vsShader, psShader);
 
@@ -118,12 +118,12 @@ bool ShaderOGL::load(const char* vsShader, const char* psShader)
 	return success;
 }
 
-void ShaderOGL::bind()
+void ShaderGL::bind()
 {
 	glUseProgram( m_glShaderID );
 }
 
-void ShaderOGL::uploadData(GraphicsDevice* device)
+void ShaderGL::uploadData(GraphicsDevice* device)
 {
 	if (m_stateDirty == 0)
 	{
@@ -184,13 +184,13 @@ void ShaderOGL::uploadData(GraphicsDevice* device)
 					break;
 				case GL_SAMPLER_2D:
 					glProgramUniform1iv( m_glShaderID, param.glID, 1, (s32*)param.data );
-					//A cast is required to the base OpenGL graphics device since that is as highest class in the hierarchy that can "friend" ShaderOGL
-					((GraphicsDeviceOGL*)device)->setTexture( param.texHandle, *((s32*)param.data) );
+					//A cast is required to the base OpenGL graphics device since that is as highest class in the hierarchy that can "friend" ShaderGL
+					((GraphicsDeviceGL*)device)->setTexture( param.texHandle, *((s32*)param.data) );
 					break;
 				case GL_SAMPLER_CUBE:
 					glProgramUniform1iv( m_glShaderID, param.glID, 1, (s32*)param.data );
-					//A cast is required to the base OpenGL graphics device since that is as highest class in the hierarchy that can "friend" ShaderOGL
-					((GraphicsDeviceOGL*)device)->setTexture( param.texHandle, *((s32*)param.data) );
+					//A cast is required to the base OpenGL graphics device since that is as highest class in the hierarchy that can "friend" ShaderGL
+					((GraphicsDeviceGL*)device)->setTexture( param.texHandle, *((s32*)param.data) );
 					break;
 			};
 		}
@@ -198,13 +198,13 @@ void ShaderOGL::uploadData(GraphicsDevice* device)
 	m_stateDirty = 0;
 }
 
-s32  ShaderOGL::getParameter(const char* name) const
+s32  ShaderGL::getParameter(const char* name) const
 {
 	const u32 nameHash = CRC32::get( (u8*)name, strlen(name) );
 	return getParameter(nameHash);
 }
 
-s32  ShaderOGL::getParameter(u32 nameHash) const
+s32  ShaderGL::getParameter(u32 nameHash) const
 {
 	const ParameterMap::const_iterator iparam = m_paramMap.find(nameHash);
 	if (iparam != m_paramMap.end())
@@ -214,7 +214,7 @@ s32  ShaderOGL::getParameter(u32 nameHash) const
 	return -1;
 }
 
-void ShaderOGL::updateParameter(s32 id, void* data, u32 size)
+void ShaderGL::updateParameter(s32 id, void* data, u32 size)
 {
 	if (id < 0) { return; }
 
@@ -227,7 +227,7 @@ void ShaderOGL::updateParameter(s32 id, void* data, u32 size)
 	m_stateDirty |= ( 1ULL << u64(id) );
 }
 
-void ShaderOGL::updateParameter(s32 id, TextureHandle texture, u32 slot, bool force/*=false*/)
+void ShaderGL::updateParameter(s32 id, TextureHandle texture, u32 slot, bool force/*=false*/)
 {
 	if (id < 0) { return; }
 	ShaderParam& param = m_param[id];
@@ -242,7 +242,7 @@ void ShaderOGL::updateParameter(s32 id, TextureHandle texture, u32 slot, bool fo
 	param.texHandle = texture;
 }
 
-bool ShaderOGL::compileShader(const char* vsShader, const char* psShader)
+bool ShaderGL::compileShader(const char* vsShader, const char* psShader)
 {
 	bool success = true;
 	u32 vsShaderHandle=0, psShaderHandle=0;
@@ -286,10 +286,10 @@ bool ShaderOGL::compileShader(const char* vsShader, const char* psShader)
 	for (u32 attr=0; attr<VATTR_COUNT; attr++)
 	{
 		//does this shader even have this attribute?
-		const s32 origLoc = glGetAttribLocation(m_glShaderID, VertexBufferOGL::c_vertexAttrib[attr]);
+		const s32 origLoc = glGetAttribLocation(m_glShaderID, VertexBufferGL::c_vertexAttrib[attr]);
 		if (origLoc >= 0)
 		{
-			glBindAttribLocation(m_glShaderID, attr, VertexBufferOGL::c_vertexAttrib[attr]); 
+			glBindAttribLocation(m_glShaderID, attr, VertexBufferGL::c_vertexAttrib[attr]); 
 			m_requiredVtxAttrib |= (1<<attr);
 		}
 	}
@@ -307,7 +307,7 @@ bool ShaderOGL::compileShader(const char* vsShader, const char* psShader)
 	return success;
 }
 
-bool ShaderOGL::compileShaderStage(u32& handle, ShaderStage stage, const char *path)
+bool ShaderGL::compileShaderStage(u32& handle, ShaderStage stage, const char *path)
 {
 	GLint status;
 	const char* shaderCode = readFileIntoString(path);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphicsDeviceOGL.h"
+#include "graphicsDeviceGL.h"
 #include <map>
 
 enum ShaderStage
@@ -24,11 +24,11 @@ struct ShaderParam
 
 typedef std::map<u32, u32> ParameterMap;
 
-class ShaderOGL
+class ShaderGL
 {
 	public:
-        ShaderOGL();
-        virtual ~ShaderOGL();
+        ShaderGL();
+        virtual ~ShaderGL();
 
 		bool load(const char* vsShader, const char* psShader);
 

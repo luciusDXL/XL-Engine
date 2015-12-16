@@ -1,16 +1,16 @@
 #include <stdlib.h>
 #include "../../log.h"
-#include "graphicsDeviceOGL.h"
-#include "textureOGL.h"
-#include "shaderOGL.h"
+#include "graphicsDeviceGL.h"
+#include "textureGL.h"
+#include "shaderGL.h"
 
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-GraphicsDeviceOGL::GraphicsDeviceOGL(GraphicsDevicePlatform* platform) : GraphicsDevice(platform)
+GraphicsDeviceGL::GraphicsDeviceGL(GraphicsDevicePlatform* platform) : GraphicsDevice(platform)
 {
-	ShaderOGL::init();
+	ShaderGL::init();
 	m_bufferIndex = 0;
 	m_writeFrame  = 0;
 	m_renderFrame = 0;
@@ -21,7 +21,7 @@ GraphicsDeviceOGL::GraphicsDeviceOGL(GraphicsDevicePlatform* platform) : Graphic
 	m_bufferMutex = new Mutex();
 }
 
-GraphicsDeviceOGL::~GraphicsDeviceOGL()
+GraphicsDeviceGL::~GraphicsDeviceGL()
 {
 	for (size_t t=0; t<m_textures.size(); t++)
 	{
@@ -29,16 +29,16 @@ GraphicsDeviceOGL::~GraphicsDeviceOGL()
 	}
 	m_textures.clear();
 
-	ShaderOGL::destroy();
+	ShaderGL::destroy();
 	delete m_bufferMutex;
 }
 
-void GraphicsDeviceOGL::present()
+void GraphicsDeviceGL::present()
 {
 	m_platform->present();
 }
 
-void GraphicsDeviceOGL::setWindowData(int nParam, void** param)
+void GraphicsDeviceGL::setWindowData(int nParam, void** param)
 {
 	m_platform->setWindowData(nParam, param, m_deviceID);
 	glClearColor(0, 0, 0, 0);
@@ -47,12 +47,12 @@ void GraphicsDeviceOGL::setWindowData(int nParam, void** param)
 	m_platform->enableVSync(false);
 }
 
-void GraphicsDeviceOGL::clear()
+void GraphicsDeviceGL::clear()
 {
 	glClear( GL_COLOR_BUFFER_BIT );
 }
 
-void GraphicsDeviceOGL::setBlendMode(BlendMode mode)
+void GraphicsDeviceGL::setBlendMode(BlendMode mode)
 {
 	const u32 srcBlend[] = { GL_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE };	//OVER, ALPHA ADD, ADD
 	const u32 dstBlend[] = { GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE };
@@ -60,7 +60,7 @@ void GraphicsDeviceOGL::setBlendMode(BlendMode mode)
 	glBlendFunc(srcBlend[mode], dstBlend[mode]);
 }
 
-void GraphicsDeviceOGL::enableBlending(bool enable)
+void GraphicsDeviceGL::enableBlending(bool enable)
 {
 	if (enable)
 	{
@@ -72,17 +72,17 @@ void GraphicsDeviceOGL::enableBlending(bool enable)
 	}
 }
 
-void GraphicsDeviceOGL::lockBuffer()
+void GraphicsDeviceGL::lockBuffer()
 {
 	m_bufferMutex->Lock();
 }
 
-void GraphicsDeviceOGL::unlockBuffer()
+void GraphicsDeviceGL::unlockBuffer()
 {
 	m_bufferMutex->Unlock();
 }
 
-void GraphicsDeviceOGL::convertFrameBufferTo32bpp(u8* source, u32* pal)
+void GraphicsDeviceGL::convertFrameBufferTo32bpp(u8* source, u32* pal)
 {
 	lockBuffer();
 		const s32 curIndex = m_bufferIndex;
@@ -101,15 +101,15 @@ void GraphicsDeviceOGL::convertFrameBufferTo32bpp(u8* source, u32* pal)
 	unlockBuffer();
 }
 
-TextureHandle GraphicsDeviceOGL::createTextureRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic)
+TextureHandle GraphicsDeviceGL::createTextureRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic)
 {
-	TextureOGL* texture = createTextureRGBA_Internal(width, height, data, initSamplerState, dynamic);
+	TextureGL* texture = createTextureRGBA_Internal(width, height, data, initSamplerState, dynamic);
 	return texture ? texture->getHandle() : INVALID_TEXTURE_HANDLE;
 }
 
-TextureOGL* GraphicsDeviceOGL::createTextureRGBA_Internal(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic/*=false*/)
+TextureGL* GraphicsDeviceGL::createTextureRGBA_Internal(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic/*=false*/)
 {
-	TextureOGL* texture = new TextureOGL(m_textures.size(), dynamic);
+	TextureGL* texture = new TextureGL(m_textures.size(), dynamic);
 	if (!texture)
 	{
 		return NULL;
@@ -125,11 +125,11 @@ TextureOGL* GraphicsDeviceOGL::createTextureRGBA_Internal(u32 width, u32 height,
 	return texture;
 }
 
-void GraphicsDeviceOGL::setTexture(TextureHandle handle, int slot/*=0*/)
+void GraphicsDeviceGL::setTexture(TextureHandle handle, int slot/*=0*/)
 {
 	if (handle == INVALID_TEXTURE_HANDLE)
 	{
-		TextureOGL::clear(slot);
+		TextureGL::clear(slot);
 		return;
 	}
 
@@ -137,7 +137,7 @@ void GraphicsDeviceOGL::setTexture(TextureHandle handle, int slot/*=0*/)
 	m_textures[index]->bind(slot);
 }
 
-void GraphicsDeviceOGL::enableTexturing(bool enable)
+void GraphicsDeviceGL::enableTexturing(bool enable)
 {
 	if (enable)
 	{

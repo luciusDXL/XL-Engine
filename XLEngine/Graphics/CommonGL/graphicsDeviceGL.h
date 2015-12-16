@@ -10,15 +10,15 @@
 #include <vector>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
-class TextureOGL;
+class TextureGL;
 
-class GraphicsDeviceOGL : public GraphicsDevice
+class GraphicsDeviceGL : public GraphicsDevice
 {
-	friend class ShaderOGL;
+	friend class ShaderGL;
 
     public:
-        GraphicsDeviceOGL(GraphicsDevicePlatform* platform);
-		virtual ~GraphicsDeviceOGL();
+        GraphicsDeviceGL(GraphicsDevicePlatform* platform);
+		virtual ~GraphicsDeviceGL();
 
 		//common functionality implemented by this class.
 		virtual void setWindowData(int nParam, void** param);
@@ -44,10 +44,10 @@ class GraphicsDeviceOGL : public GraphicsDevice
 
 		virtual void setVirtualViewport(bool reset, int x, int y, int w, int h)=0;
     protected:
-		typedef std::vector<TextureOGL*> TextureList;
+		typedef std::vector<TextureGL*> TextureList;
 
 		virtual void setTexture(TextureHandle handle, int slot=0);
-		TextureOGL* createTextureRGBA_Internal(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic=false);
+		TextureGL* createTextureRGBA_Internal(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic=false);
 
 		void lockBuffer();
 		void unlockBuffer();
@@ -67,7 +67,7 @@ class GraphicsDeviceOGL : public GraphicsDevice
 		s32 m_virtualViewportNoUI[4];
 		s32 m_fullViewport[4];
 
-		TextureOGL* m_videoFrameBuffer;
+		TextureGL* m_videoFrameBuffer;
 		TextureList m_textures;
 
 		Mutex* m_bufferMutex;

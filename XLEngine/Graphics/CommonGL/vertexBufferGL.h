@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphicsDeviceOGL.h"
+#include "graphicsDeviceGL.h"
 #include <map>
 
 enum VertexAttributes
@@ -77,11 +77,11 @@ struct VertexElement
 	bool             normalized;
 };
 
-class VertexBufferOGL
+class VertexBufferGL
 {
     public:
-        VertexBufferOGL(bool dynamic);
-        virtual ~VertexBufferOGL();
+        VertexBufferGL(bool dynamic);
+        virtual ~VertexBufferGL();
 
 		bool setVertexDecl(const VertexElement* vertexDecl, u32 count);
 		bool allocate(u32 stride, u32 count, void* data=NULL);

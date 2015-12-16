@@ -1,13 +1,13 @@
 #pragma once
 
-#include "graphicsDeviceOGL.h"
+#include "graphicsDeviceGL.h"
 #include "../samplerState.h"
 
-class TextureOGL
+class TextureGL
 {
     public:
-        TextureOGL(TextureHandle handle, bool dynamic);
-        virtual ~TextureOGL();
+        TextureGL(TextureHandle handle, bool dynamic);
+        virtual ~TextureGL();
 
 		void bind(u32 slot);
 

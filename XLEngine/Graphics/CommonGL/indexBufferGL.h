@@ -1,13 +1,13 @@
 #pragma once
 
 #include <stdlib.h>
-#include "graphicsDeviceOGL.h"
+#include "graphicsDeviceGL.h"
 
-class IndexBufferOGL
+class IndexBufferGL
 {
     public:
-        IndexBufferOGL();
-        virtual ~IndexBufferOGL();
+        IndexBufferGL();
+        virtual ~IndexBufferGL();
 
 		bool allocate(u32 stride, u32 count, void* data=NULL);
 		void update(u32 size, void* data);

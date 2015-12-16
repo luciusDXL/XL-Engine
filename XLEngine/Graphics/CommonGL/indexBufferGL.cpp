@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <memory.h>
-#include "indexBufferOGL.h"
+#include "indexBufferGL.h"
 #include "../../log.h"
 
 #include <GL/glew.h>
@@ -9,7 +9,7 @@
 
 #include <algorithm>
 
-IndexBufferOGL::IndexBufferOGL()
+IndexBufferGL::IndexBufferGL()
 {
 	glGenBuffers(1, &m_glID);
 
@@ -18,12 +18,12 @@ IndexBufferOGL::IndexBufferOGL()
 	m_count  = 0;
 }
 
-IndexBufferOGL::~IndexBufferOGL()
+IndexBufferGL::~IndexBufferGL()
 {
 	glDeleteBuffers(1, &m_glID);
 }
 
-bool IndexBufferOGL::allocate(u32 stride, u32 count, void* data/*=NULL*/)
+bool IndexBufferGL::allocate(u32 stride, u32 count, void* data/*=NULL*/)
 {
 	m_size   = stride*count;
 	m_stride = stride;
@@ -36,7 +36,7 @@ bool IndexBufferOGL::allocate(u32 stride, u32 count, void* data/*=NULL*/)
 	return true;
 }
 
-void IndexBufferOGL::update(u32 size, void* data)
+void IndexBufferGL::update(u32 size, void* data)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_glID);
 
@@ -54,12 +54,12 @@ void IndexBufferOGL::update(u32 size, void* data)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void IndexBufferOGL::bind()
+void IndexBufferGL::bind()
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_glID);
 }
 
-void IndexBufferOGL::clear()
+void IndexBufferGL::clear()
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }

@@ -1,24 +1,24 @@
 #include <stdlib.h>
-#include "graphicsDeviceOGL_1_3.h"
-#include "../CommonGL/textureOGL.h"
+#include "graphicsDeviceGL_1_3.h"
+#include "../CommonGL/textureGL.h"
 #include "../../log.h"
 
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-GraphicsDeviceOGL_1_3::GraphicsDeviceOGL_1_3(GraphicsDevicePlatform* platform) : GraphicsDeviceOGL(platform)
+GraphicsDeviceGL_1_3::GraphicsDeviceGL_1_3(GraphicsDevicePlatform* platform) : GraphicsDeviceGL(platform)
 {
 	m_deviceID = GDEV_OPENGL_1_3;
 }
 
-GraphicsDeviceOGL_1_3::~GraphicsDeviceOGL_1_3()
+GraphicsDeviceGL_1_3::~GraphicsDeviceGL_1_3()
 {
 	delete [] m_frameBuffer_32bpp[0];
 	delete [] m_frameBuffer_32bpp[1];
 }
 
-void GraphicsDeviceOGL_1_3::drawVirtualScreen()
+void GraphicsDeviceGL_1_3::drawVirtualScreen()
 {
 	glViewport( m_virtualViewport[0], m_virtualViewport[1], m_virtualViewport[2], m_virtualViewport[3] );
 
@@ -37,7 +37,7 @@ void GraphicsDeviceOGL_1_3::drawVirtualScreen()
 	glViewport( m_fullViewport[0], m_fullViewport[1], m_fullViewport[2], m_fullViewport[3] );
 }
 
-void GraphicsDeviceOGL_1_3::setVirtualViewport(bool reset, int x, int y, int w, int h)
+void GraphicsDeviceGL_1_3::setVirtualViewport(bool reset, int x, int y, int w, int h)
 {
 	if (reset)
 	{
@@ -52,7 +52,7 @@ void GraphicsDeviceOGL_1_3::setVirtualViewport(bool reset, int x, int y, int w, 
 	}
 }
 
-bool GraphicsDeviceOGL_1_3::init(int w, int h, int vw, int vh)
+bool GraphicsDeviceGL_1_3::init(int w, int h, int vw, int vh)
 {
 	m_platform->init();
 
@@ -110,22 +110,22 @@ bool GraphicsDeviceOGL_1_3::init(int w, int h, int vw, int vh)
 	return true;
 }
 
-bool GraphicsDeviceOGL_1_3::supportsShaders()
+bool GraphicsDeviceGL_1_3::supportsShaders()
 {
 	return false;
 }
 
-void GraphicsDeviceOGL_1_3::setShader(ShaderID shader)
+void GraphicsDeviceGL_1_3::setShader(ShaderID shader)
 {
 	shader;	//do nothing
 }
 
-void GraphicsDeviceOGL_1_3::setShaderResource(TextureHandle handle, u32 nameHash)
+void GraphicsDeviceGL_1_3::setShaderResource(TextureHandle handle, u32 nameHash)
 {
 	setTexture(handle);
 }
 
-void GraphicsDeviceOGL_1_3::drawQuad(const Quad& quad)
+void GraphicsDeviceGL_1_3::drawQuad(const Quad& quad)
 {
 	//scale and display.
 	float posScale[] = {-1.0f, -1.0f, 2.0f, 2.0f};
@@ -158,7 +158,7 @@ void GraphicsDeviceOGL_1_3::drawQuad(const Quad& quad)
 	glEnd();
 }
 
-void GraphicsDeviceOGL_1_3::drawFullscreenQuad()
+void GraphicsDeviceGL_1_3::drawFullscreenQuad()
 {
 	u32 white = 0xffffffff;
 	glBegin(GL_QUADS);

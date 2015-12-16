@@ -1,12 +1,12 @@
 #include <stdlib.h>
-#include "vertexBufferOGL.h"
+#include "vertexBufferGL.h"
 #include "../../log.h"
 
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-const char* VertexBufferOGL::c_vertexAttrib[]=
+const char* VertexBufferGL::c_vertexAttrib[]=
 {
 	"in_position",
 	"in_normal",
@@ -146,7 +146,7 @@ const u32 c_vertexGLType[] =
 	GL_UNSIGNED_INT_2_10_10_10_REV, //VTYPE_UINT_2_10_10_10_REV,	//4 unsigned components - 2 bits, 10 bits * 3
 };
 
-VertexBufferOGL::VertexBufferOGL(bool dynamic)
+VertexBufferGL::VertexBufferGL(bool dynamic)
 {
 	glGenBuffers(1, &m_glID);
 	m_dynamic = dynamic;
@@ -159,13 +159,13 @@ VertexBufferOGL::VertexBufferOGL(bool dynamic)
 	m_elemCount = 0;
 }
 
-VertexBufferOGL::~VertexBufferOGL()
+VertexBufferGL::~VertexBufferGL()
 {
 	glDeleteBuffers(1, &m_glID);
 	delete [] m_vertexDecl;
 }
 
-bool VertexBufferOGL::setVertexDecl(const VertexElement* vertexDecl, u32 count)
+bool VertexBufferGL::setVertexDecl(const VertexElement* vertexDecl, u32 count)
 {
 	m_elemCount  = count;
 	m_vertexDecl = new VertexElement[ count ];
@@ -193,7 +193,7 @@ bool VertexBufferOGL::setVertexDecl(const VertexElement* vertexDecl, u32 count)
 	return true;
 }
 
-bool VertexBufferOGL::allocate(u32 stride, u32 count, void* data/*=NULL*/)
+bool VertexBufferGL::allocate(u32 stride, u32 count, void* data/*=NULL*/)
 {
 	m_size   = stride*count;
 	m_stride = stride;
@@ -206,7 +206,7 @@ bool VertexBufferOGL::allocate(u32 stride, u32 count, void* data/*=NULL*/)
 	return true;
 }
 
-void VertexBufferOGL::update(u32 size, void* data)
+void VertexBufferGL::update(u32 size, void* data)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, m_glID);
 
@@ -224,7 +224,7 @@ void VertexBufferOGL::update(u32 size, void* data)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void VertexBufferOGL::bind(u32 requiredAttributes)
+void VertexBufferGL::bind(u32 requiredAttributes)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, m_glID);
 
@@ -248,7 +248,7 @@ void VertexBufferOGL::bind(u32 requiredAttributes)
 	}
 }
 
-void VertexBufferOGL::clear()
+void VertexBufferGL::clear()
 {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	for (u32 v=0; v<VATTR_COUNT; v++)

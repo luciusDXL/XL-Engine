@@ -89,7 +89,7 @@ namespace UISystem
 			false													//no mipmapping
 		};
 
-		if (s_gdev->getMaximumTextureSize() < 1024 || !s_gdev->supportsFeature(CAP_NON_POWER_2_TEX))
+		if (s_gdev->getMaximumTextureSize() < 2048 || !s_gdev->supportsFeature(CAP_NON_POWER_2_TEX))
 		{
 			s_imageLoader->loadImage("UI/background512.png");
 		}

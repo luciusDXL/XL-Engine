@@ -3,7 +3,7 @@
 #include "vertexBufferGL.h"
 #include "../../log.h"
 #include "../../filestream.h"
-#include "../../math/crc32.h"
+#include "../../Math/crc32.h"
 
 #include <GL/glew.h>
 #include <GL/gl.h>

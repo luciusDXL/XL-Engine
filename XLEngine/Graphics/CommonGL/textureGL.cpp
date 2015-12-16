@@ -54,7 +54,7 @@ bool TextureGL::createRGBA(const GraphicsDevice* gdev, u32 width, u32 height, co
 		u32 newWidth  = Math::nextPow2(width);
 		u32 newHeight = Math::nextPow2(height);
 
-		if (data)
+		if (data && (newWidth != width || newHeight != height))
 		{
 			allocateUpdateBuffer(newWidth, newHeight);
 			u32* buffer = m_updateBuffer;

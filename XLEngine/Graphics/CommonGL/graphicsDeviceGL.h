@@ -29,18 +29,18 @@ class GraphicsDeviceGL : public GraphicsDevice
 		virtual void enableTexturing(bool enable);
 		virtual void convertFrameBufferTo32bpp(u8* source, u32* pal);
 		virtual TextureHandle createTextureRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic=false);
+		virtual void queryExtensions();
 
 		//functionality that must be implemented by specific OpenGL based Graphics Devices.
-		virtual bool supportsShaders()=0;
 		virtual void setShader(ShaderID shader)=0;
 
-        virtual bool init(int w, int h, int vw, int vh)=0;
+        virtual bool init(int w, int h, int& vw, int& vh)=0;
 		virtual void drawVirtualScreen()=0;
 		
 		virtual void setShaderResource(TextureHandle handle, u32 nameHash)=0;
 
 		virtual void drawQuad(const Quad& quad)=0;
-		virtual void drawFullscreenQuad()=0;
+		virtual void drawFullscreenQuad(TextureGL* tex)=0;
 
 		virtual void setVirtualViewport(bool reset, int x, int y, int w, int h)=0;
     protected:

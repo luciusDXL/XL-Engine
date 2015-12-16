@@ -38,6 +38,21 @@ void GraphicsDeviceGL::present()
 	m_platform->present();
 }
 
+void GraphicsDeviceGL::queryExtensions()
+{
+	if (!(m_caps.flags&CAP_RENDER_TARGET) && glewGetExtension("GL_EXT_framebuffer_object"))
+	{
+		m_caps.flags |= CAP_RENDER_TARGET;
+	}
+
+	if (!(m_caps.flags&CAP_NON_POWER_2_TEX) && glewGetExtension("GL_ARB_texture_non_power_of_two"))
+	{
+		m_caps.flags |= CAP_NON_POWER_2_TEX;
+	}
+
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, (s32*)&m_caps.maxTextureSize2D);
+}
+
 void GraphicsDeviceGL::setWindowData(int nParam, void** param)
 {
 	m_platform->setWindowData(nParam, param, m_deviceID);
@@ -115,7 +130,7 @@ TextureGL* GraphicsDeviceGL::createTextureRGBA_Internal(u32 width, u32 height, c
 		return NULL;
 	}
 
-	if (!texture->createRGBA(width, height, data, initSamplerState))
+	if (!texture->createRGBA(this, width, height, data, initSamplerState))
 	{
 		delete texture;
 		return NULL;

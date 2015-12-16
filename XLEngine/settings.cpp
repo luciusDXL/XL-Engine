@@ -39,7 +39,7 @@ namespace Settings
 	static GameInfo s_games[MAX_GAME_COUNT];
 
 	//Hard coded for now, later auto-detect at startup and/or read from the settings file.
-	static GraphicsDeviceID s_graphicsDeviceID = GDEV_OPENGL_2_0;
+	static GraphicsDeviceID s_graphicsDeviceID = GDEV_OPENGL_1_3;
 
 	const char* getVersion()
 	{

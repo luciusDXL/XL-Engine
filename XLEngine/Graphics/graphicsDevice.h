@@ -18,17 +18,18 @@
 #include "graphicsDeviceList.h"
 #include "graphicsTypes.h"
 #include "samplerState.h"
+#include "capabilities.h"
 
 class GraphicsDevice
 {
     public:
         virtual void setWindowData(int nParam, void **param)=0;
-		virtual bool init(int w, int h, int vw, int vh)=0;
+		virtual bool init(int w, int h, int& vw, int& vh)=0;
 		virtual void drawVirtualScreen()=0;
         virtual void present()=0;
 		virtual void clear()=0;
+		virtual void queryExtensions()=0;
 
-		virtual bool supportsShaders()=0;
 		virtual void setShader(ShaderID shader)=0;
 
 		virtual void convertFrameBufferTo32bpp(u8* source, u32 *pal)=0;
@@ -41,6 +42,10 @@ class GraphicsDevice
 
 		virtual void setVirtualViewport(bool reset, int x, int y, int w, int h)=0;
 
+		//It is expected that an implementation will fill out the 'm_caps' variable.
+		bool supportsFeature(CapabilityFlags feature) const { return (m_caps.flags&feature)!=0; }
+		u32  getMaximumTextureSize() const { return m_caps.maxTextureSize2D; }
+
 		static GraphicsDevice* createDevice(GraphicsDeviceID deviceID, GraphicsDevicePlatform* platform);
 		static void destroyDevice(GraphicsDevice* device);
 
@@ -49,6 +54,8 @@ class GraphicsDevice
 		{
 			m_platform = platform;
 			m_deviceID = GDEV_INVALID;
+			m_caps.flags = 0;
+			m_caps.maxTextureSize2D = 0;
 		}
         virtual ~GraphicsDevice() 
 		{
@@ -59,5 +66,6 @@ class GraphicsDevice
 
 		GraphicsDevicePlatform* m_platform;
 		GraphicsDeviceID        m_deviceID;
+		Capabilities		    m_caps;	//see CapabilityFlags
     private:
 };

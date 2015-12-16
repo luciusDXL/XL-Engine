@@ -1,6 +1,7 @@
 #include "../Text/textSystem.h"
 #include "../imageLoader.h"
 #include "../input.h"
+#include "../Math/math.h"
 #include "uiSystem.h"
 #include "draw2D.h"
 #include <vector>
@@ -88,13 +89,28 @@ namespace UISystem
 			false													//no mipmapping
 		};
 
-		s_imageLoader->loadImage("UI/background.png");
+		if (s_gdev->getMaximumTextureSize() < 1024 || !s_gdev->supportsFeature(CAP_NON_POWER_2_TEX))
+		{
+			s_imageLoader->loadImage("UI/background512.png");
+		}
+		else
+		{
+			s_imageLoader->loadImage("UI/background.png");
+		}
+
 		s_background = new Icon;
 		s_background->texture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData(), samplerState);
 		s_background->width  = s_imageLoader->getWidth();
 		s_background->height = s_imageLoader->getHeight();
 
-		s_imageLoader->loadImage("UI/XL_Engine_2.png");
+		if (s_gdev->getMaximumTextureSize() < 1024 || !s_gdev->supportsFeature(CAP_NON_POWER_2_TEX))
+		{
+			s_imageLoader->loadImage("UI/XL_Engine_2_Small.png");
+		}
+		else
+		{
+			s_imageLoader->loadImage("UI/XL_Engine_2.png");
+		}
 		s_logo = new Icon;
 		s_logo->texture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData(), samplerState);
 		s_logo->width   = s_imageLoader->getWidth();
@@ -163,6 +179,7 @@ namespace UISystem
 		icon->texture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData(), samplerState);
 		icon->width   = s_imageLoader->getWidth();
 		icon->height  = s_imageLoader->getHeight();
+		
 		s_icons.push_back(icon);
 
 		return id;
@@ -596,6 +613,16 @@ namespace UISystem
 
 	void draw_rect_decoration_image(s32 id, s32 layer, TextureHandle image, s32 x, s32 y, s32 w, s32 h)
 	{
+		f32 du = 1.0f, dv = 1.0f;
+		f32  u = 0.0f,  v = 0.0f;
+		if ( !s_gdev->supportsFeature(CAP_NON_POWER_2_TEX) )
+		{
+			du = f32(w) / f32(Math::nextPow2(w));
+			dv = f32(h) / f32(Math::nextPow2(h));
+
+			v = 1.0f - dv;
+		}
+
 		if (s_kdbItem == id || s_hotItem == id)
 		{
 			DrawRectBuf* rect = Draw2D::getDrawRect();
@@ -606,6 +633,11 @@ namespace UISystem
 			rect->y = y-1;
 			rect->w = w+2;
 			rect->h = h+2;
+
+			rect->u = u;
+			rect->v = v;
+			rect->du = du;
+			rect->dv = dv;
 		}
 
 		Color color;
@@ -633,6 +665,11 @@ namespace UISystem
 		rect->y = y;
 		rect->w = w;
 		rect->h = h;
+
+		rect->u = u;
+		rect->v = v;
+		rect->du = du;
+		rect->dv = dv;
 	}
 
 	bool regionHit(s32 x, s32 y, s32 w, s32 h)

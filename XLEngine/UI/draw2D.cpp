@@ -1,5 +1,5 @@
 #include "draw2D.h"
-#include "../crc32.h"
+#include "../math/crc32.h"
 #include <stdlib.h>
 #include <string.h>
 

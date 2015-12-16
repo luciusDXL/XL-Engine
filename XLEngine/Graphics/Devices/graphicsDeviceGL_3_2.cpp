@@ -14,6 +14,9 @@
 GraphicsDeviceGL_3_2::GraphicsDeviceGL_3_2(GraphicsDevicePlatform* platform) : GraphicsDeviceGL(platform)
 {
 	m_deviceID = GDEV_OPENGL_3_2;
+	m_caps.flags |= CAP_SUPPORT_SHADERS;
+	m_caps.flags |= CAP_RENDER_TARGET;
+	m_caps.flags |= CAP_NON_POWER_2_TEX;
 }
 
 GraphicsDeviceGL_3_2::~GraphicsDeviceGL_3_2()
@@ -28,14 +31,9 @@ void GraphicsDeviceGL_3_2::setVirtualViewport(bool reset, int x, int y, int w, i
 {
 }
 
-bool GraphicsDeviceGL_3_2::init(int w, int h, int vw, int vh)
+bool GraphicsDeviceGL_3_2::init(int w, int h, int& vw, int& vh)
 {
 	return false;
-}
-
-bool GraphicsDeviceGL_3_2::supportsShaders()
-{
-	return true;
 }
 
 void GraphicsDeviceGL_3_2::setShader(ShaderID shader)
@@ -50,6 +48,6 @@ void GraphicsDeviceGL_3_2::drawQuad(const Quad& quad)
 {
 }
 
-void GraphicsDeviceGL_3_2::drawFullscreenQuad()
+void GraphicsDeviceGL_3_2::drawFullscreenQuad(TextureGL* tex)
 {
 }

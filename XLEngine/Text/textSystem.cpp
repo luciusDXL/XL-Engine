@@ -1,5 +1,6 @@
 #include "textSystem.h"
-#include "../crc32.h"
+#include "../Math/crc32.h"
+#include "../Math/math.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <vector>
@@ -44,8 +45,6 @@ namespace TextSystem
 	static Font* s_curFont = NULL;
 	static Color s_currentColor = 0xffffffff;
 	static u32   s_textureHash = 0;
-
-	u32 nextPow2(u32 x);
 
 	bool init(GraphicsDevice* gdev)
 	{
@@ -134,7 +133,7 @@ namespace TextSystem
 		int texwidth = 512, texheight = 0;
 		int numGlyphHorz = texwidth / maxWidth;
 		int numGlyphVert = (numChars+numGlyphHorz-1) / numGlyphHorz;
-		texheight = nextPow2( numGlyphVert * maxHeight );
+		texheight = Math::nextPow2( numGlyphVert * maxHeight );
 
 		//finally pack the texture...
 		Font font;
@@ -282,16 +281,5 @@ namespace TextSystem
 			x += (glyph.advanceX >> 6);
 			y += (glyph.advanceY >> 6);
 		}
-	}
-
-	u32 nextPow2(u32 x)
-	{
-		x = x-1;
-		x = x | (x>>1);
-		x = x | (x>>2);
-		x = x | (x>>4);
-		x = x | (x>>8);
-		x = x | (x>>16);
-		return x + 1;
 	}
 };

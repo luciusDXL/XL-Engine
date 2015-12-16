@@ -81,10 +81,10 @@ namespace GameUI
 				UISystem::setCurrentLayer(1);
 			}
 		}
-		UISystem::buttonIcon(CTRL_ICON_CONTROLS, 0, ICON_CONTROLS,   4, 120 );
+		UISystem::buttonIcon(CTRL_ICON_CONTROLS,  0, ICON_CONTROLS,  4, 120 );
 		UISystem::buttonIcon(CTRL_ICON_DASHBOARD, 0, ICON_DASHBOARD, 4, 160 );
-		UISystem::buttonIcon(CTRL_ICON_SEARCH, 0, ICON_SEARCH,       4, 200 );
-		UISystem::buttonIcon(CTRL_ICON_TOOLS, 0, ICON_TOOLS,         4, 240 );
+		UISystem::buttonIcon(CTRL_ICON_SEARCH,    0, ICON_SEARCH,    4, 200 );
+		UISystem::buttonIcon(CTRL_ICON_TOOLS,     0, ICON_TOOLS,     4, 240 );
 	}
 
 	void handleGameSelection(GraphicsDevice* gdev, int winWidth, int winHeight, s32& gameRunning)

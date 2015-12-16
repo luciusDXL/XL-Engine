@@ -43,6 +43,9 @@ GraphicsDeviceGL_2_0::GraphicsDeviceGL_2_0(GraphicsDevicePlatform* platform) : G
 	m_deviceID = GDEV_OPENGL_2_0;
 	m_curShaderID = SHADER_COUNT;
 	m_curShader = NULL;
+
+	m_caps.flags |= CAP_SUPPORT_SHADERS;
+	m_caps.flags |= CAP_NON_POWER_2_TEX;
 }
 
 GraphicsDeviceGL_2_0::~GraphicsDeviceGL_2_0()
@@ -71,7 +74,7 @@ void GraphicsDeviceGL_2_0::drawVirtualScreen()
 	s32 baseTex = m_curShader->getParameter("baseTex");
 	m_curShader->updateParameter(baseTex, m_videoFrameBuffer->getHandle(), 0, true);	//we have to force the update since the texture itself has changed.
 
-	drawFullscreenQuad();
+	drawFullscreenQuad(m_videoFrameBuffer);
 
 	glViewport( m_fullViewport[0], m_fullViewport[1], m_fullViewport[2], m_fullViewport[3] );
 }
@@ -91,9 +94,10 @@ void GraphicsDeviceGL_2_0::setVirtualViewport(bool reset, int x, int y, int w, i
 	}
 }
 
-bool GraphicsDeviceGL_2_0::init(int w, int h, int vw, int vh)
+bool GraphicsDeviceGL_2_0::init(int w, int h, int& vw, int& vh)
 {
 	m_platform->init();
+	queryExtensions();
 
 	m_shaders = new GraphicsShadersGL_2_0();
 	if (!m_shaders)
@@ -163,11 +167,6 @@ bool GraphicsDeviceGL_2_0::init(int w, int h, int vw, int vh)
 	return true;
 }
 
-bool GraphicsDeviceGL_2_0::supportsShaders()
-{
-	return true;
-}
-
 void GraphicsDeviceGL_2_0::setShader(ShaderID shader)
 {
 	if (m_curShaderID != shader)
@@ -223,7 +222,7 @@ void GraphicsDeviceGL_2_0::drawQuad(const Quad& quad)
 	glDrawRangeElements(GL_TRIANGLES, 0, 6, 6, (m_quadIB->m_stride==2)?GL_UNSIGNED_SHORT:GL_UNSIGNED_INT, 0);
 }
 
-void GraphicsDeviceGL_2_0::drawFullscreenQuad()
+void GraphicsDeviceGL_2_0::drawFullscreenQuad(TextureGL* tex)
 {
 	//scale and display.
 	const float uvTop[] = { 0, 1 };

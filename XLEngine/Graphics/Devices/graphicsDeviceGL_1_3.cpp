@@ -26,13 +26,12 @@ void GraphicsDeviceGL_1_3::drawVirtualScreen()
 	lockBuffer();
 		if (m_writeFrame > m_renderFrame)
 		{
-			m_videoFrameBuffer->update( m_frameBuffer_32bpp[m_writeBufferIndex] );
+			m_videoFrameBuffer->update( m_frameWidth, m_frameHeight, m_frameBuffer_32bpp[m_writeBufferIndex] );
 		}
 		m_renderFrame = m_writeFrame;
 	unlockBuffer();
 
-	m_videoFrameBuffer->bind(0);
-	drawFullscreenQuad();
+	drawFullscreenQuad(m_videoFrameBuffer);
 
 	glViewport( m_fullViewport[0], m_fullViewport[1], m_fullViewport[2], m_fullViewport[3] );
 }
@@ -52,10 +51,25 @@ void GraphicsDeviceGL_1_3::setVirtualViewport(bool reset, int x, int y, int w, i
 	}
 }
 
-bool GraphicsDeviceGL_1_3::init(int w, int h, int vw, int vh)
+bool GraphicsDeviceGL_1_3::init(int w, int h, int& vw, int& vh)
 {
 	m_platform->init();
+	queryExtensions();
 
+	//we need to support at least 512x512 textures in order to get 320x200 or 320x240
+	if (m_caps.maxTextureSize2D < 512)
+	{
+		LOG( LOG_ERROR, "The OpenGL 1.3 graphics device does not support at least 512x512 textures which is required by the XL Engine." );
+		return false;
+	}
+
+	//clamp the virtual screen by the maximum texture size.
+	while (vw > (s32)m_caps.maxTextureSize2D || vh > (s32)m_caps.maxTextureSize2D)
+	{
+		vw >>= 1;
+		vh >>= 1;
+	}
+	
     glDisable(GL_DEPTH_TEST); /* enable depth buffering */
 
 	glMatrixMode(GL_MODELVIEW);
@@ -110,11 +124,6 @@ bool GraphicsDeviceGL_1_3::init(int w, int h, int vw, int vh)
 	return true;
 }
 
-bool GraphicsDeviceGL_1_3::supportsShaders()
-{
-	return false;
-}
-
 void GraphicsDeviceGL_1_3::setShader(ShaderID shader)
 {
 	shader;	//do nothing
@@ -158,20 +167,32 @@ void GraphicsDeviceGL_1_3::drawQuad(const Quad& quad)
 	glEnd();
 }
 
-void GraphicsDeviceGL_1_3::drawFullscreenQuad()
+void GraphicsDeviceGL_1_3::drawFullscreenQuad(TextureGL* tex)
 {
+	f32 u0 = 0.0f, v0 = 0.0f;
+	f32 u1 = 1.0f, v1 = 1.0f;
+
+	tex->bind(0);
+	if ( !supportsFeature(CAP_NON_POWER_2_TEX) )
+	{
+		u32 w, h;
+		tex->getDimensions(w, h);
+		u1 = f32(m_frameWidth)  / f32(w);
+		v1 = f32(m_frameHeight) / f32(h);
+	}
+
 	u32 white = 0xffffffff;
 	glBegin(GL_QUADS);
 		glColor4ubv((GLubyte*)&white);
 
-		glTexCoord2f(0.0f, 0.0f);
+		glTexCoord2f(u0, v0);
 		glVertex3f(-1.0f, 1.0f, -1.0f);
-		glTexCoord2f(1.0f, 0.0f);
+		glTexCoord2f(u1, v0);
 		glVertex3f( 1.0f, 1.0f, -1.0f);
 
-		glTexCoord2f(1.0f, 1.0f);
+		glTexCoord2f(u1, v1);
 		glVertex3f( 1.0f, -1.0f, -1.0f);
-		glTexCoord2f(0.0f, 1.0f);
+		glTexCoord2f(u0, v1);
 		glVertex3f(-1.0f, -1.0f, -1.0f);
 	glEnd();
 }

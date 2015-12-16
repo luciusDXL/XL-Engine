@@ -49,7 +49,11 @@ namespace GameLoop
 		}
 
 		s_gdev->setWindowData(1, win_param);
-		s_gdev->init(settings->windowWidth, settings->windowHeight, settings->gameWidth, settings->gameHeight);
+		if (!s_gdev->init(settings->windowWidth, settings->windowHeight, settings->gameWidth, settings->gameHeight))
+		{
+			GraphicsDevice::destroyDevice( s_gdev );
+			return false;
+		}
 
 		GameUI::init(startGame, stopGame);
 		s_launchGameID = Settings::get()->launchGameID;

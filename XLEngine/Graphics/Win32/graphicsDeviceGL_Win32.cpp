@@ -1,10 +1,10 @@
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files:
 #include "../../log.h"
-#include "graphicsDeviceOGL_Win32.h"
+#include "graphicsDeviceGL_Win32.h"
 
 #include <windows.h>
-#include <math.h>
+#include "../../Math/math.h"
 
 #include <GL/glew.h>
 #include <GL/wglew.h>
@@ -42,12 +42,12 @@ bool wglExtensionSupported(const char *extension_name)
 
 
 
-GraphicsDeviceOGL_Win32::GraphicsDeviceOGL_Win32()
+GraphicsDeviceGL_Win32::GraphicsDeviceGL_Win32()
 {
 	m_exclusiveFullscreen = false;
 }
 
-GraphicsDeviceOGL_Win32::~GraphicsDeviceOGL_Win32()
+GraphicsDeviceGL_Win32::~GraphicsDeviceGL_Win32()
 {
 	//Restore the gamma ramp.
 	if ( m_exclusiveFullscreen )
@@ -57,22 +57,14 @@ GraphicsDeviceOGL_Win32::~GraphicsDeviceOGL_Win32()
 	}
 }
 
-void GraphicsDeviceOGL_Win32::present()
+void GraphicsDeviceGL_Win32::present()
 {
 	HDC hdc = GetDC(m_hWnd);
     SwapBuffers( hdc );
 	ReleaseDC( m_hWnd, hdc );
 }
 
-float clamp(float x, float a, float b)
-{
-	if ( x < a ) x = a;
-	if ( x > b ) x = b;
-
-	return x;
-}
-
-void GraphicsDeviceOGL_Win32::setWindowData(int nParam, void **param, GraphicsDeviceID deviceID, bool exclFullscreen/*=false*/)
+void GraphicsDeviceGL_Win32::setWindowData(int nParam, void **param, GraphicsDeviceID deviceID, bool exclFullscreen/*=false*/)
 {
 	m_exclusiveFullscreen = exclFullscreen;
 
@@ -156,7 +148,7 @@ void GraphicsDeviceOGL_Win32::setWindowData(int nParam, void **param, GraphicsDe
 			//apply gamma
 			fValue = powf(fValue, fGamma);
 			//clamp.
-			fValue = clamp(fValue, 0.0f, 1.0f);
+			fValue = Math::saturate(fValue);
 			
 			int intValue = ((int)(fValue*255.0f)) << 8;
 
@@ -170,7 +162,7 @@ void GraphicsDeviceOGL_Win32::setWindowData(int nParam, void **param, GraphicsDe
 	}
 }
 
-bool GraphicsDeviceOGL_Win32::init()
+bool GraphicsDeviceGL_Win32::init()
 {
 	const GLubyte* glVersion    = glGetString(GL_VERSION);
 	const GLubyte* glExtensions = glGetString(GL_EXTENSIONS);
@@ -191,7 +183,7 @@ bool GraphicsDeviceOGL_Win32::init()
 	return true;
 }
 
-void GraphicsDeviceOGL_Win32::enableVSync(bool enable)
+void GraphicsDeviceGL_Win32::enableVSync(bool enable)
 {
 	if (wglSwapIntervalEXT)
 	{

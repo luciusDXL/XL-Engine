@@ -10,7 +10,7 @@
 ////////////////////////////////////////////////////////////////////
 #include <stdlib.h>
 #include "graphicsDeviceGL_2_0.h"
-#include "graphicsShaders_GL_2_0.h"
+#include "graphicsShadersGL_2_0.h"
 #include "../CommonGL/textureGL.h"
 #include "../../log.h"
 #include "../../memoryPool.h"

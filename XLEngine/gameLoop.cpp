@@ -12,7 +12,7 @@
 #ifdef _WIN32
 	#define WIN32_LEAN_AND_MEAN 1
 	#include <Windows.h>
-	#include "Graphics/Win32/graphicsDeviceOGL_Win32.h"
+	#include "Graphics/Win32/graphicsDeviceGL_Win32.h"
 #endif
 
 namespace GameLoop
@@ -39,7 +39,7 @@ namespace GameLoop
 		Input::init(win_param[0]);
 
 		#ifdef _WIN32
-			GraphicsDevicePlatform* platform = new GraphicsDeviceOGL_Win32();
+			GraphicsDevicePlatform* platform = new GraphicsDeviceGL_Win32();
 		#endif
 
 		s_gdev = GraphicsDevice::createDevice(deviceID, platform);

@@ -3,7 +3,7 @@
 // TO-DO: implement
 /////////////////////////
 #include <stdlib.h>
-#include "graphicsShaders_GL_2_0.h"
+#include "graphicsShadersGL_2_0.h"
 #include "../../log.h"
 
 const char* GraphicsShadersGL_2_0::m_shaderVS[SHADER_COUNT]=

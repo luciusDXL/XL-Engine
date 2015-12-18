@@ -95,19 +95,19 @@ namespace Math
 		return a0 < b1 && b0 < a1;
 	}
 
-	//cubic polynomial that implements "hermite interpolation" between 0 and 1
+	//cubic polynomial that implements "hermite interpolation" if x is between 0 and 1
 	inline f32 cubicPolynomial(f32 x)
 	{
 		return x*x*(3.0f-2.0f*x);
 	}
 
-	//quintic polynomial that implements "hermite interpolation" between 0 and 1
+	//quintic polynomial that implements "hermite interpolation" if x is between 0 and 1.
 	inline f32 quinticPolynomial(f32 x)
 	{
 		return x*x*x*(x*(x*6.0f - 15.0f) + 10.0f);
 	}
 
-	//evaluates to 0 if x <= a and 1 if x >= b, linear interpolation between 0 to 1 between.
+	//evaluates to 0 if x <= a and 1 if x >= b, linear interpolation between 0 to 1.
 	inline f32 lineStep(f32 x, f32 a, f32 b)
 	{
 		return saturate( (x-a) / (b-a) );
@@ -122,7 +122,7 @@ namespace Math
 	}
 
 	//"improved" smoothstep, C2 continuous. Obviously more expensive to evaluate than smoothstep()
-	//evaluates to 0 if x <= a and 1 if x >= b, hermite cubic interpolation from 0 to 1 between.
+	//evaluates to 0 if x <= a and 1 if x >= b, hermite quintic interpolation from 0 to 1 between.
 	//1st and 2nd order derivatives evaluate to 0 at a and b.
 	inline f32 smootherStep(f32 x, f32 a, f32 b)
 	{
@@ -133,7 +133,7 @@ namespace Math
 	//the result is 0 when x less than c-w or greater than c+w 
 	//the result is 1 when x == c
 	//the shape is Gaussian-like.
-	inline f32 cubicPulse(f32 c, f32 w, f32 x)
+	inline f32 cubicPulse(f32 x, f32 c, f32 w)
 	{
 		x = fabsf(x - c);
 		if (x > w) return 0.0f;

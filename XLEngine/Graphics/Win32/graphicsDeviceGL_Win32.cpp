@@ -45,6 +45,7 @@ bool wglExtensionSupported(const char *extension_name)
 GraphicsDeviceGL_Win32::GraphicsDeviceGL_Win32()
 {
 	m_exclusiveFullscreen = false;
+	m_initialized = false;
 }
 
 GraphicsDeviceGL_Win32::~GraphicsDeviceGL_Win32()
@@ -66,6 +67,11 @@ void GraphicsDeviceGL_Win32::present()
 
 void GraphicsDeviceGL_Win32::setWindowData(int nParam, void **param, GraphicsDeviceID deviceID, bool exclFullscreen/*=false*/)
 {
+	if (m_initialized)
+	{
+		return;
+	}
+
 	m_exclusiveFullscreen = exclFullscreen;
 
     m_hWnd = (HWND)param[0];
@@ -164,6 +170,11 @@ void GraphicsDeviceGL_Win32::setWindowData(int nParam, void **param, GraphicsDev
 
 bool GraphicsDeviceGL_Win32::init()
 {
+	if (m_initialized)
+	{
+		return true;
+	}
+
 	const GLubyte* glVersion    = glGetString(GL_VERSION);
 	const GLubyte* glExtensions = glGetString(GL_EXTENSIONS);
 
@@ -171,16 +182,46 @@ bool GraphicsDeviceGL_Win32::init()
 	GLenum err = glewInit();
 	if (err != GLEW_OK)
 	{
+		LOG( LOG_ERROR, "GLEW failed to initialize, an OpenGL device cannot be created." );
 		return false;
 	}
 
-	//TO-DO: specify the version to check against.
-	if ( GLEW_VERSION_1_3 == false )
+	//check against the minimum version.
+	if ( GLEW_VERSION_1_3 == GL_FALSE )
 	{
 		LOG( LOG_ERROR, "OpenGL Version 1.3 is not supported. Aborting XL Engine startup." );
+		return false;
 	}
 	
+	m_initialized = true;
 	return true;
+}
+
+GraphicsDeviceID GraphicsDeviceGL_Win32::autodetect(int nParam, void **param)
+{
+	GraphicsDeviceID devID = GDEV_OPENGL_1_3;
+
+	setWindowData(nParam, param, GDEV_INVALID);
+	if ( !init() )
+	{
+		return GDEV_INVALID;
+	}
+
+	if ( GLEW_VERSION_3_2 == GL_TRUE )
+	{
+		devID = GDEV_OPENGL_3_2;
+	}
+	else if ( GLEW_VERSION_2_0 == GL_TRUE )
+	{
+		devID = GDEV_OPENGL_2_0;
+	}
+
+	//hack - this is here until the OpenGL 3.2 device is implemented.
+	//remove as soon as the device is available!
+		if (devID == GDEV_OPENGL_3_2) { devID = GDEV_OPENGL_2_0; }
+	//end hack
+
+	return devID;
 }
 
 void GraphicsDeviceGL_Win32::enableVSync(bool enable)

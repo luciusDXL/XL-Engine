@@ -20,5 +20,7 @@ class GraphicsDevicePlatform
 		virtual bool init()=0;
         virtual void present()=0;
 
+		virtual GraphicsDeviceID autodetect(int nParam, void **param)=0;
+
 		virtual void enableVSync(bool enable)=0;
 };

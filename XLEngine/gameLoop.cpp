@@ -41,6 +41,19 @@ namespace GameLoop
 		#ifdef _WIN32
 			GraphicsDevicePlatform* platform = new GraphicsDeviceGL_Win32();
 		#endif
+		//if no deviceID is specified, autodetect
+		if (deviceID == GDEV_INVALID)
+		{
+			deviceID = platform->autodetect(1, win_param);
+			//a proper device was not found... abort.
+			if (deviceID == GDEV_INVALID)
+			{
+				delete platform;
+				Log::close();
+				Clock::destroy();
+				return false;
+			}
+		}
 
 		s_gdev = GraphicsDevice::createDevice(deviceID, platform);
 		if (!s_gdev)

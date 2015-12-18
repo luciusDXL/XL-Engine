@@ -13,8 +13,11 @@ class GraphicsDeviceGL_Win32 : public GraphicsDevicePlatform
 		bool init();
         void present();
 
+		GraphicsDeviceID autodetect(int nParam, void **param);
+
 		void enableVSync(bool enable);
 
 	private:
 		bool m_exclusiveFullscreen;
+		bool m_initialized;
 };

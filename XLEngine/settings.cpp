@@ -3,6 +3,7 @@
 #include "iniWriter.h"
 #include "UI/uiSystem.h"
 #include "filestream.h"
+#include "log.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -38,8 +39,8 @@ namespace Settings
 	static bool s_setDefaultMapping = false;
 	static GameInfo s_games[MAX_GAME_COUNT];
 
-	//Hard coded for now, later auto-detect at startup and/or read from the settings file.
-	static GraphicsDeviceID s_graphicsDeviceID = GDEV_OPENGL_2_0;
+	//this will either be read from the settings file or autodetected.
+	static GraphicsDeviceID s_graphicsDeviceID = GDEV_INVALID;
 
 	const char* getVersion()
 	{
@@ -210,6 +211,31 @@ namespace Settings
 					s_settings.launchGameID = g;
 					break;
 				}
+			}
+		}
+		else if (stricmp(key, "graphicsDevice") == 0)
+		{
+			if (stricmp(value, "openGL 1.3") == 0 || stricmp(value, "openGL1.3") == 0)
+			{
+				s_graphicsDeviceID = GDEV_OPENGL_1_3;
+			}
+			else if (stricmp(value, "openGL 2.0") == 0 || stricmp(value, "openGL2.0") == 0)
+			{
+				s_graphicsDeviceID = GDEV_OPENGL_2_0;
+			}
+			else if (stricmp(value, "openGL 3.2") == 0 || stricmp(value, "openGL3.2") == 0)
+			{
+				//s_graphicsDeviceID = GDEV_OPENGL_3_2;
+				//hack just set to 2.0 until the 3.2 device is implemented.
+				s_graphicsDeviceID = GDEV_OPENGL_2_0;
+			}
+			else if (stricmp(value, "autodetect") == 0)
+			{
+				s_graphicsDeviceID = GDEV_INVALID;
+			}
+			else
+			{
+				LOG( LOG_ERROR, "Invalid Graphics Device specified \"%s\" - currently the following are available: \"openGL 1.3\", \"openGL 2.0\", \"openGL 3.2\" or \"autodetect\"", value);
 			}
 		}
 		else if (stricmp(key, "windowScale") == 0)
@@ -436,6 +462,7 @@ namespace Settings
 		iniWriter::comment("Video");
 		iniWriter::write("windowScale", s_settings.windowScale);
 		iniWriter::write("gameScale",   s_settings.gameScale);
+		iniWriter::write("graphicsDevice", s_graphicsDeviceID == GDEV_INVALID ? "autodetect" : c_graphicsDeviceName[s_graphicsDeviceID]);
 		iniWriter::newLine();
 
 		iniWriter::comment("Engine Settings");

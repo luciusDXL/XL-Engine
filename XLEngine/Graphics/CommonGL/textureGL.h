@@ -11,6 +11,7 @@ class TextureGL
         virtual ~TextureGL();
 
 		void bind(u32 slot);
+		static void unbind(u32 slot);
 
 		bool createRGBA(const GraphicsDevice* gdev, u32 width, u32 height, const u32* data, const SamplerState& initSamplerState);
 		void update(const u32* data);
@@ -20,9 +21,6 @@ class TextureGL
 
 		TextureHandle getHandle() { return m_handle; }
 		void getDimensions(u32& w, u32& h) { w = m_width; h = m_height; }
-		
-		//clear
-		static void clear(u32 slot);
 
 	private:
 		void setSamplerState_Internal(const SamplerState& state);

@@ -34,7 +34,7 @@ void TextureGL::bind(u32 slot)
 	glBindTexture(GL_TEXTURE_2D, GLuint(m_glID));
 }
 
-void TextureGL::clear(u32 slot)
+void TextureGL::unbind(u32 slot)
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, 0);

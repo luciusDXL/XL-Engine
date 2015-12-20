@@ -214,7 +214,7 @@ void GraphicsDeviceGL::setTexture(TextureHandle handle, int slot/*=0*/)
 {
 	if (handle == INVALID_TEXTURE_HANDLE)
 	{
-		TextureGL::clear(slot);
+		TextureGL::unbind(slot);
 		return;
 	}
 

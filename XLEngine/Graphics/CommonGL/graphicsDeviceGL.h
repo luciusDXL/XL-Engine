@@ -11,6 +11,7 @@
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 class TextureGL;
+class RenderTargetGL;
 
 class GraphicsDeviceGL : public GraphicsDevice
 {
@@ -29,7 +30,12 @@ class GraphicsDeviceGL : public GraphicsDevice
 		virtual void enableTexturing(bool enable);
 		virtual void convertFrameBufferTo32bpp(u8* source, u32* pal);
 		virtual TextureHandle createTextureRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic=false);
+		virtual RenderTargetHandle createRenderTarget(u32 width, u32 height, const SamplerState& initSamplerState);
 		virtual void queryExtensions();
+
+		virtual void bindRenderTarget(RenderTargetHandle handle);
+		virtual void unbindRenderTarget();
+		virtual TextureHandle getRenderTargetTexture(RenderTargetHandle handle);
 
 		//functionality that must be implemented by specific OpenGL based Graphics Devices.
 		virtual void setShader(ShaderID shader)=0;
@@ -45,6 +51,7 @@ class GraphicsDeviceGL : public GraphicsDevice
 		virtual void setVirtualViewport(bool reset, int x, int y, int w, int h)=0;
     protected:
 		typedef std::vector<TextureGL*> TextureList;
+		typedef std::vector<RenderTargetGL*> RenderTargetList;
 
 		virtual void setTexture(TextureHandle handle, int slot=0);
 		TextureGL* createTextureRGBA_Internal(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic=false);
@@ -69,6 +76,7 @@ class GraphicsDeviceGL : public GraphicsDevice
 
 		TextureGL* m_videoFrameBuffer;
 		TextureList m_textures;
+		RenderTargetList m_renderTargets;
 
 		Mutex* m_bufferMutex;
     private:

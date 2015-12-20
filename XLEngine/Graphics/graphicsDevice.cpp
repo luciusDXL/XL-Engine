@@ -27,6 +27,10 @@ GraphicsDevice* GraphicsDevice::createDevice(GraphicsDeviceID deviceID, Graphics
 	{
 		LOG( LOG_ERROR, "Invalid device ID %u!", deviceID);
 	}
+	else
+	{
+		LOG( LOG_MESSAGE, "Graphics Device \"%s\" successfully created.", c_graphicsDeviceName[deviceID] );
+	}
 
 	return gdev;
 }

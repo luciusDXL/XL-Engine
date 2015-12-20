@@ -5,6 +5,7 @@
 
 class TextureGL
 {
+	friend class RenderTargetGL;
     public:
         TextureGL(TextureHandle handle, bool dynamic);
         virtual ~TextureGL();

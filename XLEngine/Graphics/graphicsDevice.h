@@ -36,7 +36,14 @@ class GraphicsDevice
 		virtual void setBlendMode(BlendMode mode)=0;
 		virtual void enableBlending(bool enable)=0;
 		virtual void enableTexturing(bool enable)=0;
+
 		virtual TextureHandle createTextureRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerStat, bool dynamic=false)=0;
+		virtual RenderTargetHandle createRenderTarget(u32 width, u32 height, const SamplerState& initSamplerState)=0;
+
+		virtual void bindRenderTarget(RenderTargetHandle handle)=0;
+		virtual void unbindRenderTarget()=0;
+		virtual TextureHandle getRenderTargetTexture(RenderTargetHandle handle)=0;
+
 		virtual void setShaderResource(TextureHandle handle, u32 nameHash)=0;
 		virtual void drawQuad(const Quad& quad)=0;
 

@@ -186,6 +186,8 @@ bool GraphicsDeviceGL_Win32::init()
 		return false;
 	}
 
+	LOG( LOG_MESSAGE, "glVersion: %s", (const char*)glVersion );
+
 	//check against the minimum version.
 	if ( GLEW_VERSION_1_3 == GL_FALSE )
 	{

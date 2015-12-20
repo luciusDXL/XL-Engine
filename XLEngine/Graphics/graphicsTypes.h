@@ -24,6 +24,7 @@ enum ShaderID
 ///////////////////////////////////////////////////
 typedef u32 Color;
 typedef u32 TextureHandle;
+typedef u32 RenderTargetHandle;
 
 struct iPoint
 {

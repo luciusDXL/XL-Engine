@@ -25,7 +25,7 @@ class TextureGL
 		static void clear(u32 slot);
 
 	private:
-		void setGLSamplerState(const SamplerState& state);
+		void setSamplerState_Internal(const SamplerState& state);
 		void allocateUpdateBuffer(u32 width, u32 height);
 
 		bool m_dynamic;

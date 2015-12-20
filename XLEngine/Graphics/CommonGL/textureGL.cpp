@@ -45,7 +45,7 @@ bool TextureGL::createRGBA(const GraphicsDevice* gdev, u32 width, u32 height, co
 	glGenTextures(1, &m_glID);
 	glBindTexture(GL_TEXTURE_2D, m_glID);
 
-	setGLSamplerState(initSamplerState);
+	setSamplerState_Internal(initSamplerState);
 
 	//if this device does not support non-power of 2 textures, we need to round up to the next power of 2.
 	u32* finalData = (u32*)data;
@@ -83,7 +83,7 @@ bool TextureGL::createRGBA(const GraphicsDevice* gdev, u32 width, u32 height, co
 void TextureGL::setSamplerState(const SamplerState& state)
 {
 	glBindTexture(GL_TEXTURE_2D, m_glID);
-	setGLSamplerState(state);
+	setSamplerState_Internal(state);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -118,10 +118,9 @@ void TextureGL::update(u32 srcWidth, u32 srcHeight, const u32* data)
 	update(m_updateBuffer);
 }
 
-void TextureGL::setGLSamplerState(const SamplerState& state)
+void TextureGL::setSamplerState_Internal(const SamplerState& state)
 {
 	//ignore the mip filter for now and anisotropic filtering for now.
-
 	const GLenum glWrapMode[]  = { GL_REPEAT, GL_CLAMP, GL_MIRRORED_REPEAT };
 	const GLenum glMagFilter[] = { GL_NEAREST, GL_LINEAR, GL_LINEAR };
 	const GLenum glMinFilter[] = { GL_NEAREST, GL_LINEAR, GL_LINEAR };

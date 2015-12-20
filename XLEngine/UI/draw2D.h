@@ -40,4 +40,5 @@ namespace Draw2D
 	DrawRectBuf* getDrawRect();
 	DrawTextBuf* getDrawText();
 	void draw();
+	void drawImmediate(const DrawRectBuf& rect);
 };

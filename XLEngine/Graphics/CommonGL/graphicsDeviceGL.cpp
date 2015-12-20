@@ -159,6 +159,7 @@ RenderTargetHandle GraphicsDeviceGL::createRenderTarget(u32 width, u32 height, c
 	{
 		return INVALID_TEXTURE_HANDLE;
 	}
+	m_textures.push_back( texture );
 
 	RenderTargetGL* renderTarget = new RenderTargetGL(m_renderTargets.size(), texture);
 	renderTarget->create(this, 0, width, height, initSamplerState);
@@ -177,6 +178,10 @@ void GraphicsDeviceGL::bindRenderTarget(RenderTargetHandle handle)
 	const u32 index = u32( handle );
 	RenderTargetGL* renderTarget = m_renderTargets[ index ];
 	assert( renderTarget );
+
+	//clear out the current texture
+	setTexture( INVALID_TEXTURE_HANDLE, 0 );
+	setTexture( INVALID_TEXTURE_HANDLE, 1 );
 
 	renderTarget->bind();
 	glViewport( 0, 0, renderTarget->getWidth(), renderTarget->getHeight() );

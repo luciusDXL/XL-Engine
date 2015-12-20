@@ -9,6 +9,7 @@ enum XLSettingsFlags
 	XL_FLAG_FULLSCREEN     = (1<<0),	//full screen
 	XL_FLAG_IMMEDIATE_EXIT = (1<<1),	//exit the application when a game is exited.
 	XL_FLAG_SHOW_ALL_GAMES = (1<<2),	//show all games even if they can't be run on the users system.
+	XL_FLAG_UI_GLOW		   = (1<<3),	//enable the UI glow effect (visual only).
 };
 
 struct XLSettings

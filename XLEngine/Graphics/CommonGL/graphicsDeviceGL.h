@@ -43,7 +43,9 @@ class GraphicsDeviceGL : public GraphicsDevice
         virtual bool init(int w, int h, int& vw, int& vh)=0;
 		virtual void drawVirtualScreen()=0;
 		
-		virtual void setShaderResource(TextureHandle handle, u32 nameHash)=0;
+		virtual void clearShaderParamCache()=0;
+		virtual void setShaderResource(TextureHandle handle, u32 nameHash, u32 slot=0)=0;
+		virtual void setShaderParamter(void* data, u32 size, u32 nameHash)=0;
 
 		virtual void drawQuad(const Quad& quad)=0;
 		virtual void drawFullscreenQuad(TextureGL* tex)=0;

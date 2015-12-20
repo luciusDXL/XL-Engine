@@ -40,7 +40,15 @@ void GraphicsDeviceGL_3_2::setShader(ShaderID shader)
 {
 }
 
-void GraphicsDeviceGL_3_2::setShaderResource(TextureHandle handle, u32 nameHash)
+void GraphicsDeviceGL_3_2::clearShaderParamCache()
+{
+}
+
+void GraphicsDeviceGL_3_2::setShaderResource(TextureHandle handle, u32 nameHash, u32 slot)
+{
+}
+
+void GraphicsDeviceGL_3_2::setShaderParamter(void* data, u32 size, u32 nameHash)
 {
 }
 

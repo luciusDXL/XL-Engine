@@ -129,9 +129,19 @@ void GraphicsDeviceGL_1_3::setShader(ShaderID shader)
 	shader;	//do nothing
 }
 
-void GraphicsDeviceGL_1_3::setShaderResource(TextureHandle handle, u32 nameHash)
+void GraphicsDeviceGL_1_3::clearShaderParamCache()
+{
+	//do nothing.
+}
+
+void GraphicsDeviceGL_1_3::setShaderResource(TextureHandle handle, u32 nameHash, u32 slot)
 {
 	setTexture(handle);
+}
+
+void GraphicsDeviceGL_1_3::setShaderParamter(void* data, u32 size, u32 nameHash)
+{
+	data;	//do nothing.
 }
 
 void GraphicsDeviceGL_1_3::drawQuad(const Quad& quad)

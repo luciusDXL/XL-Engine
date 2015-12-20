@@ -23,7 +23,7 @@ namespace Settings
 	//default values.
 	static XLSettings s_settings = 
 	{
-		XL_FLAG_SHOW_ALL_GAMES,
+		XL_FLAG_SHOW_ALL_GAMES | XL_FLAG_UI_GLOW,
 		-1,
 		4,
 		4,
@@ -199,6 +199,17 @@ namespace Settings
 			else
 			{
 				s_settings.flags &= ~XL_FLAG_SHOW_ALL_GAMES;
+			}
+		}
+		else if (stricmp(key, "uiGlow") == 0)
+		{
+			if (readBool(value))
+			{
+				s_settings.flags |= XL_FLAG_UI_GLOW;
+			}
+			else
+			{
+				s_settings.flags &= ~XL_FLAG_UI_GLOW;
 			}
 		}
 		else if (stricmp(key, "launchGame") == 0)
@@ -457,6 +468,7 @@ namespace Settings
 		iniWriter::write("fullscreen",    bool( (s_settings.flags&XL_FLAG_FULLSCREEN)!=0 ));
 		iniWriter::write("immediateExit", bool( (s_settings.flags&XL_FLAG_IMMEDIATE_EXIT)!=0 ));
 		iniWriter::write("showAllGames",  bool( (s_settings.flags&XL_FLAG_SHOW_ALL_GAMES)!=0 ));
+		iniWriter::write("uiGlow",		  bool( (s_settings.flags&XL_FLAG_UI_GLOW)!=0 ));
 		iniWriter::newLine();
 
 		iniWriter::comment("Video");

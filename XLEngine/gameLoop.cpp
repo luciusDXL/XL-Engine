@@ -5,6 +5,7 @@
 #include "gameUI.h"
 #include "input.h"
 #include "Sound/sound.h"
+#include "Math/crc32.h"
 #include "PluginFramework/PluginManager.h"
 #include "clock.h"
 #include "log.h"
@@ -21,6 +22,10 @@ namespace GameLoop
 	static s32 s_launchGameID = -1;
 	static s32 s_uiKey = 192;
 	static bool s_exitGame = false;
+
+	static RenderTargetHandle s_screenRenderTarget = INVALID_TEXTURE_HANDLE;
+	static RenderTargetHandle s_blurTargets[6];
+	static bool s_applyUIGlow = false;
 	
 #ifdef _WIN32
 	static HANDLE s_hGameThread;
@@ -140,6 +145,99 @@ namespace GameLoop
 		return false;
 	}
 
+	void setRenderTarget(XLSettings* settings)
+	{
+		if (!s_gdev->supportsFeature(CAP_RENDER_TARGET) || !GameUI::getShowUI() || !(settings->flags&XL_FLAG_UI_GLOW))
+		{
+			s_applyUIGlow = false;
+			return;
+		}
+		s_applyUIGlow = true;
+
+		if (s_screenRenderTarget == INVALID_TEXTURE_HANDLE)
+		{
+			const SamplerState samplerState=
+			{
+				WM_CLAMP, WM_CLAMP, WM_CLAMP,							//clamp on every axis
+				TEXFILTER_LINEAR, TEXFILTER_LINEAR, TEXFILTER_POINT,	//filtering
+				false													//no mipmapping
+			};
+			s_screenRenderTarget = s_gdev->createRenderTarget( settings->windowWidth, settings->windowHeight, samplerState );
+
+			//now create smaller targets for blur...
+			s_blurTargets[0] = s_gdev->createRenderTarget( settings->windowWidth>>1, settings->windowHeight>>1, samplerState );
+			s_blurTargets[1] = s_gdev->createRenderTarget( settings->windowWidth>>1, settings->windowHeight>>1, samplerState );
+		}
+		s_gdev->bindRenderTarget( s_screenRenderTarget );
+	}
+
+	void applyUIglow(XLSettings* settings)
+	{
+		if (!s_applyUIGlow)
+		{
+			return;
+		}
+
+		s_gdev->unbindRenderTarget();
+		TextureHandle screen = s_gdev->getRenderTargetTexture( s_screenRenderTarget );
+
+		DrawRectBuf rect=
+		{
+			screen,
+			0xffffffff,
+			0,
+			//pos
+			0, 0,
+			settings->windowWidth, settings->windowHeight,
+			//uvs
+			0.0f, 0.0f,
+			1.0f, 1.0f
+		};
+
+		s_gdev->setShader( SHADER_BLUR );
+		const char* paramName = "u_uvStep";
+		u32 paramHash = CRC32::get( (u8*)paramName, strlen(paramName) );
+
+		const u32 blurPassCount = 4;
+		for (u32 p=0; p<blurPassCount; p++)
+		{
+			//horizontal
+			s_gdev->bindRenderTarget( s_blurTargets[0] );
+			{
+				f32 w = f32( p==0 ? (settings->windowWidth) : (settings->windowWidth>>1) );
+				f32 data[] = { 1.0f / w, 0.0f };
+				s_gdev->setShaderParamter(data, sizeof(f32)*2, paramHash);
+				rect.texture = p == 0 ? screen : s_gdev->getRenderTargetTexture(s_blurTargets[1]);
+				rect.w = settings->windowWidth; rect.h = settings->windowHeight;
+				Draw2D::drawImmediate(rect);
+			}
+			//vertical
+			s_gdev->bindRenderTarget( s_blurTargets[1] );
+			{
+				f32 h = f32( settings->windowHeight>>1 );
+				f32 data[] = { 0.0f, -1.0f / h };
+				s_gdev->setShaderParamter(data, sizeof(f32)*2, paramHash);
+				rect.texture = s_gdev->getRenderTargetTexture(s_blurTargets[0]);
+				rect.w = settings->windowWidth; rect.h = settings->windowHeight;
+				Draw2D::drawImmediate(rect);
+			}
+		}
+		s_gdev->unbindRenderTarget();
+
+		s_gdev->setShader( SHADER_GLOW_UI );
+
+		const char* yScaleName = "u_yScale";
+		u32 yScaleHash = CRC32::get( (u8*)yScaleName, strlen(yScaleName) );
+		f32 yScale = f32( settings->windowHeight ) * 0.5f;
+		s_gdev->setShaderParamter(&yScale, sizeof(f32), yScaleHash);
+
+		const char* glowTexName = "glowTex";
+		s_gdev->setShaderResource( s_gdev->getRenderTargetTexture(s_blurTargets[1]), CRC32::get((u8*)glowTexName, strlen(glowTexName)), 1 );
+		rect.texture = screen;
+		rect.w = settings->windowWidth; rect.h = settings->windowHeight;
+		Draw2D::drawImmediate(rect);
+	}
+
 	void update()
 	{
 		XLSettings* settings = Settings::get();
@@ -159,6 +257,7 @@ namespace GameLoop
 			GameUI::enableCursor( GameUI::getShowUI() );
 		}
 
+		setRenderTarget(settings);
 		s_gdev->clear();
 			GameUI::update(s_gdev, settings->windowWidth, settings->windowHeight, s_gameRunning);
 			if (s_gameRunning >= 0)
@@ -167,6 +266,7 @@ namespace GameLoop
 				s_gdev->drawVirtualScreen();
 			}
 			Draw2D::draw();
+		applyUIglow(settings);
 		s_gdev->present();
 
 		Input::finish();

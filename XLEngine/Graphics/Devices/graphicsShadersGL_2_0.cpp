@@ -8,12 +8,16 @@
 
 const char* GraphicsShadersGL_2_0::m_shaderVS[SHADER_COUNT]=
 {
-	"Shaders/quadUI_20.vp",	//SHADER_QUAD_UI
+	"Shaders/quadUI_20.vp",			//SHADER_QUAD_UI
+	"Shaders/downSampleBlur.vp",	//SHADER_BLUR
+	"Shaders/uiGlow.vp",			//SHADER_GLOW_UI
 };
 
 const char* GraphicsShadersGL_2_0::m_shaderPS[SHADER_COUNT]=
 {
-	"Shaders/quadUI_20.fp",	//SHADER_QUAD_UI
+	"Shaders/quadUI_20.fp",			//SHADER_QUAD_UI
+	"Shaders/downSampleBlur.fp",	//SHADER_BLUR
+	"Shaders/uiGlow.fp",			//SHADER_GLOW_UI
 };
 
 

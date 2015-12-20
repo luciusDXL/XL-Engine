@@ -39,6 +39,7 @@ class ShaderGL
 		s32  getParameter(u32 nameHash) const;
 		void updateParameter(s32 id, void* data, u32 size);
 		void updateParameter(s32 id, TextureHandle texture, u32 slot, bool force=false);
+		void clearParamCache();
 
 		u32  getRequiredVertexAttrib() const { return m_requiredVtxAttrib; }
 

@@ -15,6 +15,8 @@ enum BlendMode
 enum ShaderID
 {
 	SHADER_QUAD_UI = 0,
+	SHADER_BLUR,
+	SHADER_GLOW_UI,
 	SHADER_COUNT
 };
 

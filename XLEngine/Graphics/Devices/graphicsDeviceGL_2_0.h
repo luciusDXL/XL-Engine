@@ -16,7 +16,9 @@ class GraphicsDeviceGL_2_0 : public GraphicsDeviceGL
 
 		void setShader(ShaderID shader);
 
-		void setShaderResource(TextureHandle handle, u32 nameHash);
+		void clearShaderParamCache();
+		void setShaderResource(TextureHandle handle, u32 nameHash, u32 slot=0);
+		void setShaderParamter(void* data, u32 size, u32 nameHash);
 		void drawQuad(const Quad& quad);
 		void drawFullscreenQuad(TextureGL* tex);
 

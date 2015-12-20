@@ -18,6 +18,7 @@ static size_t s_workBufferSize;
 
 const char* readFileIntoString(const char* path);
 void freeWorkBuffer();
+u32 getParameterSize(u32 type);
 
 //////////////////////////
 // Static Functions
@@ -64,6 +65,11 @@ ShaderGL::~ShaderGL()
 	delete [] m_param;
 }
 
+void ShaderGL::clearParamCache()
+{
+	m_stateDirty = 0xffffffffffffffffULL;	//make everything dirty.
+}
+
 bool ShaderGL::load(const char* vsShader, const char* psShader)
 {
 	bool success = compileShader(vsShader, psShader);
@@ -85,7 +91,7 @@ bool ShaderGL::load(const char* vsShader, const char* psShader)
 			glGetActiveUniform( m_glShaderID, p, 256, &nameLen, &bufferSize, &paramType, paramName );
 
 			//skip built in uniforms
-			if (paramName[0] == 'g' && paramName[1] == 'l')
+			if (nameLen < 3 || (paramName[0] == 'g' && paramName[1] == 'l' && paramName[2] == '_'))
 			{
 				continue;
 			}
@@ -93,7 +99,7 @@ bool ShaderGL::load(const char* vsShader, const char* psShader)
 			param[usedCount].nameHash = CRC32::get( (u8*)paramName, nameLen );
 			param[usedCount].glID = p;
 			param[usedCount].type = paramType;
-			param[usedCount].size = max( bufferSize, 4 );
+			param[usedCount].size = getParameterSize(paramType);
 
 			usedCount++;
 		}
@@ -232,12 +238,6 @@ void ShaderGL::updateParameter(s32 id, TextureHandle texture, u32 slot, bool for
 	if (id < 0) { return; }
 	ShaderParam& param = m_param[id];
 
-	//nothing to change.
-	if (param.texHandle == texture && !force)
-	{
-		return;
-	}
-
 	updateParameter(id, &slot, sizeof(slot));
 	param.texHandle = texture;
 }
@@ -363,3 +363,63 @@ const char* readFileIntoString(const char* path)
 
 	return s_workBuffer;
 }
+
+u32 getParameterSize(u32 type)
+{
+	switch (type)
+	{
+		case GL_FLOAT:
+			return sizeof(f32);
+			break;
+		case GL_FLOAT_VEC2:
+			return sizeof(f32)*2;
+			break;
+		case GL_FLOAT_VEC3:
+			return sizeof(f32)*3;
+			break;
+		case GL_FLOAT_VEC4: 
+			return sizeof(f32)*4;
+			break;
+		case GL_INT:
+			return sizeof(s32);
+			break;
+		case GL_INT_VEC2:
+			return sizeof(s32)*2;
+			break;
+		case GL_INT_VEC3: 
+			return sizeof(s32)*3;
+			break;
+		case GL_INT_VEC4: 
+			return sizeof(s32)*4;
+			break;
+		case GL_BOOL:
+			return sizeof(s32);
+			break;
+		case GL_BOOL_VEC2:
+			return sizeof(s32)*2;
+			break;
+		case GL_BOOL_VEC3:
+			return sizeof(s32)*3;
+			break;
+		case GL_BOOL_VEC4:
+			return sizeof(s32)*4;
+			break;
+		case GL_FLOAT_MAT2:
+			return sizeof(f32)*2*2;
+			break;
+		case GL_FLOAT_MAT3:
+			return sizeof(f32)*3*3;
+			break;
+		case GL_FLOAT_MAT4:
+			return sizeof(f32)*4*4;
+			break;
+		case GL_SAMPLER_2D:
+			return sizeof(s32);
+			break;
+		case GL_SAMPLER_CUBE:
+			return sizeof(s32);
+			break;
+	};
+
+	return 4;
+};

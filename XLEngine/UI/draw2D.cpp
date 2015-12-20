@@ -61,6 +61,20 @@ namespace Draw2D
 		return text;
 	}
 
+	void drawImmediate(const DrawRectBuf& rect)
+	{
+		const Quad quad=
+		{
+			{ rect.x,          rect.y                },
+			{ rect.x + rect.w, rect.y + rect.h       },
+			{ rect.u,          1.0f-rect.v           },
+			{ rect.u+rect.du,  1.0f-(rect.v+rect.dv) },
+			rect.color
+		};
+		s_gdev->setShaderResource( rect.texture, s_textureHash );
+		s_gdev->drawQuad( quad );
+	}
+
 	void draw()
 	{
 		s_gdev->enableBlending(true);

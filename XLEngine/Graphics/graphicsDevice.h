@@ -44,7 +44,9 @@ class GraphicsDevice
 		virtual void unbindRenderTarget()=0;
 		virtual TextureHandle getRenderTargetTexture(RenderTargetHandle handle)=0;
 
-		virtual void setShaderResource(TextureHandle handle, u32 nameHash)=0;
+		virtual void clearShaderParamCache()=0;
+		virtual void setShaderResource(TextureHandle handle, u32 nameHash, u32 slot=0)=0;
+		virtual void setShaderParamter(void* data, u32 size, u32 nameHash)=0;
 		virtual void drawQuad(const Quad& quad)=0;
 
 		virtual void setVirtualViewport(bool reset, int x, int y, int w, int h)=0;

@@ -180,10 +180,21 @@ void GraphicsDeviceGL_2_0::setShader(ShaderID shader)
 	m_curShaderID = shader;
 }
 
-void GraphicsDeviceGL_2_0::setShaderResource(TextureHandle handle, u32 nameHash)
+void GraphicsDeviceGL_2_0::clearShaderParamCache()
+{
+	m_curShader->clearParamCache();
+}
+
+void GraphicsDeviceGL_2_0::setShaderResource(TextureHandle handle, u32 nameHash, u32 slot)
 {
 	s32 parmID = m_curShader->getParameter(nameHash);
-	m_curShader->updateParameter(parmID, handle, 0);
+	m_curShader->updateParameter(parmID, handle, slot);
+}
+
+void GraphicsDeviceGL_2_0::setShaderParamter(void* data, u32 size, u32 nameHash)
+{
+	s32 parmID = m_curShader->getParameter(nameHash);
+	m_curShader->updateParameter(parmID, data, size);
 }
 
 void GraphicsDeviceGL_2_0::drawQuad(const Quad& quad)

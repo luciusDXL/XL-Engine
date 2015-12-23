@@ -19,6 +19,8 @@ public:
 	bool exists(const char* filename);
 	bool open(const char* filename, FileMode mode);
 	void close();
+
+	bool isOpen() const;
 	
 	//derived functions.
 	void seek(u32 offset, Origin origin=ORIGIN_START);

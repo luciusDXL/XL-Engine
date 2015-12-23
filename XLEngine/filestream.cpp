@@ -49,6 +49,11 @@ void FileStream::close()
 	}
 }
 
+bool FileStream::isOpen() const
+{
+	return (m_file != NULL);
+}
+
 //derived from Stream
 void FileStream::seek(u32 offset, Origin origin/*=ORIGIN_START*/)
 {

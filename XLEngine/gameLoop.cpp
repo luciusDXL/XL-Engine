@@ -281,6 +281,7 @@ namespace GameLoop
 		s_gameRunning = -1;
 		s_exitGame    = false;
 		MemoryPool::reset();
+		Services::reset();
 
 		GameUI::enableCursor(true);
 		GameUI::setShowUI(true, s_gdev);

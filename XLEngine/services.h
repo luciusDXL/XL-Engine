@@ -11,4 +11,6 @@ namespace Services
 
 	void setTime(u64 time);
 	void xlDebugMessage(char* msg, ...);
+
+	void reset();
 };

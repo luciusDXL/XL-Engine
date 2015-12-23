@@ -37,6 +37,8 @@ namespace GameUI
 		MENU_COUNT
 	};
 
+	const u32 c_leftEdge = 8;
+
 	bool s_showUI = true;
 	static int s_menu = -1;
 
@@ -65,7 +67,7 @@ namespace GameUI
 
 	void handleMainIcons()
 	{
-		if (UISystem::buttonIcon(CTRL_ICON_VIDEO, 0, ICON_VIDEO, 4,  40 ))
+		if (UISystem::buttonIcon(CTRL_ICON_VIDEO, 0, ICON_VIDEO, c_leftEdge,  40 ))
 		{
 			if (s_menu < 0)
 			{
@@ -73,7 +75,7 @@ namespace GameUI
 				UISystem::setCurrentLayer(1);
 			}
 		}
-		if (UISystem::buttonIcon(CTRL_ICON_SETTINGS, 0, ICON_SETTINGS,  4,  80 ))
+		if (UISystem::buttonIcon(CTRL_ICON_SETTINGS, 0, ICON_SETTINGS,  c_leftEdge,  80 ))
 		{
 			if (s_menu < 0)
 			{
@@ -81,10 +83,10 @@ namespace GameUI
 				UISystem::setCurrentLayer(1);
 			}
 		}
-		UISystem::buttonIcon(CTRL_ICON_CONTROLS,  0, ICON_CONTROLS,  4, 120 );
-		UISystem::buttonIcon(CTRL_ICON_DASHBOARD, 0, ICON_DASHBOARD, 4, 160 );
-		UISystem::buttonIcon(CTRL_ICON_SEARCH,    0, ICON_SEARCH,    4, 200 );
-		UISystem::buttonIcon(CTRL_ICON_TOOLS,     0, ICON_TOOLS,     4, 240 );
+		UISystem::buttonIcon(CTRL_ICON_CONTROLS,  0, ICON_CONTROLS,  c_leftEdge, 120 );
+		UISystem::buttonIcon(CTRL_ICON_DASHBOARD, 0, ICON_DASHBOARD, c_leftEdge, 160 );
+		UISystem::buttonIcon(CTRL_ICON_SEARCH,    0, ICON_SEARCH,    c_leftEdge, 200 );
+		UISystem::buttonIcon(CTRL_ICON_TOOLS,     0, ICON_TOOLS,     c_leftEdge, 240 );
 	}
 
 	void handleGameSelection(GraphicsDevice* gdev, int winWidth, int winHeight, s32& gameRunning)
@@ -220,7 +222,7 @@ namespace GameUI
 		DrawTextBuf* text = Draw2D::getDrawText();
 		text->color = PACK_RGBA(0xa0, 0xff, 0xff, 0xa0);
 		text->font = UISystem::getFont(18);
-		text->x = 4; text->y = 4;
+		text->x = c_leftEdge; text->y = 4;
 		sprintf(text->msg, "XL Engine  version %s", Settings::getVersion());
 
 		handleMainIcons();

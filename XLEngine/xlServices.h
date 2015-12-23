@@ -9,6 +9,14 @@ extern "C" {
 #define MAX_MAPPING_COUNT 16
 #define MAX_ACTION_COUNT  128
 
+#define XL_FILE_READ		0
+#define XL_FILE_WRITE		1
+#define XL_FILE_READWRITE	2
+
+#define XL_FILE_ORIGIN_START	0
+#define XL_FILE_ORIGIN_END		1
+#define XL_FILE_ORIGIN_CURRENT	2
+
 typedef struct ActionMapping
 {
 	char action[256];
@@ -57,6 +65,13 @@ typedef int  (*XLSoundIsPlaying)(int);
 typedef void (*XLSoundSetPan)(int, unsigned int, unsigned int, unsigned int);
 typedef void (*XLStopSound)(int);
 
+typedef int    (*XLFileOpen)(const char*, int);
+typedef void   (*XLFileClose)(int);
+typedef size_t (*XLFileRead)(void*, size_t, size_t, int);
+typedef size_t (*XLFileWrite)(const void*, size_t, size_t, int);
+typedef void   (*XLFileSeek)(int, int, int);
+typedef size_t (*XLFileTell)(int);
+
 typedef struct
 {
 	//video
@@ -89,6 +104,13 @@ typedef struct
 
 	//file I/O
 	XLBuildGamePath buildGamePath;
+	//file I/O functions automatically remap paths to the game root path.
+	XLFileOpen		fileOpen;
+	XLFileClose		fileClose;
+	XLFileRead		fileRead;
+	XLFileWrite		fileWrite;
+	XLFileSeek		fileSeek;
+	XLFileTell		fileTell;
 
 	//game info
 	XLGetGameInfo getGameInfo;

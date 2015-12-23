@@ -7,6 +7,7 @@
 #include "Sound/sound.h"
 #include "Graphics/graphicsDevice.h"
 #include "log.h"
+#include "filestream.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <memory.h>
@@ -23,6 +24,10 @@ namespace Services
 	int s_clockTics = 0;
 	int s_clockTicsBase = 0;
 	u64 s_lastRealTime = 0;
+
+	//File System
+	#define MAX_OPEN_FILES 512
+	FileStream s_fileStreams[ MAX_OPEN_FILES ];
 
 	GraphicsDevice* s_gdev = NULL;
 
@@ -163,6 +168,88 @@ namespace Services
 		return info;
 	}
 
+	//file system
+	int xlFileOpen(const char* path, int fileMode)
+	{
+		const char* gamePath = buildGamePath(path);
+
+		//search for an open file stream.
+		s32 streamIndex = -1;
+		for (u32 f=0; f<MAX_OPEN_FILES; f++)
+		{
+			if ( !s_fileStreams[f].isOpen() )
+			{
+				streamIndex = f;
+				break;
+			}
+		}
+
+		if (streamIndex >= 0)
+		{
+			if ( !s_fileStreams[ streamIndex ].open( gamePath, FileStream::FileMode(fileMode) ) )
+			{
+				return -1;
+			}
+		}
+
+		return streamIndex;
+	}
+
+	void xlFileClose(int handle)
+	{
+		if (handle >= 0 && handle < MAX_OPEN_FILES)
+		{
+			assert( s_fileStreams[handle].isOpen() );
+			s_fileStreams[handle].close();
+		}
+	}
+
+	size_t xlFileRead(void* data, size_t size, size_t count, int fileHandle)
+	{
+		if (fileHandle < 0 && fileHandle >= MAX_OPEN_FILES)
+		{
+			return 0;
+		}
+		assert( s_fileStreams[fileHandle].isOpen() );
+
+		s_fileStreams[fileHandle].readBuffer(data, size, count);
+		return size*count;
+	}
+
+	size_t xlFileWrite(const void* data, size_t size, size_t count, int fileHandle)
+	{
+		if (fileHandle < 0 && fileHandle >= MAX_OPEN_FILES)
+		{
+			return 0;
+		}
+		assert( s_fileStreams[fileHandle].isOpen() );
+
+		s_fileStreams[fileHandle].writeBuffer(data, size, count);
+		return size*count;
+	}
+
+	void xlFileSeek(int offset, int origin, int fileHandle)
+	{
+		if (fileHandle < 0 && fileHandle >= MAX_OPEN_FILES)
+		{
+			return;
+		}
+		assert( s_fileStreams[fileHandle].isOpen() );
+
+		s_fileStreams[fileHandle].seek(offset, Stream::Origin(origin));
+	}
+
+	size_t xlFileTell(int fileHandle)
+	{
+		if (fileHandle < 0 && fileHandle >= MAX_OPEN_FILES)
+		{
+			return 0;
+		}
+		assert( s_fileStreams[fileHandle].isOpen() );
+
+		return s_fileStreams[fileHandle].getLoc();
+	}
+
 	void setup(int gameWidth, int gameHeight, GraphicsDevice* gdev)
 	{
 		s_gameScreenWidth  = gameWidth;
@@ -191,6 +278,13 @@ namespace Services
 		s_services.keyEvent        = NULL;	//this will be filled in by the game if it wants to get keyboard events.
 
 		s_services.buildGamePath = buildGamePath;
+		s_services.fileOpen		 = xlFileOpen;
+		s_services.fileClose	 = xlFileClose;
+		s_services.fileRead		 = xlFileRead;
+		s_services.fileWrite	 = xlFileWrite;
+		s_services.fileSeek	 	 = xlFileSeek;
+		s_services.fileTell		 = xlFileTell;
+
 		s_services.getGameInfo   = getGameInfo;
 
 		s_services.playVocOneShot = Sound::PlayVoc_OneShot;
@@ -198,6 +292,15 @@ namespace Services
 		s_services.soundIsPlaying = Sound::soundIsPlaying;
 		s_services.soundSetPan    = Sound::setPan;
 		s_services.stopSound      = Sound::stopSound;
+	}
+
+	void reset()
+	{
+		//close any open file streams.
+		for (u32 f=0; f<MAX_OPEN_FILES; f++)
+		{
+			s_fileStreams[f].close();
+		}
 	}
 
 	XLEngineServices* get()

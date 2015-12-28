@@ -115,16 +115,17 @@ void GraphicsDeviceGL::unlockBuffer()
 void GraphicsDeviceGL::convertFrameBufferTo32bpp(u8* source, u32* pal)
 {
 	lockBuffer();
-		const s32 curIndex = m_bufferIndex;
-		u32 *dest = m_frameBuffer_32bpp[curIndex];
+		const s32 curIndex   = m_bufferIndex;
+		const u32 pixelCount = m_frameWidth*m_frameHeight;
 
-		u32 pixelCount = m_frameWidth*m_frameHeight;
-		for (u32 p=0; p<pixelCount; p++)
+		u32* dest = m_frameBuffer_32bpp[curIndex];
+		const u32* end = &dest[ pixelCount ];
+
+		for (; dest != end; dest++, source++)
 		{
 			*dest = pal[ *source ];
-			dest++;
-			source++;
 		}
+
 		m_writeBufferIndex = m_bufferIndex;
 		m_bufferIndex = (m_bufferIndex+1)&1;
 		m_writeFrame++;

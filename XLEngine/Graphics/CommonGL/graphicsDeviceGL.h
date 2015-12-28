@@ -29,8 +29,13 @@ class GraphicsDeviceGL : public GraphicsDevice
 		virtual void enableBlending(bool enable);
 		virtual void enableTexturing(bool enable);
 		virtual void convertFrameBufferTo32bpp(u8* source, u32* pal);
+
 		virtual TextureHandle createTextureRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic=false);
+		virtual void destroyTexture(TextureHandle texHandle);
+
 		virtual RenderTargetHandle createRenderTarget(u32 width, u32 height, const SamplerState& initSamplerState);
+		virtual void destroyRenderTarget(RenderTargetHandle rtHandle);
+
 		virtual void queryExtensions();
 
 		virtual void bindRenderTarget(RenderTargetHandle handle);
@@ -54,9 +59,14 @@ class GraphicsDeviceGL : public GraphicsDevice
     protected:
 		typedef std::vector<TextureGL*> TextureList;
 		typedef std::vector<RenderTargetGL*> RenderTargetList;
+		typedef std::vector<u32> FreeList;
 
 		virtual void setTexture(TextureHandle handle, int slot=0);
+		TextureGL* createTexture_Internal(bool dynamic=false);
 		TextureGL* createTextureRGBA_Internal(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic=false);
+
+		void destroyTexture_Internal(u32 index);
+		void destroyRenderTarget_Internal(u32 index);
 
 		void lockBuffer();
 		void unlockBuffer();
@@ -79,6 +89,9 @@ class GraphicsDeviceGL : public GraphicsDevice
 		TextureGL* m_videoFrameBuffer;
 		TextureList m_textures;
 		RenderTargetList m_renderTargets;
+
+		FreeList m_freeTextures;
+		FreeList m_freeRenderTargets;
 
 		Mutex* m_bufferMutex;
     private:

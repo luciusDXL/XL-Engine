@@ -39,6 +39,8 @@ class GraphicsDevice
 
 		virtual TextureHandle createTextureRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerStat, bool dynamic=false)=0;
 		virtual RenderTargetHandle createRenderTarget(u32 width, u32 height, const SamplerState& initSamplerState)=0;
+		virtual void destroyTexture(TextureHandle texHandle)=0;
+		virtual void destroyRenderTarget(RenderTargetHandle rtHandle)=0;
 
 		virtual void bindRenderTarget(RenderTargetHandle handle)=0;
 		virtual void unbindRenderTarget()=0;

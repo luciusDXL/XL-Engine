@@ -11,6 +11,9 @@
 
 #include <assert.h>
 
+/////////////////////////////////////////
+// Implementation
+/////////////////////////////////////////
 GraphicsDeviceGL::GraphicsDeviceGL(GraphicsDevicePlatform* platform) : GraphicsDevice(platform)
 {
 	ShaderGL::init();
@@ -134,38 +137,56 @@ TextureHandle GraphicsDeviceGL::createTextureRGBA(u32 width, u32 height, const u
 	return texture ? texture->getHandle() : INVALID_TEXTURE_HANDLE;
 }
 
-TextureGL* GraphicsDeviceGL::createTextureRGBA_Internal(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic/*=false*/)
+void GraphicsDeviceGL::destroyTexture(TextureHandle texHandle)
 {
-	TextureGL* texture = new TextureGL(m_textures.size(), dynamic);
-	if (!texture)
+	u32 index = u32( texHandle );
+	if (index >= m_textures.size())
 	{
-		return NULL;
+		return;
 	}
 
-	if (!texture->createRGBA(this, width, height, data, initSamplerState))
-	{
-		delete texture;
-		return NULL;
-	}
-
-	m_textures.push_back( texture );
-	return texture;
+	destroyTexture_Internal(index);
 }
 
 RenderTargetHandle GraphicsDeviceGL::createRenderTarget(u32 width, u32 height, const SamplerState& initSamplerState)
 {
-	TextureGL* texture = new TextureGL(m_textures.size(), false);
+	u32 newID = m_renderTargets.size();
+	if (m_freeRenderTargets.size())
+	{
+		newID = m_freeRenderTargets.back();
+	}
+
+	TextureGL* texture = createTexture_Internal();
 	if (!texture)
 	{
-		return INVALID_TEXTURE_HANDLE;
+		return NULL;
 	}
-	m_textures.push_back( texture );
 
-	RenderTargetGL* renderTarget = new RenderTargetGL(m_renderTargets.size(), texture);
+	RenderTargetGL* renderTarget = new RenderTargetGL(newID, texture);
 	renderTarget->create(this, 0, width, height, initSamplerState);
 
-	m_renderTargets.push_back( renderTarget );
+	if (newID != m_renderTargets.size())
+	{
+		m_renderTargets[newID] = renderTarget;
+		m_freeRenderTargets.pop_back();
+	}
+	else
+	{
+		m_renderTargets.push_back( renderTarget );
+	}
+
 	return renderTarget->getHandle();
+}
+
+void GraphicsDeviceGL::destroyRenderTarget(RenderTargetHandle rtHandle)
+{
+	u32 index = u32( rtHandle );
+	if (index >= m_renderTargets.size())
+	{
+		return;
+	}
+
+	destroyRenderTarget_Internal(index);
 }
 
 void GraphicsDeviceGL::bindRenderTarget(RenderTargetHandle handle)
@@ -232,4 +253,69 @@ void GraphicsDeviceGL::enableTexturing(bool enable)
 	{
 		glDisable(GL_TEXTURE_2D);
 	}
+}
+
+/////////////////////////////////////////
+// Internal Functions
+/////////////////////////////////////////
+TextureGL* GraphicsDeviceGL::createTexture_Internal(bool dynamic/*=false*/)
+{
+	u32 newID = m_textures.size();
+	if (m_freeTextures.size())
+	{
+		newID = m_freeTextures.back();
+	}
+
+	TextureGL* texture = new TextureGL(newID, dynamic);
+
+	if (newID != m_textures.size())
+	{
+		m_textures[newID] = texture;
+		m_freeTextures.pop_back();
+	}
+	else
+	{
+		m_textures.push_back( texture );
+	}
+
+	return texture;
+}
+
+TextureGL* GraphicsDeviceGL::createTextureRGBA_Internal(u32 width, u32 height, const u32* data, const SamplerState& initSamplerState, bool dynamic/*=false*/)
+{
+	TextureGL* texture = createTexture_Internal(dynamic);
+	if (!texture)
+	{
+		return NULL;
+	}
+
+	if (!texture->createRGBA(this, width, height, data, initSamplerState))
+	{
+		destroyTexture( texture->getHandle() );
+		return NULL;
+	}
+
+	return texture;
+}
+
+void GraphicsDeviceGL::destroyTexture_Internal(u32 index)
+{
+	delete m_textures[index];
+
+	m_textures[index] = NULL;
+	m_freeTextures.push_back(index);
+}
+
+void GraphicsDeviceGL::destroyRenderTarget_Internal(u32 index)
+{
+	TextureGL* texture = m_renderTargets[index]->getTexture();
+	if (texture)
+	{
+		destroyTexture( texture->getHandle() );
+	}
+
+	delete m_renderTargets[index];
+
+	m_renderTargets[index] = NULL;
+	m_freeRenderTargets.push_back(index);
 }

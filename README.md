@@ -9,7 +9,7 @@ Source ports are a great way of keeping games such as Doom and Duke Nukem 3D wor
 
 The XL Engine is designed to be easy to use, easy to play the supported games on modern systems. It handles modern GPUs, varying refresh rates, high resolutions with high performance. In the future, the engine will add support for easy modding and easy multiplayer support for those games that support it (such as Blood). In the future this will include built-in tools, including scripting and reviving the DarkXL sector editor so that games such as Dark Forces and Blood can be modded with modern tools.
 
-However this is only an engine, no games are bundled with the application. Games need to be legally acquired before they can be played using the XL Engine. The good news is that Daggerfall is now free and can be downloaded from Bethesda or using Daggerfall Setup.
+However this is only an engine, no games are bundled with the application. Games need to be legally acquired before they can be played using the XL Engine. The good news is that Daggerfall is now free and can be downloaded from Bethesda or using Daggerfall Setup. Blood and Dark Forces are available for purchase from GOG.com and Steam.
 
 # Availability
 Beta 1 is still in progress and is not yet available for download. Older builds are avaiable on the XL Engine website, however they are incomplete and buggy. I would suggest waiting for the Beta 1 release before downloading.

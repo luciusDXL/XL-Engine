@@ -7,7 +7,7 @@ Blood
 ```
 Source ports are a great way of keeping games such as Doom and Duke Nukem 3D working and even being enhanced on modern systems. While the XL Engine may support games with source available in the future, its primary goal is to support games with no source released with "source port accuracy." Many great older games may never see a source release but they still deserve to be preserved and enhanced.
 
-The XL Engine is designed to be easy to use, easy to play the supported games on modern systems. It handles modern GPUs, varying refresh rates, high resolutions and high performance. In the future, the engine will add support for easy modding and easy multiplayer support for those games that support it (such as Blood). In the future this will include built-in tools, including scripting and reviving the DarkXL sector editor so that games such as Dark Forces and Blood can be modded with modern tools.
+The XL Engine is designed to be easy to use, easy to play the supported games on modern systems. It handles modern GPUs, varying refresh rates, high resolutions with high performance. In the future, the engine will add support for easy modding and easy multiplayer support for those games that support it (such as Blood). In the future this will include built-in tools, including scripting and reviving the DarkXL sector editor so that games such as Dark Forces and Blood can be modded with modern tools.
 
 However this is only an engine, no games are bundled with the application. Games need to be legally acquired before they can be played using the XL Engine. The good news is that Daggerfall is now free and can be downloaded from Bethesda or using Daggerfall Setup.
 

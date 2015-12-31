@@ -53,9 +53,15 @@ class GraphicsDevice
 
 		virtual void setVirtualViewport(bool reset, int x, int y, int w, int h)=0;
 
+		//batching (not used by all devices)
+		virtual void flush()=0;
+		virtual u32 addQuad(const Quad& quad)=0;
+		virtual void drawQuadBatch(u32 vertexOffset, u32 count)=0;
+
 		//It is expected that an implementation will fill out the 'm_caps' variable.
 		bool supportsFeature(CapabilityFlags feature) const { return (m_caps.flags&feature)!=0; }
 		u32  getMaximumTextureSize() const { return m_caps.maxTextureSize2D; }
+		GraphicsDeviceID getDeviceID() const { return m_deviceID; }
 
 		static GraphicsDevice* createDevice(GraphicsDeviceID deviceID, GraphicsDevicePlatform* platform);
 		static void destroyDevice(GraphicsDevice* device);

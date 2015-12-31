@@ -75,11 +75,126 @@ namespace Draw2D
 		s_gdev->drawQuad( quad );
 	}
 
+	void drawBatch()
+	{
+		int curLayer = 255;
+		if (s_rectIndex > 0)
+		{
+			curLayer = MIN(curLayer, s_rectPool[0].layer);
+		}
+		if (s_textIndex > 0)
+		{
+			curLayer = MIN(curLayer, s_textPool[0].layer);
+		}
+
+		//now fill the vertex data before drawing.
+		static u32 vertexOffsetsRect[1024];
+		static u32 vertexOffsetsText[1024];
+		static u32 textQuadCount[1024];
+
+		s32 r=0, t=0;
+		for (; r<s_rectIndex; r++)
+		{
+			const DrawRectBuf& rect = s_rectPool[r];
+
+			const Quad quad=
+			{
+				{ rect.x,          rect.y                },
+				{ rect.x + rect.w, rect.y + rect.h       },
+				{ rect.u,          1.0f-rect.v           },
+				{ rect.u+rect.du,  1.0f-(rect.v+rect.dv) },
+				rect.color
+			};
+			vertexOffsetsRect[r] = s_gdev->addQuad( quad );
+		}
+		for (; t<s_textIndex; t++)
+		{
+			const DrawTextBuf& text = s_textPool[t];
+
+			TextSystem::setColor( text.color );
+			TextSystem::setFont( text.font );
+			vertexOffsetsText[t] = TextSystem::print_genQuads( textQuadCount[t], text.x, text.y, text.msg );
+		}
+
+		s_gdev->flush();
+
+		r = 0; t = 0;
+		while (r < s_rectIndex || t < s_textIndex)
+		{
+			int nextLayerRect = 255;
+			int nextLayerText = 255;
+			for (; r < s_rectIndex; r++)
+			{
+				const DrawRectBuf& rect = s_rectPool[r];
+
+				if (rect.layer > curLayer)
+				{
+					nextLayerRect = rect.layer;
+					break;
+				}
+
+				s_gdev->setShaderResource( rect.texture, s_textureHash );
+				s_gdev->drawQuadBatch( vertexOffsetsRect[r], 1 );
+			}
+
+			FontHandle curFont = INVALID_FONT_HANDLE;
+			u32 vertexOffset = 0;
+			u32 quadCount = 0;
+			for (; t < s_textIndex; t++)
+			{
+				const DrawTextBuf& text = s_textPool[t];
+				if (text.layer > curLayer)
+				{
+					nextLayerText = text.layer;
+					break;
+				}
+
+				if (text.font != curFont)
+				{
+					if (quadCount)
+					{
+						TextSystem::setFont( curFont );
+						TextSystem::bindTexture();
+
+						s_gdev->drawQuadBatch( vertexOffset, quadCount );
+					}
+
+					curFont = text.font;
+					vertexOffset = vertexOffsetsText[t];
+					quadCount = textQuadCount[t];
+				}
+				else
+				{
+					quadCount += textQuadCount[t];
+				}
+			}
+
+			//draw the last batch
+			if (curFont != INVALID_FONT_HANDLE && quadCount)
+			{
+				TextSystem::setFont( curFont );
+				TextSystem::bindTexture();
+
+				s_gdev->drawQuadBatch( vertexOffset, quadCount );
+			}
+
+			curLayer = MIN(nextLayerRect, nextLayerText);
+		};
+
+		clearDraw();
+		s_gdev->enableBlending(false);
+	}
+
 	void draw()
 	{
 		s_gdev->enableBlending(true);
 		s_gdev->setBlendMode( BLEND_OVER );
 		s_gdev->setShader( SHADER_QUAD_UI );
+
+		if ( s_gdev->getDeviceID() != GDEV_OPENGL_1_3 )
+		{
+			drawBatch();
+		}
 
 		int curLayer = 255;
 		if (s_rectIndex > 0)
@@ -91,7 +206,7 @@ namespace Draw2D
 			curLayer = MIN(curLayer, s_textPool[0].layer);
 		}
 
-		int r=0, t=0;
+		s32 r=0, t=0;
 		while (r < s_rectIndex || t < s_textIndex)
 		{
 			int nextLayerRect = 255;

@@ -202,8 +202,6 @@ namespace UISystem
 		rect->h = MIN( s_logo->height, s_windowHeight );
 		rect->color = PACK_RGBA(0x80, 0xff, 0xff, 0x20);
 		rect->texture = s_logo->texture;
-
-		Draw2D::draw();
 	}
 
 	//State preparation before the drawing

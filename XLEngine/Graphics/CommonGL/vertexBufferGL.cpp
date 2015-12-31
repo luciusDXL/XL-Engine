@@ -211,7 +211,7 @@ void VertexBufferGL::update(u32 size, void* data)
 	glBindBuffer(GL_ARRAY_BUFFER, m_glID);
 
 	//cause the "discard" buffer behavior, which is done by first calling glBufferData() with NULL data.
-	glBufferData(GL_ARRAY_BUFFER, m_size, NULL, m_dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, min(size, m_size), NULL, m_dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 
 	//now lock and update the buffer.
 	void* mem = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);

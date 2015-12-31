@@ -27,5 +27,8 @@ namespace TextSystem
 	void setFont(FontHandle handle);
 	void setColor(Color color);
 	void print(int x, int y, const char* msg, ...);
+	u32 print_genQuads(u32& quadCount, int x, int y, const char* msg, ...);
 	int  getStringWidth(FontHandle font, const char* msg);
+
+	void bindTexture();
 };

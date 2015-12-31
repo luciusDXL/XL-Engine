@@ -17,12 +17,15 @@
 #include "../CommonGL/shaderGL.h"
 #include "../CommonGL/vertexBufferGL.h"
 #include "../CommonGL/indexBufferGL.h"
+#include "../CommonGL/streamingVertexBuffer.h"
 
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 
 //Temporary, to get basic rendering working.
+#define MAX_QUADS 16384
+
 struct QuadVertex
 {
 	f32 pos[3];
@@ -106,17 +109,24 @@ bool GraphicsDeviceGL_2_0::init(int w, int h, int& vw, int& vh)
 	}
 	m_shaders->loadShaders();
 
-	m_quadVB = new VertexBufferGL(true);
-	m_quadVB->allocate( sizeof(QuadVertex), 4 );
-	m_quadVB->setVertexDecl( c_quadVertexDecl, arraysize(c_quadVertexDecl) );
+	//support up to MAX_QUADS quads per frame.
+	m_quadVB = new StreamingVertexBuffer( c_quadVertexDecl, arraysize(c_quadVertexDecl), sizeof(QuadVertex), MAX_QUADS * 4 );
 
-	u16 indices[6]=
+	u16* indices = (u16*)malloc( sizeof(u16) * MAX_QUADS * 6 );
+	for (u32 q=0, v=0; q<MAX_QUADS; q++, v+=4)
 	{
-		0, 1, 2,
-		0, 2, 3
-	};
+		indices[q*6 + 0] = v;
+		indices[q*6 + 1] = v + 1;
+		indices[q*6 + 2] = v + 2;
+
+		indices[q*6 + 3] = v;
+		indices[q*6 + 4] = v + 2;
+		indices[q*6 + 5] = v + 3;
+	}
+
 	m_quadIB = new IndexBufferGL();
-	m_quadIB->allocate( sizeof(u16), 6, indices );
+	m_quadIB->allocate( sizeof(u16), MAX_QUADS * 6, indices );
+	free(indices);
 
 	/* establish initial viewport */
 	// fix the height to the actual screen height.
@@ -215,19 +225,29 @@ void GraphicsDeviceGL_2_0::drawQuad(const Quad& quad)
 	uvBot[0] = quad.uv1.x;
 	uvBot[1] = quad.uv1.y;
 
-	//for now lock and fill the vb everytime.
-	//this is obviously a bad idea but will get things started.
-	const QuadVertex vertex[]=
-	{
-		{ posScale[0], posScale[1], 0.0f, uvTop[0], uvTop[1], quad.color },
-		{ posScale[2], posScale[1], 0.0f, uvBot[0], uvTop[1], quad.color },
-		{ posScale[2], posScale[3], 0.0f, uvBot[0], uvBot[1], quad.color },
-		{ posScale[0], posScale[3], 0.0f, uvTop[0], uvBot[1], quad.color },
-	};
-	m_quadVB->update(sizeof(QuadVertex)*4, (void*)vertex);
+	u32 quadOffset = 0;
+	QuadVertex* vertex = (QuadVertex*)m_quadVB->getWritePointer(4, quadOffset);
+	vertex[0].pos[0] = posScale[0]; vertex[0].pos[1] = posScale[1]; vertex[0].pos[2] = 0.0f;
+	vertex[0].uv[0] = uvTop[0]; vertex[0].uv[1] = uvTop[1];
+	vertex[0].color = quad.color;
+
+	vertex[1].pos[0] = posScale[2]; vertex[1].pos[1] = posScale[1]; vertex[1].pos[2] = 0.0f;
+	vertex[1].uv[0] = uvBot[0]; vertex[1].uv[1] = uvTop[1];
+	vertex[1].color = quad.color;
+
+	vertex[2].pos[0] = posScale[2]; vertex[2].pos[1] = posScale[3]; vertex[2].pos[2] = 0.0f;
+	vertex[2].uv[0] = uvBot[0]; vertex[2].uv[1] = uvBot[1];
+	vertex[2].color = quad.color;
+
+	vertex[3].pos[0] = posScale[0]; vertex[3].pos[1] = posScale[3]; vertex[3].pos[2] = 0.0f;
+	vertex[3].uv[0] = uvTop[0]; vertex[3].uv[1] = uvBot[1];
+	vertex[3].color = quad.color;
+
 	m_curShader->uploadData(this);
 
-	m_quadVB->bind( m_curShader->getRequiredVertexAttrib() );
+	u32 outVertexCount = 0;
+	VertexBufferGL* vb = m_quadVB->update(outVertexCount);
+	vb->bind( m_curShader->getRequiredVertexAttrib() );
 	m_quadIB->bind();
 
 	glDrawRangeElements(GL_TRIANGLES, 0, 6, 6, (m_quadIB->m_stride==2)?GL_UNSIGNED_SHORT:GL_UNSIGNED_INT, 0);
@@ -241,18 +261,85 @@ void GraphicsDeviceGL_2_0::drawFullscreenQuad(TextureGL* tex)
 
 	//for now lock and fill the vb everytime.
 	//this is obviously a bad idea but will get things started.
-	const QuadVertex vertex[]=
-	{
-		{ -1.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0xffffffff },
-		{  1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0xffffffff },
-		{  1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0xffffffff },
-		{ -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0xffffffff },
-	};
-	m_quadVB->update(sizeof(QuadVertex)*4, (void*)vertex);
+	u32 quadOffset = 0;
+	QuadVertex* vertex = (QuadVertex*)m_quadVB->getWritePointer(4, quadOffset);
+	vertex[0].pos[0] = -1.0f; vertex[0].pos[1] = 1.0f; vertex[0].pos[2] = 0.0f;
+	vertex[0].uv[0] = 0.0f; vertex[0].uv[1] = 0.0f;
+	vertex[0].color = 0xffffffff;
+
+	vertex[1].pos[0] = 1.0f; vertex[1].pos[1] = 1.0f; vertex[1].pos[2] = 0.0f;
+	vertex[1].uv[0] = 1.0f; vertex[1].uv[1] = 0.0f;
+	vertex[1].color = 0xffffffff;
+
+	vertex[2].pos[0] = 1.0f; vertex[2].pos[1] = -1.0f; vertex[2].pos[2] = 0.0f;
+	vertex[2].uv[0] = 1.0f; vertex[2].uv[1] = 1.0f;
+	vertex[2].color = 0xffffffff;
+
+	vertex[3].pos[0] = -1.0f; vertex[3].pos[1] = -1.0f; vertex[3].pos[2] = 0.0f;
+	vertex[3].uv[0] = 0.0f; vertex[3].uv[1] = 1.0f;
+	vertex[3].color = 0xffffffff;
+
+	u32 outVertexCount = 0;
+	VertexBufferGL* vb = m_quadVB->update(outVertexCount);
 	m_curShader->uploadData(this);
 
-	m_quadVB->bind( m_curShader->getRequiredVertexAttrib() );
+	vb->bind( m_curShader->getRequiredVertexAttrib() );
 	m_quadIB->bind();
 
 	glDrawRangeElements(GL_TRIANGLES, 0, 6, 6, (m_quadIB->m_stride==2)?GL_UNSIGNED_SHORT:GL_UNSIGNED_INT, 0);
+}
+
+void GraphicsDeviceGL_2_0::flush()
+{
+	m_streamBuffer = m_quadVB->update( m_streamVertexCount );
+}
+
+u32 GraphicsDeviceGL_2_0::addQuad(const Quad& quad)
+{
+	//scale and display.
+	float posScale[] = {-1.0f, -1.0f, 2.0f, 2.0f};
+	float uvTop[] = { 0, 1 };
+	float uvBot[] = { 1, 0 };
+
+	posScale[0] =  2.0f * float(quad.p0.x) / float(m_windowWidth)  - 1.0f;
+	posScale[1] = -2.0f * float(quad.p0.y) / float(m_windowHeight) + 1.0f;
+
+	posScale[2] =  2.0f * float(quad.p1.x) / float(m_windowWidth)  - 1.0f;
+	posScale[3] = -2.0f * float(quad.p1.y) / float(m_windowHeight) + 1.0f;
+
+	uvTop[0] = quad.uv0.x;
+	uvTop[1] = quad.uv0.y;
+	uvBot[0] = quad.uv1.x;
+	uvBot[1] = quad.uv1.y;
+
+	u32 quadOffset = 0;
+	QuadVertex* vertex = (QuadVertex*)m_quadVB->getWritePointer(4, quadOffset);
+	vertex[0].pos[0] = posScale[0]; vertex[0].pos[1] = posScale[1]; vertex[0].pos[2] = 0.0f;
+	vertex[0].uv[0] = uvTop[0]; vertex[0].uv[1] = uvTop[1];
+	vertex[0].color = quad.color;
+
+	vertex[1].pos[0] = posScale[2]; vertex[1].pos[1] = posScale[1]; vertex[1].pos[2] = 0.0f;
+	vertex[1].uv[0] = uvBot[0]; vertex[1].uv[1] = uvTop[1];
+	vertex[1].color = quad.color;
+
+	vertex[2].pos[0] = posScale[2]; vertex[2].pos[1] = posScale[3]; vertex[2].pos[2] = 0.0f;
+	vertex[2].uv[0] = uvBot[0]; vertex[2].uv[1] = uvBot[1];
+	vertex[2].color = quad.color;
+
+	vertex[3].pos[0] = posScale[0]; vertex[3].pos[1] = posScale[3]; vertex[3].pos[2] = 0.0f;
+	vertex[3].uv[0] = uvTop[0]; vertex[3].uv[1] = uvBot[1];
+	vertex[3].color = quad.color;
+
+	return quadOffset;
+}
+
+void GraphicsDeviceGL_2_0::drawQuadBatch(u32 vertexOffset, u32 count)
+{
+	m_curShader->uploadData(this);
+
+	m_streamBuffer->bind( m_curShader->getRequiredVertexAttrib() );
+	m_quadIB->bind();
+
+	const u32 indexBufferOffset = (vertexOffset>>2)*6*m_quadIB->m_stride;
+	glDrawRangeElements(GL_TRIANGLES, 0, m_streamVertexCount, count*6, (m_quadIB->m_stride==2)?GL_UNSIGNED_SHORT:GL_UNSIGNED_INT, (void*)indexBufferOffset);
 }

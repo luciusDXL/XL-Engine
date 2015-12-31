@@ -3,6 +3,7 @@
 #include "../CommonGL/graphicsDeviceGL.h"
 
 class GraphicsShadersGL_2_0;
+class StreamingVertexBuffer;
 class VertexBufferGL;
 class IndexBufferGL;
 
@@ -24,11 +25,20 @@ class GraphicsDeviceGL_2_0 : public GraphicsDeviceGL
 
 		void drawVirtualScreen();
 		void setVirtualViewport(bool reset, int x, int y, int w, int h);
+
+		//batching
+		void flush();
+		u32 addQuad(const Quad& quad);
+		void drawQuadBatch(u32 vertexOffset, u32 count);
     protected:
 		GraphicsShadersGL_2_0* m_shaders;
-		VertexBufferGL* m_quadVB;
+		StreamingVertexBuffer* m_quadVB;
 		IndexBufferGL*  m_quadIB;
 
 		ShaderGL* m_curShader;
 		u32 m_curShaderID;
+
+		//batching
+		VertexBufferGL* m_streamBuffer;
+		u32 m_streamVertexCount;
 };

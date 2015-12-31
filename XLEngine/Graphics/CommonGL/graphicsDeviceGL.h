@@ -56,6 +56,12 @@ class GraphicsDeviceGL : public GraphicsDevice
 		virtual void drawFullscreenQuad(TextureGL* tex)=0;
 
 		virtual void setVirtualViewport(bool reset, int x, int y, int w, int h)=0;
+
+		//batching (not used by all devices)
+		virtual void flush() {};
+		virtual u32 addQuad(const Quad& quad) { return 0; }
+		virtual void drawQuadBatch(u32 vertexOffset, u32 count) {};
+
     protected:
 		typedef std::vector<TextureGL*> TextureList;
 		typedef std::vector<RenderTargetGL*> RenderTargetList;

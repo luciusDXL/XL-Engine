@@ -282,4 +282,64 @@ namespace TextSystem
 			y += (glyph.advanceY >> 6);
 		}
 	}
+
+	u32 print_genQuads(u32& quadCount, int x, int y, const char* msg, ...)
+	{
+		quadCount = 0;
+		u32 outVertexOffset = 0xffffffff;
+
+		if (s_curFont == NULL) { return 0; }
+
+		//first build up the string.
+		static char outMsg[4096];
+		va_list arg;
+		va_start(arg, msg);
+		int res = vsprintf(outMsg, msg, arg);
+		va_end(arg);
+
+		//set the texture.
+		s_gdev->setShaderResource( s_curFont->texture, s_textureHash );
+
+		//now draw each quad...
+		const char* text = outMsg;
+		for (; *text != 0; text++)
+		{
+			const char c = *text;
+			if (c < 0) { continue; }
+
+			const int m = s_curFont->charMap[c];
+			if (m < 0) { continue; }
+
+			const Glyph& glyph = s_curFont->glyphs[m];
+
+			//setup the quad to draw.
+			Quad quad;
+			quad.p0.x = x + glyph.left;
+			quad.p0.y = y - glyph.top + s_curFont->size;
+			quad.p1.x = quad.p0.x + glyph.width;
+			quad.p1.y = quad.p0.y + glyph.height;
+			quad.uv0.x = glyph.u0;
+			quad.uv0.y = glyph.v0;
+			quad.uv1.x = glyph.u1;
+			quad.uv1.y = glyph.v1;
+			quad.color = s_currentColor;
+
+			u32 offset = s_gdev->addQuad( quad );
+			if (outVertexOffset == 0xffffffff)
+			{
+				outVertexOffset = offset;
+			}
+			quadCount++;
+
+			x += (glyph.advanceX >> 6);
+			y += (glyph.advanceY >> 6);
+		}
+
+		return outVertexOffset;
+	}
+
+	void bindTexture()
+	{
+		s_gdev->setShaderResource( s_curFont->texture, s_textureHash );
+	}
 };

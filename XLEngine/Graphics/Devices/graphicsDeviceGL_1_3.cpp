@@ -31,6 +31,7 @@ void GraphicsDeviceGL_1_3::drawVirtualScreen()
 		m_renderFrame = m_writeFrame;
 	unlockBuffer();
 
+	enableBlending(false);
 	drawFullscreenQuad(m_videoFrameBuffer);
 
 	glViewport( m_fullViewport[0], m_fullViewport[1], m_fullViewport[2], m_fullViewport[3] );

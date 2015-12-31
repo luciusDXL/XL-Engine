@@ -77,6 +77,7 @@ void GraphicsDeviceGL_2_0::drawVirtualScreen()
 	s32 baseTex = m_curShader->getParameter("baseTex");
 	m_curShader->updateParameter(baseTex, m_videoFrameBuffer->getHandle(), 0, true);	//we have to force the update since the texture itself has changed.
 
+	enableBlending(false);
 	drawFullscreenQuad(m_videoFrameBuffer);
 
 	glViewport( m_fullViewport[0], m_fullViewport[1], m_fullViewport[2], m_fullViewport[3] );

@@ -22,3 +22,4 @@ Beta 1  | the initial release, all the games previously stated should be working
 Beta 2  | the OpenGL 3.2 device should be implemented and true 3D hardware rendering support added – basically Daggerfall will surpass previous builds visually in addition to being gameplay complete.
 Beta 3  | the “Unified Sector Theory” release – perspective correct hardware rendering for 2.5D games. At this point Dark Forces should surpass the current build visually in addition to being gameplay complete.
 Beta 4  | will add support for additional platforms – Linux and OS X.
+Beta 5  | the "Multiplayer" release - add multiplayer framework and support for certain games (such as Blood).

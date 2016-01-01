@@ -202,7 +202,7 @@ void GraphicsDeviceGL_2_0::setShaderResource(TextureHandle handle, u32 nameHash,
 	m_curShader->updateParameter(parmID, handle, slot);
 }
 
-void GraphicsDeviceGL_2_0::setShaderParamter(void* data, u32 size, u32 nameHash)
+void GraphicsDeviceGL_2_0::setShaderParameter(void* data, u32 size, u32 nameHash)
 {
 	s32 parmID = m_curShader->getParameter(nameHash);
 	m_curShader->updateParameter(parmID, data, size);

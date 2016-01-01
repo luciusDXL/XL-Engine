@@ -140,7 +140,7 @@ void GraphicsDeviceGL_1_3::setShaderResource(TextureHandle handle, u32 nameHash,
 	setTexture(handle);
 }
 
-void GraphicsDeviceGL_1_3::setShaderParamter(void* data, u32 size, u32 nameHash)
+void GraphicsDeviceGL_1_3::setShaderParameter(void* data, u32 size, u32 nameHash)
 {
 	data;	//do nothing.
 }

@@ -217,7 +217,7 @@ namespace GameLoop
 				f32 w = f32( p==0 ? (settings->windowWidth) : (settings->windowWidth>>1) );
 				f32 data[] = { 1.0f / w, 0.0f };
 				s_gdev->setShaderResource( p==0 ? screen : s_gdev->getRenderTargetTexture(s_blurTargets[1]), baseTex );
-				s_gdev->setShaderParamter(data, sizeof(f32)*2, paramHash);
+				s_gdev->setShaderParameter(data, sizeof(f32)*2, paramHash);
 				s_gdev->drawQuadBatch(p*8, 1);
 			}
 			//vertical
@@ -226,7 +226,7 @@ namespace GameLoop
 				f32 h = f32( settings->windowHeight>>1 );
 				f32 data[] = { 0.0f, -1.0f / h };
 				s_gdev->setShaderResource( s_gdev->getRenderTargetTexture(s_blurTargets[0]), baseTex );
-				s_gdev->setShaderParamter(data, sizeof(f32)*2, paramHash);
+				s_gdev->setShaderParameter(data, sizeof(f32)*2, paramHash);
 				s_gdev->drawQuadBatch(p*8+4, 1);
 			}
 		}
@@ -237,7 +237,7 @@ namespace GameLoop
 		const char* yScaleName = "u_yScale";
 		u32 yScaleHash = CRC32::get( (u8*)yScaleName, strlen(yScaleName) );
 		f32 yScale = f32( settings->windowHeight ) * 0.5f;
-		s_gdev->setShaderParamter(&yScale, sizeof(f32), yScaleHash);
+		s_gdev->setShaderParameter(&yScale, sizeof(f32), yScaleHash);
 
 		const char* glowTexName = "glowTex";
 		s_gdev->setShaderResource( screen, baseTex, 0 );

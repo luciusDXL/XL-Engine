@@ -181,24 +181,34 @@ namespace GameLoop
 		s_gdev->unbindRenderTarget();
 		TextureHandle screen = s_gdev->getRenderTargetTexture( s_screenRenderTarget );
 
-		DrawRectBuf rect=
+		Quad rect=
 		{
-			screen,
+			{ 0, 0 },
+			{ settings->windowWidth, settings->windowHeight },
+			{ 0.0f, 1.0f },
+			{ 1.0f, 0.0f },
 			0xffffffff,
-			0,
-			//pos
-			0, 0,
-			settings->windowWidth, settings->windowHeight,
-			//uvs
-			0.0f, 0.0f,
-			1.0f, 1.0f
 		};
 
 		s_gdev->setShader( SHADER_BLUR );
 		const char* paramName = "u_uvStep";
 		u32 paramHash = CRC32::get( (u8*)paramName, strlen(paramName) );
 
+		const char* baseTexName = "baseTex";
+		u32 baseTex = CRC32::get( (u8*)baseTexName, strlen(baseTexName) );
+
+		//fill vertex buffer.
 		const u32 blurPassCount = 4;
+		for (u32 p=0; p<blurPassCount; p++)
+		{
+			//horizontal + vertical
+			s_gdev->addQuad(rect);
+			s_gdev->addQuad(rect);
+		}
+		//final blit
+		s_gdev->addQuad(rect);
+		s_gdev->flush();
+
 		for (u32 p=0; p<blurPassCount; p++)
 		{
 			//horizontal
@@ -206,20 +216,18 @@ namespace GameLoop
 			{
 				f32 w = f32( p==0 ? (settings->windowWidth) : (settings->windowWidth>>1) );
 				f32 data[] = { 1.0f / w, 0.0f };
+				s_gdev->setShaderResource( p==0 ? screen : s_gdev->getRenderTargetTexture(s_blurTargets[1]), baseTex );
 				s_gdev->setShaderParamter(data, sizeof(f32)*2, paramHash);
-				rect.texture = p == 0 ? screen : s_gdev->getRenderTargetTexture(s_blurTargets[1]);
-				rect.w = settings->windowWidth; rect.h = settings->windowHeight;
-				Draw2D::drawImmediate(rect);
+				s_gdev->drawQuadBatch(p*8, 1);
 			}
 			//vertical
 			s_gdev->bindRenderTarget( s_blurTargets[1] );
 			{
 				f32 h = f32( settings->windowHeight>>1 );
 				f32 data[] = { 0.0f, -1.0f / h };
+				s_gdev->setShaderResource( s_gdev->getRenderTargetTexture(s_blurTargets[0]), baseTex );
 				s_gdev->setShaderParamter(data, sizeof(f32)*2, paramHash);
-				rect.texture = s_gdev->getRenderTargetTexture(s_blurTargets[0]);
-				rect.w = settings->windowWidth; rect.h = settings->windowHeight;
-				Draw2D::drawImmediate(rect);
+				s_gdev->drawQuadBatch(p*8+4, 1);
 			}
 		}
 		s_gdev->unbindRenderTarget();
@@ -232,10 +240,9 @@ namespace GameLoop
 		s_gdev->setShaderParamter(&yScale, sizeof(f32), yScaleHash);
 
 		const char* glowTexName = "glowTex";
+		s_gdev->setShaderResource( screen, baseTex, 0 );
 		s_gdev->setShaderResource( s_gdev->getRenderTargetTexture(s_blurTargets[1]), CRC32::get((u8*)glowTexName, strlen(glowTexName)), 1 );
-		rect.texture = screen;
-		rect.w = settings->windowWidth; rect.h = settings->windowHeight;
-		Draw2D::drawImmediate(rect);
+		s_gdev->drawQuadBatch(blurPassCount*8, 1);
 	}
 
 	void update()

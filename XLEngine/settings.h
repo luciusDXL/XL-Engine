@@ -7,15 +7,17 @@ enum XLSettingsFlags
 {
 	XL_FLAG_NONE           = 0,
 	XL_FLAG_FULLSCREEN     = (1<<0),	//full screen
-	XL_FLAG_IMMEDIATE_EXIT = (1<<1),	//exit the application when a game is exited.
-	XL_FLAG_SHOW_ALL_GAMES = (1<<2),	//show all games even if they can't be run on the users system.
-	XL_FLAG_UI_GLOW		   = (1<<3),	//enable the UI glow effect (visual only).
+	XL_FLAG_VSYNC		   = (1<<1),	//vsync
+	XL_FLAG_IMMEDIATE_EXIT = (1<<2),	//exit the application when a game is exited.
+	XL_FLAG_SHOW_ALL_GAMES = (1<<3),	//show all games even if they can't be run on the users system.
+	XL_FLAG_UI_GLOW		   = (1<<4),	//enable the UI glow effect (visual only).
 };
 
 struct XLSettings
 {
 	u32 flags;
 	s32 launchGameID;	//Game to launch on XL Engine startup (-1 to show the UI where the user can select a game)
+	s32 frameLimit;		//Framerate limit (for the main thread)
 
 	s32 windowScale;	//Window 4:3 scale, resolution = 320x240 x windowScale (not used when in fullscreen)
 	s32 gameScale;		//Game scale, resolution = 320x200 x gameScale for 16:10 in 4:3 or 320x240 x gameScale for 4:3

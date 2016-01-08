@@ -36,7 +36,7 @@ class GraphicsDevice
 		virtual void setBlendMode(BlendMode mode)=0;
 		virtual void enableBlending(bool enable)=0;
 		virtual void enableTexturing(bool enable)=0;
-
+		
 		virtual TextureHandle createTextureRGBA(u32 width, u32 height, const u32* data, const SamplerState& initSamplerStat, bool dynamic=false)=0;
 		virtual RenderTargetHandle createRenderTarget(u32 width, u32 height, const SamplerState& initSamplerState)=0;
 		virtual void destroyTexture(TextureHandle texHandle)=0;
@@ -62,6 +62,8 @@ class GraphicsDevice
 		bool supportsFeature(CapabilityFlags feature) const { return (m_caps.flags&feature)!=0; }
 		u32  getMaximumTextureSize() const { return m_caps.maxTextureSize2D; }
 		GraphicsDeviceID getDeviceID() const { return m_deviceID; }
+
+		void enableVsync(bool enable) { m_platform->enableVSync(enable); }
 
 		static GraphicsDevice* createDevice(GraphicsDeviceID deviceID, GraphicsDevicePlatform* platform);
 		static void destroyDevice(GraphicsDevice* device);

@@ -20,4 +20,5 @@ class GraphicsDeviceGL_Win32 : public GraphicsDevicePlatform
 	private:
 		bool m_exclusiveFullscreen;
 		bool m_initialized;
+		bool m_adaptiveVsync;
 };

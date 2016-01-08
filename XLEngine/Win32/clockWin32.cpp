@@ -52,11 +52,24 @@ u64 Clock::getDeltaTime_uS(int timerID/*=0*/)
 	return (u64)( (f64)(End - s_startTick[timerID]) / quadPart_uS );
 }
 
+f64 Clock::getDeltaTime_f64(int timerID/*=0*/)
+{
+	u64 End = getCurTickCnt();
+	return f64(End - s_startTick[timerID]) / (f64)(s_timerFreq.QuadPart);
+}
+
 u64 Clock::getTime_uS()
 {
 	u64 value = getCurTickCnt();
 	f64 quadPart_uS = (f64)(s_timerFreq.QuadPart) / SEC_TO_uS;
 	return (u64)( (f64)value / quadPart_uS );
+}
+
+f64 Clock::getTime_uS_flt()
+{
+	u64 value = getCurTickCnt();
+	f64 quadPart_uS = (f64)(s_timerFreq.QuadPart) / SEC_TO_uS;
+	return (f64)value / quadPart_uS;
 }
 
 u64 getCurTickCnt()

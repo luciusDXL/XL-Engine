@@ -25,6 +25,7 @@ namespace Settings
 	{
 		XL_FLAG_SHOW_ALL_GAMES | XL_FLAG_UI_GLOW,
 		-1,
+		120,	//0 = no cap, default is 120Hz
 		4,
 		4,
 		320*4,
@@ -212,6 +213,17 @@ namespace Settings
 				s_settings.flags &= ~XL_FLAG_UI_GLOW;
 			}
 		}
+		else if (stricmp(key, "vsync") == 0)
+		{
+			if (readBool(value))
+			{
+				s_settings.flags |= XL_FLAG_VSYNC;
+			}
+			else
+			{
+				s_settings.flags &= ~XL_FLAG_VSYNC;
+			}
+		}
 		else if (stricmp(key, "launchGame") == 0)
 		{
 			s_settings.launchGameID = -1;
@@ -223,6 +235,11 @@ namespace Settings
 					break;
 				}
 			}
+		}
+		else if (stricmp(key, "frameLimit") == 0)
+		{
+			char* endPtr = NULL;
+			s_settings.frameLimit = strtol(value, &endPtr, 10);
 		}
 		else if (stricmp(key, "graphicsDevice") == 0)
 		{
@@ -469,12 +486,14 @@ namespace Settings
 		iniWriter::write("immediateExit", bool( (s_settings.flags&XL_FLAG_IMMEDIATE_EXIT)!=0 ));
 		iniWriter::write("showAllGames",  bool( (s_settings.flags&XL_FLAG_SHOW_ALL_GAMES)!=0 ));
 		iniWriter::write("uiGlow",		  bool( (s_settings.flags&XL_FLAG_UI_GLOW)!=0 ));
+		iniWriter::write("vsync",		  bool( (s_settings.flags&XL_FLAG_VSYNC)!=0 ));
 		iniWriter::newLine();
 
 		iniWriter::comment("Video");
 		iniWriter::write("windowScale", s_settings.windowScale);
 		iniWriter::write("gameScale",   s_settings.gameScale);
 		iniWriter::write("graphicsDevice", s_graphicsDeviceID == GDEV_INVALID ? "autodetect" : c_graphicsDeviceName[s_graphicsDeviceID]);
+		iniWriter::write("frameLimit", s_settings.frameLimit);
 		iniWriter::newLine();
 
 		iniWriter::comment("Engine Settings");

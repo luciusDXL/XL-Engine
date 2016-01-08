@@ -133,6 +133,12 @@ void GraphicsDeviceGL_Win32::setWindowData(int nParam, void **param, GraphicsDev
 		wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
 	}
 
+	m_adaptiveVsync = false;
+	if ( wglExtensionSupported("EXT_swap_control_tear") )
+	{
+		m_adaptiveVsync = true;
+	}
+
 	//Only setup the gamma ramp in fullscreen.
 	if ( m_exclusiveFullscreen )
 	{
@@ -230,6 +236,7 @@ void GraphicsDeviceGL_Win32::enableVSync(bool enable)
 {
 	if (wglSwapIntervalEXT)
 	{
-		wglSwapIntervalEXT( enable ? 1 : 0 );
+		s32 enableValue = m_adaptiveVsync ? -1 : 1;
+		wglSwapIntervalEXT( enable ? enableValue : 0 );
 	}
 }

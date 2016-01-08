@@ -4,6 +4,7 @@
 #include "main.h"
 #include "../../stdafx.h"
 #include "../../XLEngine/input.h"
+#include "../../XLEngine/clock.h"
 #include "../../XLEngine/services.h"
 #include "../../XLEngine/settings.h"
 #include "../../XLEngine/gameLoop.h"
@@ -65,6 +66,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	}
 
 	// main message loop:
+	Clock::startTimer();
 	while (true)
 	{
 		if ( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) )

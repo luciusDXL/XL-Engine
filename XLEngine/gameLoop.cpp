@@ -6,8 +6,10 @@
 #include "input.h"
 #include "Sound/sound.h"
 #include "Math/crc32.h"
+#include "Math/math.h"
 #include "PluginFramework/PluginManager.h"
 #include "clock.h"
+#include "osUtil.h"
 #include "log.h"
 
 #ifdef _WIN32
@@ -26,6 +28,10 @@ namespace GameLoop
 	static RenderTargetHandle s_screenRenderTarget = INVALID_TEXTURE_HANDLE;
 	static RenderTargetHandle s_blurTargets[6];
 	static bool s_applyUIGlow = false;
+
+	static f64 s_desiredFrameLimit = 0.0;
+	static f64 s_avePresentTime    = 1.0;		//1.0ms
+	static f64 s_presentAdapt      = 0.1;		//how fast the present time adjusts
 	
 #ifdef _WIN32
 	static HANDLE s_hGameThread;
@@ -73,6 +79,13 @@ namespace GameLoop
 			return false;
 		}
 
+		s_gdev->enableVsync( (settings->flags&XL_FLAG_VSYNC)!=0 );
+		//do not apply the framerate limiter and vsync at the same time.
+		if (settings->flags&XL_FLAG_VSYNC)
+		{
+			settings->frameLimit = 0;
+		}
+
 		GameUI::init(startGame, stopGame);
 		s_launchGameID = Settings::get()->launchGameID;
 
@@ -86,6 +99,7 @@ namespace GameLoop
 		PluginManager::init();
 		s_gdev->setVirtualViewport(false, 100, settings->windowHeight-250, 320, 200);
 
+		s_desiredFrameLimit = settings->frameLimit ? 1.0 / f64(settings->frameLimit) : 0.0;
 		return true;
 	}
 	
@@ -236,8 +250,11 @@ namespace GameLoop
 
 		const char* yScaleName = "u_yScale";
 		u32 yScaleHash = CRC32::get( (u8*)yScaleName, strlen(yScaleName) );
-		f32 yScale = f32( settings->windowHeight ) * 0.5f;
-		s_gdev->setShaderParameter(&yScale, sizeof(f32), yScaleHash);
+		f32 timeFract = f32( 45.0 * (f64)Clock::getTime_uS_flt() * Math::twoPI / 1000000.0 );
+		timeFract = sinf(timeFract)*0.1f + 0.9f;
+
+		f32 yScale[] = { f32( settings->windowHeight ) * 0.5f, timeFract };
+		s_gdev->setShaderParameter(yScale, sizeof(f32)*2, yScaleHash);
 
 		const char* glowTexName = "glowTex";
 		s_gdev->setShaderResource( screen, baseTex, 0 );
@@ -248,7 +265,7 @@ namespace GameLoop
 	void update()
 	{
 		XLSettings* settings = Settings::get();
-
+		
 		//launch a game immediately?
 		if (s_launchGameID >= 0)
 		{
@@ -274,9 +291,28 @@ namespace GameLoop
 			}
 			Draw2D::draw();
 		applyUIglow(settings);
-		s_gdev->present();
 
+		//Wait until the elapsed frame time + estimated 'present' time = desired frame time.
+		if (s_desiredFrameLimit)
+		{
+			f64 accum = Clock::getDeltaTime_f64();
+			f64 presentTime = s_avePresentTime;
+			while (accum < s_desiredFrameLimit - presentTime)
+			{
+				OS::sleep(0);	//give the system time to work.
+				accum = Clock::getDeltaTime_f64();
+			};
+		}
+		
+		Clock::startTimer();
+		s_gdev->present();
 		Input::finish();
+
+		f64 presentDt = Clock::getDeltaTime_f64();
+		s_avePresentTime = s_avePresentTime*(1.0 - s_presentAdapt) + presentDt*s_presentAdapt;
+
+		//start the next frame timing...
+		Clock::startTimer();
 	}
 
 	void exitGame()

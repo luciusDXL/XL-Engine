@@ -63,6 +63,12 @@ void GraphicsDeviceGL_Win32::present()
 	HDC hdc = GetDC(m_hWnd);
     SwapBuffers( hdc );
 	ReleaseDC( m_hWnd, hdc );
+
+	//avoid buffering frames when vsync is enabled otherwise the input "lag" will be increased.
+	if (m_vsyncEnabled)
+	{
+		glFinish();
+	}
 }
 
 void GraphicsDeviceGL_Win32::setWindowData(int nParam, void **param, GraphicsDeviceID deviceID, bool exclFullscreen/*=false*/)
@@ -239,4 +245,6 @@ void GraphicsDeviceGL_Win32::enableVSync(bool enable)
 		s32 enableValue = m_adaptiveVsync ? -1 : 1;
 		wglSwapIntervalEXT( enable ? enableValue : 0 );
 	}
+
+	m_vsyncEnabled = enable;
 }

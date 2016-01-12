@@ -11,6 +11,7 @@ enum XLSettingsFlags
 	XL_FLAG_IMMEDIATE_EXIT = (1<<2),	//exit the application when a game is exited.
 	XL_FLAG_SHOW_ALL_GAMES = (1<<3),	//show all games even if they can't be run on the users system.
 	XL_FLAG_UI_GLOW		   = (1<<4),	//enable the UI glow effect (visual only).
+	XL_FLAG_COLOR_CORRECT  = (1<<5),	//enable color correction for the game view (slightly slower).
 };
 
 struct XLSettings
@@ -27,6 +28,8 @@ struct XLSettings
 
 	s32 gameWidth;		//Final virtual game width  after taking into account game scale
 	s32 gameHeight;		//Final virtual game height after taking into account game scale
+
+	f32 colorCorrect[4];//Color correction values: brightness, saturation, contrast, gamma
 };
 
 namespace Settings

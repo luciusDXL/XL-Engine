@@ -151,12 +151,12 @@ void GraphicsDeviceGL_Win32::setWindowData(int nParam, void **param, GraphicsDev
 		//get the current gamma ramp so it can be restored on exit.
 		GetDeviceGammaRamp(m_hDC, m_GammaRamp_Default);
 
-		float fBrightness=1.0f, fContrast=1.0f, fGamma=1.0f;
+		f32 fBrightness=1.0f, fContrast=1.0f, fGamma=1.0f;
 
 		//apply brightness, contrast and gamma.
-		float fIntensity = 0.0f;
-		float fValue;
-		const float fInc = 1.0f / 255.0f;
+		f32 fIntensity = 0.0f;
+		f32 fValue;
+		const f32 fInc = 1.0f / 255.0f;
 		for (int i=0; i<256; i++)
 		{
 			//apply contrast
@@ -191,7 +191,7 @@ bool GraphicsDeviceGL_Win32::init()
 	const GLubyte* glExtensions = glGetString(GL_EXTENSIONS);
 
 	//initialize GLEW for extension loading.
-	GLenum err = glewInit();
+	const GLenum err = glewInit();
 	if (err != GLEW_OK)
 	{
 		LOG( LOG_ERROR, "GLEW failed to initialize, an OpenGL device cannot be created." );
@@ -242,7 +242,7 @@ void GraphicsDeviceGL_Win32::enableVSync(bool enable)
 {
 	if (wglSwapIntervalEXT)
 	{
-		s32 enableValue = m_adaptiveVsync ? -1 : 1;
+		const s32 enableValue = m_adaptiveVsync ? -1 : 1;
 		wglSwapIntervalEXT( enable ? enableValue : 0 );
 	}
 

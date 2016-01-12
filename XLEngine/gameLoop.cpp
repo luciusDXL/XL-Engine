@@ -286,7 +286,19 @@ namespace GameLoop
 			GameUI::update(s_gdev, settings->windowWidth, settings->windowHeight, s_gameRunning);
 			if (s_gameRunning >= 0)
 			{
-				s_gdev->setShader( SHADER_QUAD_UI );
+				if (settings->flags & XL_FLAG_COLOR_CORRECT)
+				{
+					s_gdev->setShader( SHADER_QUAD_COLOR_CORRECT );
+
+					const char* paramName = "u_colorCorrect";
+					u32 paramHash = CRC32::get( (u8*)paramName, strlen(paramName) );
+					s_gdev->setShaderParameter(settings->colorCorrect, sizeof(f32)*4, paramHash);
+				}
+				else
+				{
+					s_gdev->setShader( SHADER_QUAD_UI );
+				}
+
 				s_gdev->drawVirtualScreen();
 			}
 			Draw2D::draw();

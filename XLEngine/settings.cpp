@@ -31,7 +31,9 @@ namespace Settings
 		320*4,
 		240*4,
 		320*4,
-		200*4
+		200*4,
+		////Color correction values: brightness, saturation, contrast, gamma
+		{ 1.0f, 1.0f, 1.0f, 1.0f }
 	};
 	
 	static s32 s_gameCount  = 0;
@@ -213,6 +215,17 @@ namespace Settings
 				s_settings.flags &= ~XL_FLAG_UI_GLOW;
 			}
 		}
+		else if (stricmp(key, "colorCorrect") == 0)
+		{
+			if (readBool(value))
+			{
+				s_settings.flags |= XL_FLAG_COLOR_CORRECT;
+			}
+			else
+			{
+				s_settings.flags &= ~XL_FLAG_COLOR_CORRECT;
+			}
+		}
 		else if (stricmp(key, "vsync") == 0)
 		{
 			if (readBool(value))
@@ -240,6 +253,26 @@ namespace Settings
 		{
 			char* endPtr = NULL;
 			s_settings.frameLimit = strtol(value, &endPtr, 10);
+		}
+		else if (stricmp(key, "brightness") == 0)
+		{
+			char* endPtr = NULL;
+			s_settings.colorCorrect[0] = (f32)strtod(value, &endPtr) * 0.01f;	//convert from percent to float
+		}
+		else if (stricmp(key, "saturation") == 0)
+		{
+			char* endPtr = NULL;
+			s_settings.colorCorrect[1] = (f32)strtod(value, &endPtr) * 0.01f;	//convert from percent to float
+		}
+		else if (stricmp(key, "contrast") == 0)
+		{
+			char* endPtr = NULL;
+			s_settings.colorCorrect[2] = (f32)strtod(value, &endPtr) * 0.01f;	//convert from percent to float
+		}
+		else if (stricmp(key, "gamma") == 0)
+		{
+			char* endPtr = NULL;
+			s_settings.colorCorrect[3] = (f32)strtod(value, &endPtr) * 0.01f;	//convert from percent to float
 		}
 		else if (stricmp(key, "graphicsDevice") == 0)
 		{
@@ -486,6 +519,7 @@ namespace Settings
 		iniWriter::write("immediateExit", bool( (s_settings.flags&XL_FLAG_IMMEDIATE_EXIT)!=0 ));
 		iniWriter::write("showAllGames",  bool( (s_settings.flags&XL_FLAG_SHOW_ALL_GAMES)!=0 ));
 		iniWriter::write("uiGlow",		  bool( (s_settings.flags&XL_FLAG_UI_GLOW)!=0 ));
+		iniWriter::write("colorCorrect",  bool( (s_settings.flags&XL_FLAG_COLOR_CORRECT)!=0 ));
 		iniWriter::write("vsync",		  bool( (s_settings.flags&XL_FLAG_VSYNC)!=0 ));
 		iniWriter::newLine();
 
@@ -494,6 +528,10 @@ namespace Settings
 		iniWriter::write("gameScale",   s_settings.gameScale);
 		iniWriter::write("graphicsDevice", s_graphicsDeviceID == GDEV_INVALID ? "autodetect" : c_graphicsDeviceName[s_graphicsDeviceID]);
 		iniWriter::write("frameLimit", s_settings.frameLimit);
+		iniWriter::write("brightness", s_settings.colorCorrect[0] * 100.0f);
+		iniWriter::write("saturation", s_settings.colorCorrect[1] * 100.0f);
+		iniWriter::write("contrast",   s_settings.colorCorrect[2] * 100.0f);
+		iniWriter::write("gamma",	   s_settings.colorCorrect[3] * 100.0f);
 		iniWriter::newLine();
 
 		iniWriter::comment("Engine Settings");

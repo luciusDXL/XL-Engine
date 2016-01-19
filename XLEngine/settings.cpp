@@ -32,8 +32,11 @@ namespace Settings
 		240*4,
 		320*4,
 		200*4,
-		////Color correction values: brightness, saturation, contrast, gamma
-		{ 1.0f, 1.0f, 1.0f, 1.0f }
+		//Color correction values: brightness, saturation, contrast, gamma
+		{ 1.0f, 1.0f, 1.0f, 1.0f },
+		//Sound
+		MFMT_GUS_PATCH,
+		"Sound/freepats/freepats.cfg"
 	};
 	
 	static s32 s_gameCount  = 0;
@@ -273,6 +276,21 @@ namespace Settings
 		{
 			char* endPtr = NULL;
 			s_settings.colorCorrect[3] = (f32)strtod(value, &endPtr) * 0.01f;	//convert from percent to float
+		}
+		else if (stricmp(key, "midiformat") == 0)
+		{
+			if (stricmp(value, "gus") == 0 || stricmp(value, "gravis") == 0)
+			{
+				s_settings.midiformat = MFMT_GUS_PATCH;
+			}
+			else if (stricmp(value, "sf2") == 0)
+			{
+				s_settings.midiformat = MFMT_SOUND_FONT;
+			}
+		}
+		else if (stricmp(key, "patchloc") == 0)
+		{
+			strcpy(s_settings.patchDataLoc, value);
 		}
 		else if (stricmp(key, "graphicsDevice") == 0)
 		{
@@ -532,6 +550,12 @@ namespace Settings
 		iniWriter::write("saturation", s_settings.colorCorrect[1] * 100.0f);
 		iniWriter::write("contrast",   s_settings.colorCorrect[2] * 100.0f);
 		iniWriter::write("gamma",	   s_settings.colorCorrect[3] * 100.0f);
+		iniWriter::newLine();
+
+		const char* midiformatNames[] = { "gus", "sf2" };
+		iniWriter::comment("Sound");
+		iniWriter::write("midiformat", midiformatNames[ s_settings.midiformat ]);
+		iniWriter::write("patchloc", s_settings.patchDataLoc);
 		iniWriter::newLine();
 
 		iniWriter::comment("Engine Settings");

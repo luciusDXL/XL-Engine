@@ -5,6 +5,7 @@
 #include "gameUI.h"
 #include "input.h"
 #include "Sound/sound.h"
+#include "Sound/midi.h"
 #include "Math/crc32.h"
 #include "Math/math.h"
 #include "PluginFramework/PluginManager.h"
@@ -45,7 +46,7 @@ namespace GameLoop
 	bool init(void* win_param[], GraphicsDeviceID deviceID)
 	{
 		XLSettings* settings = Settings::get();
-		Log::open("Logs/log.txt");
+		
 		Clock::init();
 		Input::init(win_param[0]);
 
@@ -94,7 +95,8 @@ namespace GameLoop
 		Draw2D::init(s_gdev);
 		UISystem::init(s_gdev, settings->windowWidth, settings->windowHeight);
 		Settings::initGameData();
-		Sound::Init();
+		Sound::init();
+		Midi::init( settings->midiformat, settings->patchDataLoc );
 		
 		PluginManager::init();
 		s_gdev->setVirtualViewport(false, 100, settings->windowHeight-250, 320, 200);
@@ -111,10 +113,10 @@ namespace GameLoop
 		Clock::destroy();
 		MemoryPool::destroy();
 		PluginManager::destroy();
-		Sound::Free();
-		Log::close();
-		
+		Sound::free();
+		Midi::free();
 		GraphicsDevice::destroyDevice(s_gdev);
+		Log::close();
 	}
 
 	bool startGame(s32 gameID)
@@ -265,6 +267,7 @@ namespace GameLoop
 	void update()
 	{
 		XLSettings* settings = Settings::get();
+		Sound::update();
 		
 		//launch a game immediately?
 		if (s_launchGameID >= 0)
@@ -293,6 +296,11 @@ namespace GameLoop
 					const char* paramName = "u_colorCorrect";
 					u32 paramHash = CRC32::get( (u8*)paramName, strlen(paramName) );
 					s_gdev->setShaderParameter(settings->colorCorrect, sizeof(f32)*4, paramHash);
+
+					const char* viewSize = "u_viewSize";
+					f32 view[] = { (f32)settings->windowWidth, (f32)settings->windowHeight };
+					paramHash = CRC32::get( (u8*)viewSize, strlen(viewSize) );
+					s_gdev->setShaderParameter(view, sizeof(f32)*2, paramHash);
 				}
 				else
 				{
@@ -341,7 +349,7 @@ namespace GameLoop
 		GameUI::enableCursor(true);
 		GameUI::setShowUI(true, s_gdev);
 
-		Sound::UnloadSounds();
+		Sound::reset();
 	}
 	
 #ifdef _WIN32

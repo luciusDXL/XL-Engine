@@ -287,11 +287,14 @@ namespace Services
 
 		s_services.getGameInfo   = getGameInfo;
 
-		s_services.playVocOneShot = Sound::PlayVoc_OneShot;
-		s_services.playVocLooping = Sound::playVoc_Looping;
-		s_services.soundIsPlaying = Sound::soundIsPlaying;
-		s_services.soundSetPan    = Sound::setPan;
-		s_services.stopSound      = Sound::stopSound;
+		s_services.soundSetCallback = Sound::setCallback;
+		s_services.soundPlay2D		= Sound::playSound2D;
+		s_services.soundIsPlaying	= Sound::isPlaying;
+		s_services.soundSetPan		= Sound::setPan;
+		s_services.soundSetVolume	= Sound::setVolume;
+		s_services.stopSound		= Sound::stopSound;
+		s_services.stopAllSounds	= Sound::stopAllSounds;
+		s_services.soundsPlaying	= Sound::soundsPlaying;
 	}
 
 	void reset()

@@ -12,6 +12,10 @@
 #include "../../XLEngine/log.h"
 #include <stdio.h>
 
+#if XL_CHECK_MEMORY
+#include <crtdbg.h>
+#endif
+
 #define MAX_LOADSTRING 100
 
 // Global Variables:
@@ -28,12 +32,19 @@ int win32MapShiftAndControl( int vkey );
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPTSTR lpCmdLine, _In_ int nCmdShow)
 {
+	#if XL_CHECK_MEMORY
+		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF );
+	#endif
+
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
  	// TODO: Place code here.
 	MSG msg;
 	HACCEL hAccelTable;
+
+	Log::open("Logs/log.txt");
+	LOG( LOG_MESSAGE, "Log opened." );
 
 	//read the settings from disk or apply the defaults and generate a new settings file.
 	int monitorWidth  = GetSystemMetrics(SM_CXSCREEN);
@@ -43,6 +54,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	//get the engine version for display
 	XLSettings* settings = Settings::get();
 	sprintf(s_title, "XL Engine %s", Settings::getVersion());
+	LOG( LOG_MESSAGE, s_title );
 
 	LoadString(hInstance, IDC_XLENGINE, s_windowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);

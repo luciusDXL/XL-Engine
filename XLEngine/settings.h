@@ -1,6 +1,7 @@
 #pragma once
 #include "types.h"
 #include "xlServices.h"
+#include "Sound/midi.h"
 #include "Graphics/graphicsDeviceList.h"
 
 enum XLSettingsFlags
@@ -30,6 +31,10 @@ struct XLSettings
 	s32 gameHeight;		//Final virtual game height after taking into account game scale
 
 	f32 colorCorrect[4];//Color correction values: brightness, saturation, contrast, gamma
+
+	//Sound
+	MidiFormat midiformat;
+	char patchDataLoc[256];
 };
 
 namespace Settings

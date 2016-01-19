@@ -17,6 +17,15 @@ extern "C" {
 #define XL_FILE_ORIGIN_END		1
 #define XL_FILE_ORIGIN_CURRENT	2
 
+typedef int Bool;
+
+enum XLSoundType
+{
+	STYPE_RAW = 0,
+	STYPE_VOC,
+	STYPE_COUNT
+};
+
 typedef struct ActionMapping
 {
 	char action[256];
@@ -36,6 +45,18 @@ typedef struct GameInfo
 	int actionCount;
 	ActionMapping actionMapping[MAX_ACTION_COUNT];
 } GameInfo;
+
+typedef struct SoundInfo
+{
+	unsigned int samplingRate;	//11025, ...
+	unsigned int bitRate;		//8 or 16
+	unsigned int userValue;		//used for optional callbacks
+	float volume;				//volume, range: [0, 1]
+	float pan;					//stereo pan, range: [-1, 1]
+	Bool stereo;				//true for stereo, else mono
+} SoundInfo;
+
+typedef void  (*XLSoundCallback)(unsigned int);
 
 typedef void  (*XLSetPalette)(unsigned char*, int);
 typedef void  (*XLGetPalette)(unsigned char*);
@@ -59,11 +80,13 @@ typedef void  (*XLGetMouseButtons)(int*);
 typedef const char*     (*XLBuildGamePath)(const char*);
 typedef const GameInfo* (*XLGetGameInfo)(void);
 
-typedef int  (*XLPlayVoc_OneShot)(unsigned char*, unsigned int);
-typedef int  (*XLPlayVoc_Looping)(unsigned char*, unsigned int);
-typedef int  (*XLSoundIsPlaying)(int);
-typedef void (*XLSoundSetPan)(int, unsigned int, unsigned int, unsigned int);
-typedef void (*XLStopSound)(int);
+typedef void (*XLSoundSetCallback)(XLSoundCallback);
+typedef unsigned int (*XLSoundPlay2D)(const char*, const void*, unsigned int, unsigned int, SoundInfo*, Bool);
+typedef int  (*XLSoundIsPlaying)(unsigned int);
+typedef void (*XLSoundSetPan)(unsigned int, float);
+typedef void (*XLStopSound)(unsigned int);
+typedef void (*XLStopAllSounds)(void);
+typedef int  (*XLSoundsPlaying)(void);
 
 typedef int    (*XLFileOpen)(const char*, int);
 typedef void   (*XLFileClose)(int);
@@ -116,11 +139,14 @@ typedef struct
 	XLGetGameInfo getGameInfo;
 
 	//sound
-	XLPlayVoc_OneShot playVocOneShot;
-	XLPlayVoc_Looping playVocLooping;
-	XLSoundIsPlaying  soundIsPlaying;
-	XLSoundSetPan     soundSetPan;
-	XLStopSound       stopSound;
+	XLSoundSetCallback  soundSetCallback;
+	XLSoundPlay2D		soundPlay2D;
+	XLSoundIsPlaying	soundIsPlaying;
+	XLSoundSetPan		soundSetVolume;
+	XLSoundSetPan		soundSetPan;
+	XLStopSound			stopSound;
+	XLStopAllSounds		stopAllSounds;
+	XLSoundsPlaying		soundsPlaying;
 } XLEngineServices;
 
 #ifdef __cplusplus

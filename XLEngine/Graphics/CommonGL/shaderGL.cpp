@@ -86,6 +86,7 @@ bool ShaderGL::load(const char* vsShader, const char* psShader)
 		s32 usedCount = 0;
 
 		glGetProgramiv( m_glShaderID, GL_ACTIVE_UNIFORMS, &paramCount );
+		assert(paramCount <= 64);
 		for (s32 p=0; p<paramCount; p++)
 		{
 			glGetActiveUniform( m_glShaderID, p, 256, &nameLen, &bufferSize, &paramType, paramName );
@@ -114,7 +115,7 @@ bool ShaderGL::load(const char* vsShader, const char* psShader)
 			m_param[p].type = param[p].type;
 			m_param[p].size = param[p].size;
 
-			m_param[p].data = malloc( bufferSize );
+			m_param[p].data = malloc( param[p].size );
 			memset(m_param[p].data, 0, m_param[p].size);
 
 			m_paramMap[ m_param[p].nameHash ] = p;

@@ -2,6 +2,7 @@
 #include "../imageLoader.h"
 #include "../input.h"
 #include "../Math/math.h"
+#include "../Sound/sound.h"
 #include "uiSystem.h"
 #include "draw2D.h"
 #include <vector>
@@ -44,15 +45,28 @@ namespace UISystem
 	int s_currentLayer = 0;
 	char s_iconPath[512] = "UI/icons/";
 
+	SoundInfo s_soundInfo=
+	{
+		11025,
+		16,
+		0,
+		2.0f,
+		0.0f,
+		false
+	};
+
 	//imGUI
 	static bool s_enabled = false;
 
 	static s32  s_hotItem;
+	static s32  s_prevHotItem = -1;
 	static s32  s_activeItem;
 	static s32  s_kdbItem;
 	static s32  s_lastWidget = 0;
 	static u32  s_colorMask = 0xffffffff;
 	static bool s_clearState;
+
+	static UI_Sound* s_mouseOverSound = NULL;
 
 	int createIcon(IconID id, int size);
 	void setColorMask(u32 mask=0xffffffff);
@@ -128,6 +142,11 @@ namespace UISystem
 	void setCurrentLayer(int layer)
 	{
 		s_currentLayer = layer;
+	}
+
+	void setMouseOverSound(UI_Sound* sound)
+	{
+		s_mouseOverSound = sound;
 	}
 
 	FontHandle getFont(int size)
@@ -222,6 +241,7 @@ namespace UISystem
 		{
 			s_activeItem = false;
 		}
+		s_prevHotItem = s_hotItem;
 	}
 
 	//Clears the state when a new gui layout should be drawn
@@ -708,6 +728,11 @@ namespace UISystem
 		{
 			s_kdbItem = id;
 			s_lastWidget = id;
+		}
+
+		if (s_prevHotItem != s_hotItem && s_hotItem == id)
+		{
+			Sound::playOneShot2D(s_mouseOverSound->filename, s_mouseOverSound->data, s_mouseOverSound->size, STYPE_WAV, &s_soundInfo);
 		}
 	}
 

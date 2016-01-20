@@ -1,5 +1,7 @@
 #include "gameUI.h"
 #include "settings.h"
+#include "filestream.h"
+#include "Sound/sound.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -37,6 +39,19 @@ namespace GameUI
 		MENU_COUNT
 	};
 
+	enum Sounds
+	{
+		SOUND_MOUSEOVER = 0,
+		SOUND_COUNT
+	};
+
+	const char* c_sounds[]=
+	{
+		"UI/Sounds/sub_bass_mouseover.wav",
+	};
+
+	UI_Sound s_sounds[SOUND_COUNT];
+
 	const u32 c_leftEdge = 8;
 
 	bool s_showUI = true;
@@ -63,6 +78,28 @@ namespace GameUI
 	{
 		s_startGame = startGame;
 		s_stopGame  = stopGame;
+
+		for (u32 s=0; s<SOUND_COUNT; s++)
+		{
+			UI_Sound& sound = s_sounds[s];
+			sound.filename = c_sounds[s];
+
+			FileStream file;
+			if (file.open(sound.filename, FileStream::MODE_READ))
+			{
+				sound.size = file.getSize();
+				sound.data = malloc(sound.size);
+
+				file.read((u8*)sound.data, sound.size);
+				file.close();
+			}
+			else
+			{
+				sound.filename = NULL;
+			}
+		}
+
+		UISystem::setMouseOverSound(&s_sounds[SOUND_MOUSEOVER]);
 	}
 
 	void handleMainIcons()

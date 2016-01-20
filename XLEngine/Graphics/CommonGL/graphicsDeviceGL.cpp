@@ -24,7 +24,7 @@ GraphicsDeviceGL::GraphicsDeviceGL(GraphicsDevicePlatform* platform) : GraphicsD
 	m_frameBuffer_32bpp[0] = NULL;
 	m_frameBuffer_32bpp[1] = NULL;
 
-	m_bufferMutex = new Mutex();
+	m_bufferMutex = Mutex::create();
 }
 
 GraphicsDeviceGL::~GraphicsDeviceGL()
@@ -104,12 +104,12 @@ void GraphicsDeviceGL::enableBlending(bool enable)
 
 void GraphicsDeviceGL::lockBuffer()
 {
-	m_bufferMutex->Lock();
+	m_bufferMutex->lock();
 }
 
 void GraphicsDeviceGL::unlockBuffer()
 {
-	m_bufferMutex->Unlock();
+	m_bufferMutex->unlock();
 }
 
 void GraphicsDeviceGL::convertFrameBufferTo32bpp(u8* source, u32* pal)

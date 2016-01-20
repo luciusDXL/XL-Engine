@@ -104,12 +104,12 @@ void TextureGL::update(u32 srcWidth, u32 srcHeight, const u32* data)
 	}
 
 	u32 dstStride = m_width;	//assume RGBA for now.
-	u32 srcStride = min(srcWidth, m_width) * 4;
+	u32 srcStride = std::min(srcWidth, m_width) * 4;
 
 	allocateUpdateBuffer(m_width, m_height);
 	
 	u32* buffer = m_updateBuffer;
-	for (u32 y=0; y<min(srcHeight, m_height); y++)
+	for (u32 y=0; y<std::min(srcHeight, m_height); y++)
 	{
 		memcpy(buffer, data, srcStride);
 		buffer += dstStride;

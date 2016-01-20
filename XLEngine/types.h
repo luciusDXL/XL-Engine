@@ -12,3 +12,9 @@ typedef char				s8;
 
 typedef float				f32;
 typedef double				f64;
+
+#ifdef _WIN32
+	#define XL_STDCALL __stdcall
+#else
+	#define XL_STDCALL
+#endif

@@ -1,21 +1,18 @@
 #pragma once
-#ifdef _WIN32
-#include <Windows.h>
-#endif
+#include "../types.h"
 
 class Mutex
 {
 public:
+	virtual ~Mutex() {};
 
-	Mutex();
-	virtual ~Mutex();
+	virtual s32 lock() const = 0;
+	virtual s32 unlock() const = 0;
 
-	void operator=(Mutex &M);
-	Mutex( const Mutex &M );
+protected:
+	Mutex() {};
 
-	int Lock() const;
-	int Unlock() const;
-
-private:
-	mutable CRITICAL_SECTION C;
+public:
+	//static factory function - creates the correct platform dependent version
+	static Mutex* create();
 };

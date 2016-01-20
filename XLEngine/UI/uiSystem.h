@@ -14,6 +14,13 @@ enum IconID
 	ICON_TOOLS,
 };
 
+struct UI_Sound
+{
+	const char* filename;
+	void* data;
+	u32   size;
+};
+
 namespace UISystem
 {
 	bool init(GraphicsDevice* gdev, int screenWidth, int screenHeight);
@@ -25,6 +32,7 @@ namespace UISystem
 	void clear();
 	FontHandle getFont(int size);
 	void setCurrentLayer(int layer=0);
+	void setMouseOverSound(UI_Sound* sound);
 
 	//controls
 	bool window(int id, int layer, const char* caption, int x, int y, int w, int h);

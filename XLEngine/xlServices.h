@@ -23,6 +23,7 @@ enum XLSoundType
 {
 	STYPE_RAW = 0,
 	STYPE_VOC,
+	STYPE_WAV,
 	STYPE_COUNT
 };
 

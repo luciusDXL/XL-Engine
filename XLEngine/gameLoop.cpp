@@ -6,6 +6,7 @@
 #include "input.h"
 #include "Sound/sound.h"
 #include "Sound/midi.h"
+#include "Threads/thread.h"
 #include "Math/crc32.h"
 #include "Math/math.h"
 #include "PluginFramework/PluginManager.h"
@@ -14,8 +15,6 @@
 #include "log.h"
 
 #ifdef _WIN32
-	#define WIN32_LEAN_AND_MEAN 1
-	#include <Windows.h>
 	#include "Graphics/Win32/graphicsDeviceGL_Win32.h"
 #endif
 
@@ -34,12 +33,10 @@ namespace GameLoop
 	static f64 s_avePresentTime    = 1.0;		//1.0ms
 	static f64 s_presentAdapt      = 0.1;		//how fast the present time adjusts
 	
-#ifdef _WIN32
-	static HANDLE s_hGameThread;
+	static Thread* s_gameThread = NULL;
 	static GraphicsDevice* s_gdev;
 
-	DWORD WINAPI GameLoop(LPVOID lpParameter);
-#endif
+	u32 XL_STDCALL gameLoop(void* param);
 	void exitGame();
 
 
@@ -130,20 +127,22 @@ namespace GameLoop
 
 		Services::setTime( Clock::getTime_uS() );
 		GameUI::enableCursor(false);
-		s_hGameThread  = CreateThread(NULL, 0, GameLoop, (LPVOID)gameID, 0, NULL);
+
+		s_gameThread = Thread::create(info->name, gameLoop, (void*)gameID);
+		s_gameThread->run();
 
 		return true;
 	}
 
 	void stopGame()
 	{
-		if (s_hGameThread == 0)
+		if (s_gameThread == NULL)
 		{
 			return;
 		}
 
-		TerminateThread(s_hGameThread, 0); // Dangerous source of errors! TO-DO: non-crappy solution. :D-
-		CloseHandle(s_hGameThread);
+		delete s_gameThread;
+		s_gameThread = NULL;
 
 		exitGame();
 	}
@@ -340,7 +339,7 @@ namespace GameLoop
 		const GameInfo* info = Settings::getGameInfo( s_gameRunning );
 		Services::xlDebugMessage("Game \"%s\" stopped...", info->name);
 
-		s_hGameThread =  0;
+		s_gameThread  = NULL;
 		s_gameRunning = -1;
 		s_exitGame    = false;
 		MemoryPool::reset();
@@ -352,10 +351,9 @@ namespace GameLoop
 		Sound::reset();
 	}
 	
-#ifdef _WIN32
-	DWORD WINAPI GameLoop(LPVOID lpParameter)
+	u32 XL_STDCALL gameLoop(void* param)
 	{
-		const s32 gameID = s32( lpParameter );
+		const s32 gameID = s32( param );
 		Services::xlDebugMessage("GameLoop for game %d started...", gameID);
 
 		const XLSettings* settings = Settings::get();
@@ -389,5 +387,4 @@ namespace GameLoop
 		s_exitGame = true;
 		return 1;
 	}
-#endif
 };

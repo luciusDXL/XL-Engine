@@ -226,7 +226,7 @@ void ShaderGL::updateParameter(s32 id, void* data, u32 size)
 	if (id < 0) { return; }
 
 	ShaderParam& param = m_param[id];
-	u32 copySize = min( size, param.size );
+	u32 copySize = std::min( size, param.size );
 
 	memcpy(param.data, data, copySize);
 	param.texHandle = 0;

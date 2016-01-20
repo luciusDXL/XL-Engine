@@ -10,6 +10,7 @@
 //internal inlines
 #include "sound_inl.h"
 #include "vocFormat.h"
+#include "wavFormat.h"
 
 namespace Sound
 {
@@ -76,6 +77,8 @@ namespace Sound
 	static XLSoundCallback s_callback = NULL;
 	static u32* s_userValue;
 
+	static f32 s_pos2D[3] = { 0.0f, 0.0f, 0.0f };
+
 	u32* s_activeSounds;
 
 	//////////////////////////////////////////////////////////////////
@@ -86,13 +89,14 @@ namespace Sound
 	SoundHandle allocateSound(u32 bufferID);
 	bool playSoundInternal(SoundHandle sound, f32 volume, f32 pan, Bool loop, Bool is3D);
 	const void* getRawSoundData(const void* data, u32 size, u32 type, u32& rawSize);
+	const f32* calculatePan(f32 pan);
 	
 	//////////////////////////////////////////////////////////////////
 	//API implementation
 	//////////////////////////////////////////////////////////////////
 	bool init()
 	{
-		s_mutex = new Mutex();
+		s_mutex = Mutex::create();
 
 		//setup the device.
 		s_device = alcOpenDevice(NULL);
@@ -195,8 +199,9 @@ namespace Sound
 	void reset()
 	{
 		//first stop all sounds.
-		s_mutex->Lock();
+		s_mutex->lock();
 
+		s_callback = NULL;
 		for (s32 s=0; s<s_maxSimulSounds; s++)
 		{
 			alSourceStop( s_sources[s] );
@@ -211,7 +216,7 @@ namespace Sound
 			s_buffers[b].lastUsed = 0;
 		}
 
-		s_mutex->Unlock(); 
+		s_mutex->unlock(); 
 	}
 		
 	void setCallback( XLSoundCallback callback )
@@ -222,7 +227,7 @@ namespace Sound
 	void update()
 	{
 		if (!s_init) { return; }
-		s_mutex->Lock();
+		s_mutex->lock();
 
 		for (s32 s=0; s<s_maxSimulSounds; s++)
 		{
@@ -251,7 +256,7 @@ namespace Sound
 		}
 
 		s_currentFrame++;
-		s_mutex->Unlock();
+		s_mutex->unlock();
 	}
 
 	void setGlobalVolume(f32 volume)
@@ -259,7 +264,7 @@ namespace Sound
 		volume *= 0.80f;
 		if (volume != s_globalVolume && s_init)
 		{
-			s_mutex->Lock();
+			s_mutex->lock();
 
 			const f32 scale = s_globalVolume > 0.0f ? volume / s_globalVolume : 1.0f;
 
@@ -269,21 +274,21 @@ namespace Sound
 				f32 currentVolume;
 				alGetSourcef(s, AL_GAIN, &currentVolume);
 
-				const f32 gain = min(currentVolume * scale, 1.0f);
+				const f32 gain = std::min(currentVolume * scale, 1.0f);
 				alSourcef( s, AL_GAIN, gain );
 			}
 			
 			s_globalVolume = volume;
 
-			s_mutex->Unlock();
+			s_mutex->unlock();
 		}
 	}
 	
 	Bool isActive(SoundHandle handle)
 	{
-		s_mutex->Lock();
+		s_mutex->lock();
 			const bool soundActive = isActiveNoLock(handle);
-		s_mutex->Unlock();
+		s_mutex->unlock();
 
 		return soundActive;
 	}
@@ -291,20 +296,20 @@ namespace Sound
 	Bool isPlaying(SoundHandle handle)
 	{
 		//debug
-		s_mutex->Lock();
+		s_mutex->lock();
 			const u32 sourceID = getHandleSource(handle);
 			const bool soundIsPlaying = ( isActiveNoLock(handle) && checkActiveFlag(sourceID, SOUND_PLAYING) );
-		s_mutex->Unlock();
+		s_mutex->unlock();
 
 		return soundIsPlaying;
 	}
 
 	Bool isLooping(SoundHandle handle)
 	{
-		s_mutex->Lock();
+		s_mutex->lock();
 			const u32 sourceID = getHandleSource(handle);
 			const bool soundIsLooping = ( isActiveNoLock(handle) && checkActiveFlag(sourceID, SOUND_LOOPING) );
-		s_mutex->Unlock();
+		s_mutex->unlock();
 		
 		return soundIsLooping;
 	}
@@ -313,7 +318,7 @@ namespace Sound
 	{
 		if (!s_init) { return INVALID_SOUND_HANDLE; }
 
-		s_mutex->Lock();
+		s_mutex->lock();
 
 		//allocate a free buffer if needed
 		SoundBuffer* buffer = getSoundBuffer(name);
@@ -346,13 +351,28 @@ namespace Sound
 			{
 				samplingRate = Voc::getSampleRate() * 3;
 			}
+			else if (type == STYPE_WAV)
+			{
+				samplingRate = Wav::getSampleRate();
+				u32 wavBitsPerSample = Wav::getBitsPerSample();
+				Bool wavStereo = Wav::isStereo();
+
+				if (wavBitsPerSample == 8)
+				{
+					bufferFmt = (wavStereo) ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8;
+				}
+				else if (wavBitsPerSample == 16)
+				{
+					bufferFmt = (wavStereo) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
+				}
+			}
 
 			alBufferData( buffer->oalBuffer, bufferFmt, rawData, rawSize, samplingRate );
 			ALenum error = alGetError();
 			if (error != AL_NO_ERROR)
 			{
 				LOG( LOG_ERROR, "Sound \"%s\" has invalid data.", name );
-				s_mutex->Unlock();
+				s_mutex->unlock();
 				return false;
 			}
 
@@ -376,7 +396,7 @@ namespace Sound
 			s_userValue[ getHandleSource(sound) ] = info->userValue;
 		}
 
-		s_mutex->Unlock();
+		s_mutex->unlock();
 
 		return sound;
 	}
@@ -394,15 +414,15 @@ namespace Sound
 
 	void stopSound(SoundHandle handle)
 	{
-		s_mutex->Lock();
+		s_mutex->lock();
 		
-		if (!isActiveNoLock(handle)) { s_mutex->Unlock(); return; }
+		if (!isActiveNoLock(handle)) { s_mutex->unlock(); return; }
 		const u32 sourceID = getHandleSource(handle);
 
 		//if the sound is not playing then it doesn't need to be stopped.
 		if (!checkActiveFlag(sourceID, SOUND_PLAYING))
 		{
-			s_mutex->Unlock(); 
+			s_mutex->unlock(); 
 			return;
 		}
 
@@ -419,12 +439,12 @@ namespace Sound
 		s_buffers[bufferID].refCount--;
 		assert(s_buffers[bufferID].refCount >= 0);
 
-		s_mutex->Unlock(); 
+		s_mutex->unlock(); 
 	}
 
 	void stopAllSounds()
 	{
-		s_mutex->Lock();
+		s_mutex->lock();
 
 		for (s32 s=0; s<s_maxSimulSounds; s++)
 		{
@@ -442,14 +462,14 @@ namespace Sound
 			s_buffers[b].refCount = 0;
 		}
 
-		s_mutex->Unlock(); 
+		s_mutex->unlock(); 
 	}
 
 	s32 soundsPlaying()
 	{
 		s32 numSoundsPlaying = 0;
 
-		s_mutex->Lock();
+		s_mutex->lock();
 		for (s32 s=0; s<s_maxSimulSounds; s++)
 		{
 			if (checkActiveFlag(s, SOUND_PLAYING))
@@ -457,22 +477,22 @@ namespace Sound
 				numSoundsPlaying++;
 			}
 		}
-		s_mutex->Unlock(); 
+		s_mutex->unlock(); 
 
 		return numSoundsPlaying;
 	}
 
 	void pauseSound(SoundHandle handle)
 	{
-		s_mutex->Lock();
+		s_mutex->lock();
 
-		if (!isActiveNoLock(handle)) { s_mutex->Unlock(); return; }
+		if (!isActiveNoLock(handle)) { s_mutex->unlock(); return; }
 		const u32 sourceID = getHandleSource(handle);
 
 		//if the sound is not playing then it doesn't need to be stopped.
 		if (!checkActiveFlag(sourceID, SOUND_PLAYING))
 		{
-			s_mutex->Unlock();
+			s_mutex->unlock();
 			return;
 		}
 
@@ -486,20 +506,20 @@ namespace Sound
 		const u32 bufferID = getHandleBuffer(handle);
 		s_buffers[bufferID].lastUsed = s_currentFrame;
 
-		s_mutex->Unlock();
+		s_mutex->unlock();
 	}
 
 	void resumeSound(SoundHandle handle)
 	{
-		s_mutex->Lock();
+		s_mutex->lock();
 
-		if (!isActiveNoLock(handle)) { s_mutex->Unlock(); return; }
+		if (!isActiveNoLock(handle)) { s_mutex->unlock(); return; }
 		const u32 sourceID = getHandleSource(handle);
 
 		//if the sound is not playing then it doesn't need to be stopped.
 		if (!checkActiveFlag(sourceID, SOUND_PAUSED))
 		{
-			s_mutex->Unlock();
+			s_mutex->unlock();
 			return;
 		}
 
@@ -513,39 +533,38 @@ namespace Sound
 		const u32 bufferID = getHandleBuffer(handle);
 		s_buffers[bufferID].lastUsed = s_currentFrame;
 
-		s_mutex->Unlock();
+		s_mutex->unlock();
 	}
 
 	void setPan(SoundHandle handle, f32 pan)
 	{
-		s_mutex->Lock();
+		s_mutex->lock();
 
-		if (!isActiveNoLock(handle)) { s_mutex->Unlock(); return; }
+		if (!isActiveNoLock(handle)) { s_mutex->unlock(); return; }
 		const u32 sourceID = getHandleSource(handle);
-		const f32 sourcePosAL[] = { pan, 0.0f, 0.0f }; 
 
-		alSourcefv(s_sources[sourceID], AL_POSITION, sourcePosAL);
+		alSourcefv(s_sources[sourceID], AL_POSITION, calculatePan(pan));
 
 		const u32 bufferID = getHandleBuffer(handle);
 		s_buffers[bufferID].lastUsed = s_currentFrame;
 
-		s_mutex->Unlock();
+		s_mutex->unlock();
 	}
 
 	void setVolume(SoundHandle handle, f32 volume)
 	{
-		s_mutex->Lock();
+		s_mutex->lock();
 
-		if (!isActiveNoLock(handle)) { s_mutex->Unlock(); return; }
+		if (!isActiveNoLock(handle)) { s_mutex->unlock(); return; }
 		//set the gain.
 		const u32 sourceID = getHandleSource(handle);
-		const f32 gain = min(volume * s_globalVolume, 1.0f);
+		const f32 gain = std::min(volume * s_globalVolume, 1.0f);
 		alSourcef( s_sources[sourceID], AL_GAIN, gain );
 
 		const u32 bufferID = getHandleBuffer(handle);
 		s_buffers[bufferID].lastUsed = s_currentFrame;
 
-		s_mutex->Unlock();
+		s_mutex->unlock();
 	}
 
 	//////////////////////////////////////////////////////////////////
@@ -662,7 +681,7 @@ namespace Sound
 		//create a sound handle.
 		return SoundHandle( bufferID | (soundID<<8) | (allocID<<13) );
 	}
-	
+
 	bool playSoundInternal(SoundHandle sound, f32 volume, f32 pan, Bool loop, Bool is3D)
 	{
 		const u32 sourceID = getHandleSource(sound);
@@ -680,13 +699,12 @@ namespace Sound
 			alSourcef( oalSource, AL_REFERENCE_DISTANCE, 15.0f );
 			alSourcef( oalSource, AL_MAX_DISTANCE, 200.0f );
 			
-			const f32 pos2D[] = { pan, 0.0f, 0.0f };
-			alSourcefv( oalSource, AL_POSITION, pos2D );
+			alSourcefv( oalSource, AL_POSITION, calculatePan(pan) );
 		}
 		else
 		{
 			//adjust the hearing distance...
-			f32 distScale = max(volume, 1.0f);
+			f32 distScale = std::max(volume, 1.0f);
 			alSourcef( oalSource, AL_REFERENCE_DISTANCE, 15.0f*distScale );
 			alSourcef( oalSource, AL_MAX_DISTANCE, 200.0f*distScale );
 		}
@@ -695,7 +713,7 @@ namespace Sound
 		alSourcei( oalSource, AL_LOOPING, loop ? AL_TRUE : AL_FALSE );
 
 		//set the gain.
-		f32 gain = min(volume * s_globalVolume, 1.0f);
+		f32 gain = std::min(volume * s_globalVolume, 1.0f);
 		alSourcef( oalSource, AL_GAIN, gain );
 
 		//finally play the sound.
@@ -735,7 +753,30 @@ namespace Sound
 
 			return outData;
 		}
+		else if (type == STYPE_WAV)
+		{
+			if (!Wav::read((u8*)data, size))
+			{
+				LOG( LOG_ERROR, "Cannot read VOC data for sound." );
+				return NULL;
+			}
+
+			rawSize = Wav::getRawSize();
+			const void* outData = Wav::getRawData();
+			Wav::free();
+
+			return outData;
+		}
 
 		return NULL;
+	}
+
+	const f32* calculatePan(f32 pan)
+	{
+		//"half circle" position, as suggested by kcat (though z needs to be positive).
+		s_pos2D[0] = pan;
+		s_pos2D[2] = sqrtf(1.0f - pan*pan);
+
+		return s_pos2D;
 	}
 }

@@ -49,7 +49,7 @@ namespace UISystem
 	{
 		11025,
 		16,
-		0,
+		XL_SOUND_NO_CALLBACK,
 		2.0f,
 		0.0f,
 		false

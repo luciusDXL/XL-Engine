@@ -6,6 +6,8 @@ extern "C" {
 
 #include <stdlib.h>
 
+#define XL_SOUND_NO_CALLBACK 0xffffffff
+
 #define MAX_MAPPING_COUNT 16
 #define MAX_ACTION_COUNT  128
 

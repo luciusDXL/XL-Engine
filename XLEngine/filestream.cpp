@@ -54,6 +54,14 @@ bool FileStream::isOpen() const
 	return (m_file != NULL);
 }
 
+void FileStream::flush()
+{
+	if (m_file)
+	{
+		fflush(m_file);
+	}
+}
+
 //derived from Stream
 void FileStream::seek(u32 offset, Origin origin/*=ORIGIN_START*/)
 {

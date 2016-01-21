@@ -21,6 +21,7 @@ public:
 	void close();
 
 	bool isOpen() const;
+	void flush();
 	
 	//derived functions.
 	void seek(u32 offset, Origin origin=ORIGIN_START);

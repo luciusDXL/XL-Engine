@@ -1,6 +1,8 @@
 #include "sound.h"
+#include "../osUtil.h"
 #include "../log.h"
 #include "../Threads/mutex.h"
+#include "../Threads/thread.h"
 #include <al.h>
 #include <alc.h>
 #include <assert.h>
@@ -60,13 +62,20 @@ namespace Sound
 	//////////////////////////////////////////////////////////////////
 	static s32 s_numBuffers		= 256;
 	static s32 s_maxSimulSounds	= 32;
+	static const s32 c_musicBufferCount = 4;
 
 	static bool			s_init   = false;
 	static ALCdevice*	s_device = NULL;
 	static ALCcontext*	s_context = NULL;
 
+	//sounds
 	static SoundBuffer*	s_buffers;
 	static ALuint*		s_sources;
+	static f32*			s_sourceVolume;
+	
+	//music - for now only support a single track.
+	static ALuint		s_musicBuffers[c_musicBufferCount];
+	static ALuint		s_musicSource;
 
 	static BufferMap    s_bufferMap;
 
@@ -76,11 +85,20 @@ namespace Sound
 	static Mutex* s_mutex;
 	static XLSoundCallback s_callback = NULL;
 	static u32* s_userValue;
-
 	static f32 s_pos2D[3] = { 0.0f, 0.0f, 0.0f };
 
 	u32* s_activeSounds;
 
+	//music
+	static bool s_musicPlaying = false;
+	static s32  s_musicBuffersProcessed = 0;
+	static Thread* s_musicThread = NULL;
+	static MusicCallback s_musicCallback = NULL;
+	static void* s_musicUserData = NULL;
+	static ALenum s_musicFormat;
+	static u32 s_musicSamplingRate;
+	static bool s_musicPaused = false;
+		
 	//////////////////////////////////////////////////////////////////
 	//Forward function declarations.
 	//////////////////////////////////////////////////////////////////
@@ -90,14 +108,13 @@ namespace Sound
 	bool playSoundInternal(SoundHandle sound, f32 volume, f32 pan, Bool loop, Bool is3D);
 	const void* getRawSoundData(const void* data, u32 size, u32 type, u32& rawSize);
 	const f32* calculatePan(f32 pan);
+	u32 XL_STDCALL streamMusic(void* userData);
 	
 	//////////////////////////////////////////////////////////////////
 	//API implementation
 	//////////////////////////////////////////////////////////////////
 	bool init()
 	{
-		s_mutex = Mutex::create();
-
 		//setup the device.
 		s_device = alcOpenDevice(NULL);
 		if (!s_device)
@@ -142,6 +159,7 @@ namespace Sound
 
 		//allocate sources
 		s_sources = new ALuint[s_maxSimulSounds];
+		s_sourceVolume = new f32[s_maxSimulSounds];
 		alGenSources(s_maxSimulSounds, s_sources);
 		if ( alGetError() != AL_NO_ERROR )
 		{
@@ -167,9 +185,18 @@ namespace Sound
 		s_userValue = new u32[ s_maxSimulSounds ];
 		memset(s_userValue, 0, sizeof(u32)*s_maxSimulSounds);
 
+		//allocate music buffers
+		alGenBuffers(c_musicBufferCount, s_musicBuffers);
+		alGenSources(1, &s_musicSource);
+
+		s_mutex = Mutex::create();
+
+		s_musicThread = Thread::create("Music Thread", streamMusic, NULL);
+		s_musicThread->run();
+
 		s_init = true;
 		s_currentFrame = 1;
-		s_globalVolume = 0.80f;
+		s_globalVolume = 0.50f;
 		LOG( LOG_MESSAGE, "Sound System initialized." );
 				
 		return true;
@@ -177,16 +204,24 @@ namespace Sound
 
 	void free()
 	{
-		reset();
-
-		delete s_mutex;
 		if (!s_init) { return; }
+
+		reset();
+		stopMusic();
+
+		delete s_musicThread;
+		delete s_mutex;
 
 		for (s32 i=0; i<s_numBuffers; i++)
 		{
 			alDeleteBuffers(1, &s_buffers[i].oalBuffer);
 		}
 		alDeleteSources(s_maxSimulSounds, s_sources);
+
+		//music buffers
+		alDeleteBuffers(c_musicBufferCount, s_musicBuffers);
+		alDeleteSources(1, &s_musicSource);
+
 		alcMakeContextCurrent(0);
 		alcDestroyContext(s_context);
 		alcCloseDevice(s_device);
@@ -198,6 +233,8 @@ namespace Sound
 
 	void reset()
 	{
+		if (!s_init) { return; }
+
 		//first stop all sounds.
 		s_mutex->lock();
 
@@ -229,6 +266,10 @@ namespace Sound
 		if (!s_init) { return; }
 		s_mutex->lock();
 
+		f32 totalVolume = 0.0f;
+		s32 activeSources[32] = {0};
+		s32 activeCount = 0;
+
 		for (s32 s=0; s<s_maxSimulSounds; s++)
 		{
 			if ( checkActiveFlag(s, SOUND_PLAYING) )
@@ -240,19 +281,46 @@ namespace Sound
 					//was this playing up until now? - fire off the callback...
 					if (s_callback && checkActiveFlag(s, SOUND_PLAYING))
 					{
-						s_callback( s_userValue[s] );
-
-						const u32 bufferID = getActiveBuffer(s);
-						s_buffers[bufferID].refCount--;
-						assert(s_buffers[bufferID].refCount >= 0);
+						if (s_userValue[s] != XL_SOUND_NO_CALLBACK) 
+						{ 
+							s_callback( s_userValue[s] ); 
+						}
 					}
+
+					const u32 bufferID = getActiveBuffer(s);
+					s_buffers[bufferID].refCount--;
+					assert(s_buffers[bufferID].refCount >= 0);
+
 					clearActiveFlag(s, SOUND_PLAYING);
 				}
-				if ( state != AL_PAUSED )
+				else if ( state != AL_PAUSED )
 				{
+					totalVolume += s_sourceVolume[s];
+					activeSources[ activeCount++ ] = s;
 					clearActiveFlag(s, SOUND_PAUSED);
 				}
 			}
+		}
+
+		//reduce the overall volume.
+#if 0
+		f32 scale = totalVolume > 0.0f ? s_globalVolume/totalVolume : 1.0f;
+		scale = sqrtf(scale);
+
+		for (s32 s=0; s<activeCount; s++)
+		{
+			const u32 sourceID = activeSources[s];
+			const f32 gain = std::min(s_sourceVolume[sourceID] * scale, 1.0f);
+			alSourcef( s_sources[sourceID], AL_GAIN, gain );
+		}
+#endif
+		
+		//check the music track.
+		if (s_musicPlaying)
+		{
+			s32 buffersProcessed = 0;
+			alGetSourcei( s_musicSource, AL_BUFFERS_PROCESSED, &buffersProcessed );
+			s_musicBuffersProcessed += buffersProcessed;
 		}
 
 		s_currentFrame++;
@@ -261,20 +329,16 @@ namespace Sound
 
 	void setGlobalVolume(f32 volume)
 	{
-		volume *= 0.80f;
+		if (!s_init) { return; }
+
 		if (volume != s_globalVolume && s_init)
 		{
 			s_mutex->lock();
 
-			const f32 scale = s_globalVolume > 0.0f ? volume / s_globalVolume : 1.0f;
-
 			//change the volume of all the currently playing sounds.
 			for (s32 s=0; s<s_maxSimulSounds; s++)
 			{
-				f32 currentVolume;
-				alGetSourcef(s, AL_GAIN, &currentVolume);
-
-				const f32 gain = std::min(currentVolume * scale, 1.0f);
+				const f32 gain = std::min(s_sourceVolume[s] * volume, 1.0f);
 				alSourcef( s, AL_GAIN, gain );
 			}
 			
@@ -286,6 +350,8 @@ namespace Sound
 	
 	Bool isActive(SoundHandle handle)
 	{
+		if (!s_init || handle == INVALID_SOUND_HANDLE) { return false; }
+
 		s_mutex->lock();
 			const bool soundActive = isActiveNoLock(handle);
 		s_mutex->unlock();
@@ -295,7 +361,8 @@ namespace Sound
 
 	Bool isPlaying(SoundHandle handle)
 	{
-		//debug
+		if (!s_init || handle == INVALID_SOUND_HANDLE) { return false; }
+
 		s_mutex->lock();
 			const u32 sourceID = getHandleSource(handle);
 			const bool soundIsPlaying = ( isActiveNoLock(handle) && checkActiveFlag(sourceID, SOUND_PLAYING) );
@@ -306,6 +373,8 @@ namespace Sound
 
 	Bool isLooping(SoundHandle handle)
 	{
+		if (!s_init || handle == INVALID_SOUND_HANDLE) { return false; }
+		
 		s_mutex->lock();
 			const u32 sourceID = getHandleSource(handle);
 			const bool soundIsLooping = ( isActiveNoLock(handle) && checkActiveFlag(sourceID, SOUND_LOOPING) );
@@ -316,7 +385,10 @@ namespace Sound
 	
 	SoundHandle playSound2D(const char* name, const void* data, u32 size, u32 type, SoundInfo* info, Bool looping)
 	{
-		if (!s_init) { return INVALID_SOUND_HANDLE; }
+		if (!s_init || name==NULL || data==NULL || info==NULL) 
+		{ 
+			return INVALID_SOUND_HANDLE; 
+		}
 
 		s_mutex->lock();
 
@@ -324,11 +396,19 @@ namespace Sound
 		SoundBuffer* buffer = getSoundBuffer(name);
 		if (!buffer)
 		{
+			LOG( LOG_WARNING, "Sound \"%s\" failed to get a sound buffer.", name );
+
+			s_mutex->unlock();
 			return INVALID_SOUND_HANDLE;
 		}
 
 		//allocate a sound
 		SoundHandle sound = allocateSound(buffer->index);
+		if (sound == INVALID_SOUND_HANDLE)
+		{
+			s_mutex->unlock();
+			return INVALID_SOUND_HANDLE;
+		}
 
 		//load the sound buffer (if not already active).
 		if ( !(buffer->flags&BUFFER_ACTIVE) )
@@ -372,6 +452,7 @@ namespace Sound
 			if (error != AL_NO_ERROR)
 			{
 				LOG( LOG_ERROR, "Sound \"%s\" has invalid data.", name );
+
 				s_mutex->unlock();
 				return false;
 			}
@@ -414,6 +495,8 @@ namespace Sound
 
 	void stopSound(SoundHandle handle)
 	{
+		if (!s_init || handle == INVALID_SOUND_HANDLE) { return; }
+
 		s_mutex->lock();
 		
 		if (!isActiveNoLock(handle)) { s_mutex->unlock(); return; }
@@ -444,6 +527,8 @@ namespace Sound
 
 	void stopAllSounds()
 	{
+		if (!s_init) { return; }
+
 		s_mutex->lock();
 
 		for (s32 s=0; s<s_maxSimulSounds; s++)
@@ -467,6 +552,11 @@ namespace Sound
 
 	s32 soundsPlaying()
 	{
+		if (!s_init)
+		{
+			return 0;
+		}
+
 		s32 numSoundsPlaying = 0;
 
 		s_mutex->lock();
@@ -484,6 +574,8 @@ namespace Sound
 
 	void pauseSound(SoundHandle handle)
 	{
+		if (!s_init || handle == INVALID_SOUND_HANDLE) { return; }
+
 		s_mutex->lock();
 
 		if (!isActiveNoLock(handle)) { s_mutex->unlock(); return; }
@@ -511,6 +603,8 @@ namespace Sound
 
 	void resumeSound(SoundHandle handle)
 	{
+		if (!s_init || handle == INVALID_SOUND_HANDLE) { return; }
+
 		s_mutex->lock();
 
 		if (!isActiveNoLock(handle)) { s_mutex->unlock(); return; }
@@ -538,6 +632,8 @@ namespace Sound
 
 	void setPan(SoundHandle handle, f32 pan)
 	{
+		if (!s_init || handle == INVALID_SOUND_HANDLE) { return; }
+
 		s_mutex->lock();
 
 		if (!isActiveNoLock(handle)) { s_mutex->unlock(); return; }
@@ -553,18 +649,88 @@ namespace Sound
 
 	void setVolume(SoundHandle handle, f32 volume)
 	{
+		if (!s_init || handle == INVALID_SOUND_HANDLE) { return; }
+
 		s_mutex->lock();
 
 		if (!isActiveNoLock(handle)) { s_mutex->unlock(); return; }
 		//set the gain.
 		const u32 sourceID = getHandleSource(handle);
 		const f32 gain = std::min(volume * s_globalVolume, 1.0f);
+		s_sourceVolume[ sourceID ] = volume;
 		alSourcef( s_sources[sourceID], AL_GAIN, gain );
 
 		const u32 bufferID = getHandleBuffer(handle);
 		s_buffers[bufferID].lastUsed = s_currentFrame;
 
 		s_mutex->unlock();
+	}
+
+	//////////////////////////////////////////////////////////////////
+	//Starts streaming music playback.
+	//////////////////////////////////////////////////////////////////
+	// Inputs:
+	// streamCallback - this callback is called whenever data needs to
+	//		be loaded into the streaming sound buffers.
+	//////////////////////////////////////////////////////////////////
+	bool startMusic(MusicCallback streamCallback, void* userData, Bool stereo, u32 bitsPerSample, u32 samplingRate)
+	{
+		if (!s_init || !streamCallback)
+		{
+			LOG( LOG_ERROR, "A streaming music callback must be provided in order to play any music." );
+			return false;
+		}
+
+		s_mutex->lock();
+			s_musicCallback = streamCallback;
+			s_musicUserData = userData;
+			s_musicPlaying  = false;
+
+			s_musicSamplingRate = samplingRate;
+			if (bitsPerSample == 8)
+			{
+				s_musicFormat = (stereo) ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8;
+			}
+			else if (bitsPerSample == 16)
+			{
+				s_musicFormat = (stereo) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
+			}
+		s_mutex->unlock();
+
+		return true;
+	}
+
+	// Stops music playback and pauses music update.
+	void stopMusic()
+	{
+		if (!s_init) { return; }
+
+		s_mutex->lock();
+			alSourceStop(s_musicSource);
+			s_musicPlaying = false;
+		s_mutex->unlock(); 
+	}
+
+	// Pause the music, it can be resumed from the same spot.
+	void pauseMusic()
+	{
+		if (!s_init) { return; }
+
+		s_mutex->lock();
+			s_musicPaused = true;
+			alSourcePause(s_musicSource);
+		s_mutex->unlock(); 
+	}
+
+	// Resume paused music.
+	void resumeMusic()
+	{
+		if (!s_init) { return; }
+
+		s_mutex->lock();
+			s_musicPaused = false;
+			alSourcePlay(s_musicSource);
+		s_mutex->unlock(); 
 	}
 
 	//////////////////////////////////////////////////////////////////
@@ -714,6 +880,7 @@ namespace Sound
 
 		//set the gain.
 		f32 gain = std::min(volume * s_globalVolume, 1.0f);
+		s_sourceVolume[ sourceID ] = volume;
 		alSourcef( oalSource, AL_GAIN, gain );
 
 		//finally play the sound.
@@ -778,5 +945,72 @@ namespace Sound
 		s_pos2D[2] = sqrtf(1.0f - pan*pan);
 
 		return s_pos2D;
+	}
+
+	/////////////////////////////////////////////////
+	// Music Streaming Update Thread
+	/////////////////////////////////////////////////
+	const u32 c_musicChunkSize = 4096;
+	static u8 s_chunkData[c_musicBufferCount][c_musicChunkSize];
+	static u32 s_currentMusicBuffer = 0;
+	static u32 s_headMusicBuffer = 0;
+	
+	u32 XL_STDCALL streamMusic(void* userData)
+	{
+		while (1)
+		{
+			s_mutex->lock();
+			if ( !s_musicPaused && !s_musicPlaying && s_musicCallback )
+			{
+				u8* chunkData = NULL;
+				//get 2 buffers ready ahead of time
+				s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData[0]);
+				s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData[1]);
+				
+				//buffer the data and queue them up for playing
+				alBufferData( s_musicBuffers[0], s_musicFormat, s_chunkData[0], c_musicChunkSize, s_musicSamplingRate );
+				alBufferData( s_musicBuffers[1], s_musicFormat, s_chunkData[1], c_musicChunkSize, s_musicSamplingRate );
+				alSourceQueueBuffers(s_musicSource, 2, s_musicBuffers);
+				
+				//play the music as a 2D sound
+				const f32 zero[] = { 0.0f, 0.0f, 0.0f };
+				alSourceStop(s_musicSource);
+				alSourcef(s_musicSource, AL_ROLLOFF_FACTOR, 1.0f );
+				alSourcei( s_musicSource, AL_SOURCE_RELATIVE, AL_TRUE );
+				alSourcef( s_musicSource, AL_REFERENCE_DISTANCE, 15.0f );
+				alSourcef( s_musicSource, AL_MAX_DISTANCE, 200.0f );
+				alSourcefv( s_musicSource, AL_POSITION, zero );
+
+				//set looping.
+				alSourcei( s_musicSource, AL_LOOPING, AL_TRUE );
+
+				//set the gain.
+				alSourcef( s_musicSource, AL_GAIN, s_globalVolume );
+
+				//finally play the sound.
+				alSourcePlay( s_musicSource );
+
+				s_headMusicBuffer = 0;
+				s_currentMusicBuffer = 2;
+				s_musicPlaying = true;
+			}
+			else if ( !s_musicPaused && s_musicCallback && s_musicBuffersProcessed )
+			{
+				s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData[s_currentMusicBuffer]);
+				alBufferData( s_musicBuffers[s_currentMusicBuffer], s_musicFormat, s_chunkData[s_currentMusicBuffer], c_musicChunkSize, s_musicSamplingRate );
+
+				alSourceUnqueueBuffers(s_musicSource, 1, &s_musicBuffers[s_headMusicBuffer]);
+				alSourceQueueBuffers(s_musicSource, 1, &s_musicBuffers[s_currentMusicBuffer]);
+
+				s_headMusicBuffer++;
+				s_musicBuffersProcessed--;
+				s_currentMusicBuffer = (s_currentMusicBuffer+1) % c_musicBufferCount;
+			}
+			s_mutex->unlock();
+
+			OS::sleep(1);
+		};
+
+		return 0;
 	}
 }

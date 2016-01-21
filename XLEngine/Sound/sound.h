@@ -16,6 +16,8 @@
 typedef u32 SoundHandle;
 #define INVALID_SOUND_HANDLE 0xffffffff
 
+typedef void (*MusicCallback)(void* userData, u32 requestedChunkSize, u8* chunkData);
+
 namespace Sound
 {
 	//system setup
@@ -35,6 +37,21 @@ namespace Sound
 	//////////////////////////////////////////////////////////////////
 	void setGlobalVolume(f32 volume);
 
+	//////////////////////////////////////////////////////////////////
+	//Starts streaming music playback.
+	//////////////////////////////////////////////////////////////////
+	// Inputs:
+	// streamCallback - this callback is called whenever data needs to
+	//		be loaded into the streaming sound buffers.
+	//////////////////////////////////////////////////////////////////
+	bool startMusic(MusicCallback streamCallback, void* userData, Bool stereo, u32 bitsPerSample, u32 samplingRate);
+	// Stops music playback and pauses music update.
+	void stopMusic();
+	// Pause the music, it can be resumed from the same spot.
+	void pauseMusic();
+	// Resume paused music.
+	void resumeMusic();
+	
 	//////////////////////////////////////////////////////////////////
 	//Generic 2D sound play function
 	//////////////////////////////////////////////////////////////////

@@ -59,6 +59,7 @@ namespace Log
 		const size_t len = strlen(s_printString);
 
 		s_logFile.write(s_printString, (u32)len);
+		s_logFile.flush();	//flush to disk in case of a crash.
 	#endif
 
 	#if XL_DEBUG_OUT_ENABLED

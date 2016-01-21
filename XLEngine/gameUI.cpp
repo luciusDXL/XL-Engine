@@ -42,12 +42,18 @@ namespace GameUI
 	enum Sounds
 	{
 		SOUND_MOUSEOVER = 0,
+		SOUND_CLICK,
+		SOUND_AFFIRM,
+		SOUND_DENY,
 		SOUND_COUNT
 	};
 
 	const char* c_sounds[]=
 	{
 		"UI/Sounds/sub_bass_mouseover.wav",
+		"UI/Sounds/echo_affirm.wav",
+		"UI/Sounds/echo_affirm1.wav",
+		"UI/Sounds/echo_deny.wav",
 	};
 
 	UI_Sound s_sounds[SOUND_COUNT];
@@ -59,6 +65,21 @@ namespace GameUI
 
 	StartGameFunc s_startGame = NULL;
 	StopGameFunc  s_stopGame  = NULL;
+
+	void playUISound(Sounds sound)
+	{
+		SoundInfo info=
+		{
+			11025,
+			16,
+			XL_SOUND_NO_CALLBACK,
+			2.0f,
+			0.0f,
+			false
+		};
+
+		Sound::playOneShot2D(s_sounds[sound].filename, s_sounds[sound].data, s_sounds[sound].size, STYPE_WAV, &info);
+	}
 
 	bool getShowUI()
 	{
@@ -108,6 +129,8 @@ namespace GameUI
 		{
 			if (s_menu < 0)
 			{
+				playUISound(SOUND_CLICK);
+
 				s_menu = MENU_VIDEO;
 				UISystem::setCurrentLayer(1);
 			}
@@ -116,14 +139,31 @@ namespace GameUI
 		{
 			if (s_menu < 0)
 			{
+				playUISound(SOUND_CLICK);
+
 				s_menu = MENU_SETTINGS;
 				UISystem::setCurrentLayer(1);
 			}
 		}
-		UISystem::buttonIcon(CTRL_ICON_CONTROLS,  0, ICON_CONTROLS,  c_leftEdge, 120 );
-		UISystem::buttonIcon(CTRL_ICON_DASHBOARD, 0, ICON_DASHBOARD, c_leftEdge, 160 );
-		UISystem::buttonIcon(CTRL_ICON_SEARCH,    0, ICON_SEARCH,    c_leftEdge, 200 );
-		UISystem::buttonIcon(CTRL_ICON_TOOLS,     0, ICON_TOOLS,     c_leftEdge, 240 );
+		if (UISystem::buttonIcon(CTRL_ICON_CONTROLS,  0, ICON_CONTROLS,  c_leftEdge, 120 ))
+		{
+			playUISound(SOUND_CLICK);
+		}
+
+		if (UISystem::buttonIcon(CTRL_ICON_DASHBOARD, 0, ICON_DASHBOARD, c_leftEdge, 160 ))
+		{
+			playUISound(SOUND_CLICK);
+		}
+
+		if (UISystem::buttonIcon(CTRL_ICON_SEARCH,    0, ICON_SEARCH,    c_leftEdge, 200 ))
+		{
+			playUISound(SOUND_CLICK);
+		}
+		
+		if (UISystem::buttonIcon(CTRL_ICON_TOOLS,     0, ICON_TOOLS,     c_leftEdge, 240 ))
+		{
+			playUISound(SOUND_CLICK);
+		}
 	}
 
 	void handleGameSelection(GraphicsDevice* gdev, int winWidth, int winHeight, s32& gameRunning)
@@ -163,6 +203,7 @@ namespace GameUI
 				{
 					if (gameRunning != g)
 					{
+						playUISound(SOUND_AFFIRM);
 						s_stopGame();
 						if (s_startGame( g ))
 						{
@@ -170,6 +211,10 @@ namespace GameUI
 							gdev->setVirtualViewport(true, 0, 0, 0, 0);
 							return;
 						}
+					}
+					else
+					{
+						playUISound(SOUND_CLICK);
 					}
 				}
 
@@ -190,6 +235,7 @@ namespace GameUI
 
 		if (UISystem::window(CTRL_WIN_VIDEO, 1, "Video Settings", 32, 32, 400, 400))
 		{
+			playUISound(SOUND_DENY);
 			s_menu = -1;
 			UISystem::setCurrentLayer(0);
 		}
@@ -229,6 +275,7 @@ namespace GameUI
 
 		if (UISystem::window(CTRL_WIN_SETTINGS, 1, "General Settings", 32, 32, 550, 512))
 		{
+			playUISound(SOUND_DENY);
 			s_menu = -1;
 			UISystem::setCurrentLayer(0);
 		}

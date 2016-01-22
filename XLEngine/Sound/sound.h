@@ -44,7 +44,7 @@ namespace Sound
 	// streamCallback - this callback is called whenever data needs to
 	//		be loaded into the streaming sound buffers.
 	//////////////////////////////////////////////////////////////////
-	bool startMusic(MusicCallback streamCallback, void* userData, Bool stereo, u32 bitsPerSample, u32 samplingRate);
+	bool startMusic(MusicCallback streamCallback, void* userData, f32 volume, Bool stereo, u32 bitsPerSample, u32 samplingRate);
 	// Stops music playback and pauses music update.
 	void stopMusic();
 	// Pause the music, it can be resumed from the same spot.

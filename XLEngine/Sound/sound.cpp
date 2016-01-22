@@ -82,6 +82,8 @@ namespace Sound
 	static u64 s_currentFrame;
 	static f32 s_globalVolume;
 
+	static const f32 s_globalVolumeRangeScale = 0.5f;
+
 	static Mutex* s_mutex;
 	static XLSoundCallback s_callback = NULL;
 	static u32* s_userValue;
@@ -91,6 +93,7 @@ namespace Sound
 
 	//music
 	static bool s_musicPlaying = false;
+	static f32  s_musicVolume = 1.0f;
 	static s32  s_musicBuffersProcessed = 0;
 	static Thread* s_musicThread = NULL;
 	static MusicCallback s_musicCallback = NULL;
@@ -196,7 +199,7 @@ namespace Sound
 
 		s_init = true;
 		s_currentFrame = 1;
-		s_globalVolume = 0.50f;
+		s_globalVolume = s_globalVolumeRangeScale;
 		LOG( LOG_MESSAGE, "Sound System initialized." );
 				
 		return true;
@@ -315,14 +318,6 @@ namespace Sound
 		}
 #endif
 		
-		//check the music track.
-		if (s_musicPlaying)
-		{
-			s32 buffersProcessed = 0;
-			alGetSourcei( s_musicSource, AL_BUFFERS_PROCESSED, &buffersProcessed );
-			s_musicBuffersProcessed += buffersProcessed;
-		}
-
 		s_currentFrame++;
 		s_mutex->unlock();
 	}
@@ -331,6 +326,7 @@ namespace Sound
 	{
 		if (!s_init) { return; }
 
+		volume *= s_globalVolumeRangeScale;
 		if (volume != s_globalVolume && s_init)
 		{
 			s_mutex->lock();
@@ -673,7 +669,7 @@ namespace Sound
 	// streamCallback - this callback is called whenever data needs to
 	//		be loaded into the streaming sound buffers.
 	//////////////////////////////////////////////////////////////////
-	bool startMusic(MusicCallback streamCallback, void* userData, Bool stereo, u32 bitsPerSample, u32 samplingRate)
+	bool startMusic(MusicCallback streamCallback, void* userData, f32 volume, Bool stereo, u32 bitsPerSample, u32 samplingRate)
 	{
 		if (!s_init || !streamCallback)
 		{
@@ -681,10 +677,18 @@ namespace Sound
 			return false;
 		}
 
+		//if the music is paused then just resume.
+		if (s_musicPlaying && s_musicPaused)
+		{
+			resumeMusic();
+			return true;
+		}
+
 		s_mutex->lock();
 			s_musicCallback = streamCallback;
 			s_musicUserData = userData;
 			s_musicPlaying  = false;
+			s_musicVolume   = volume;
 
 			s_musicSamplingRate = samplingRate;
 			if (bitsPerSample == 8)
@@ -703,11 +707,13 @@ namespace Sound
 	// Stops music playback and pauses music update.
 	void stopMusic()
 	{
-		if (!s_init) { return; }
+		if (!s_init || !s_musicPlaying) { return; }
 
 		s_mutex->lock();
 			alSourceStop(s_musicSource);
-			s_musicPlaying = false;
+			s_musicPlaying  = false;
+			s_musicCallback = NULL;
+			s_musicUserData = NULL;
 		s_mutex->unlock(); 
 	}
 
@@ -950,10 +956,8 @@ namespace Sound
 	/////////////////////////////////////////////////
 	// Music Streaming Update Thread
 	/////////////////////////////////////////////////
-	const u32 c_musicChunkSize = 4096;
-	static u8 s_chunkData[c_musicBufferCount][c_musicChunkSize];
-	static u32 s_currentMusicBuffer = 0;
-	static u32 s_headMusicBuffer = 0;
+	const u32  c_musicChunkSize = 4096;
+	static u8  s_chunkData[c_musicChunkSize];
 	
 	u32 XL_STDCALL streamMusic(void* userData)
 	{
@@ -963,48 +967,59 @@ namespace Sound
 			if ( !s_musicPaused && !s_musicPlaying && s_musicCallback )
 			{
 				u8* chunkData = NULL;
-				//get 2 buffers ready ahead of time
-				s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData[0]);
-				s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData[1]);
+
+				//get 4 buffers ready ahead of time
+				s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData);
+				alBufferData( s_musicBuffers[0], s_musicFormat, s_chunkData, c_musicChunkSize, s_musicSamplingRate );
+
+				s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData);
+				alBufferData( s_musicBuffers[1], s_musicFormat, s_chunkData, c_musicChunkSize, s_musicSamplingRate );
+
+				s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData);
+				alBufferData( s_musicBuffers[2], s_musicFormat, s_chunkData, c_musicChunkSize, s_musicSamplingRate );
+
+				s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData);
+				alBufferData( s_musicBuffers[3], s_musicFormat, s_chunkData, c_musicChunkSize, s_musicSamplingRate );
 				
 				//buffer the data and queue them up for playing
-				alBufferData( s_musicBuffers[0], s_musicFormat, s_chunkData[0], c_musicChunkSize, s_musicSamplingRate );
-				alBufferData( s_musicBuffers[1], s_musicFormat, s_chunkData[1], c_musicChunkSize, s_musicSamplingRate );
-				alSourceQueueBuffers(s_musicSource, 2, s_musicBuffers);
+				alSourceQueueBuffers(s_musicSource, 4, s_musicBuffers);
 				
 				//play the music as a 2D sound
 				const f32 zero[] = { 0.0f, 0.0f, 0.0f };
 				alSourceStop(s_musicSource);
-				alSourcef(s_musicSource, AL_ROLLOFF_FACTOR, 1.0f );
-				alSourcei( s_musicSource, AL_SOURCE_RELATIVE, AL_TRUE );
-				alSourcef( s_musicSource, AL_REFERENCE_DISTANCE, 15.0f );
-				alSourcef( s_musicSource, AL_MAX_DISTANCE, 200.0f );
+				alSourcef(s_musicSource,   AL_ROLLOFF_FACTOR, 1.0f );
+				alSourcei( s_musicSource,  AL_SOURCE_RELATIVE, AL_TRUE );
+				alSourcef( s_musicSource,  AL_REFERENCE_DISTANCE, 15.0f );
+				alSourcef( s_musicSource,  AL_MAX_DISTANCE, 200.0f );
 				alSourcefv( s_musicSource, AL_POSITION, zero );
 
 				//set looping.
-				alSourcei( s_musicSource, AL_LOOPING, AL_TRUE );
+				alSourcei( s_musicSource, AL_LOOPING, AL_FALSE );
 
 				//set the gain.
-				alSourcef( s_musicSource, AL_GAIN, s_globalVolume );
+				alSourcef( s_musicSource, AL_GAIN, s_musicVolume );
 
 				//finally play the sound.
 				alSourcePlay( s_musicSource );
 
-				s_headMusicBuffer = 0;
-				s_currentMusicBuffer = 2;
-				s_musicPlaying = true;
+				s_musicPlaying       = true;
 			}
-			else if ( !s_musicPaused && s_musicCallback && s_musicBuffersProcessed )
+			else if ( !s_musicPaused && s_musicPlaying && s_musicCallback )
 			{
-				s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData[s_currentMusicBuffer]);
-				alBufferData( s_musicBuffers[s_currentMusicBuffer], s_musicFormat, s_chunkData[s_currentMusicBuffer], c_musicChunkSize, s_musicSamplingRate );
+				s32 buffersProcessed = 0;
+				alGetSourcei( s_musicSource, AL_BUFFERS_PROCESSED, &buffersProcessed );
 
-				alSourceUnqueueBuffers(s_musicSource, 1, &s_musicBuffers[s_headMusicBuffer]);
-				alSourceQueueBuffers(s_musicSource, 1, &s_musicBuffers[s_currentMusicBuffer]);
+				while (buffersProcessed > 0)
+				{
+					ALuint buffer;
+					alSourceUnqueueBuffers( s_musicSource, 1, &buffer );
 
-				s_headMusicBuffer++;
-				s_musicBuffersProcessed--;
-				s_currentMusicBuffer = (s_currentMusicBuffer+1) % c_musicBufferCount;
+					s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData);
+					alBufferData( buffer, s_musicFormat, s_chunkData, c_musicChunkSize, s_musicSamplingRate );
+					alSourceQueueBuffers( s_musicSource, 1, &buffer );
+
+					buffersProcessed--;
+				};
 			}
 			s_mutex->unlock();
 

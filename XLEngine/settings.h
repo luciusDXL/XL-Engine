@@ -35,6 +35,8 @@ struct XLSettings
 	//Sound
 	MidiFormat midiformat;
 	char patchDataLoc[256];
+	u32  musicVolume;
+	u32  soundVolume;
 };
 
 namespace Settings

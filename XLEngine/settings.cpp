@@ -36,7 +36,9 @@ namespace Settings
 		{ 1.0f, 1.0f, 1.0f, 1.0f },
 		//Sound
 		MFMT_GUS_PATCH,
-		"Sound/freepats/freepats.cfg"
+		"Sound/freepats/freepats.cfg",
+		100,
+		100,
 	};
 	
 	static s32 s_gameCount  = 0;
@@ -276,6 +278,16 @@ namespace Settings
 		{
 			char* endPtr = NULL;
 			s_settings.colorCorrect[3] = (f32)strtod(value, &endPtr) * 0.01f;	//convert from percent to float
+		}
+		else if (stricmp(key, "musicVolume") == 0)
+		{
+			char* endPtr = NULL;
+			s_settings.musicVolume = (u32)strtol(value, &endPtr, 10);	//convert from percent to float
+		}
+		else if (stricmp(key, "soundVolume") == 0)
+		{
+			char* endPtr = NULL;
+			s_settings.soundVolume = (u32)strtol(value, &endPtr, 10);	//convert from percent to float
 		}
 		else if (stricmp(key, "midiformat") == 0)
 		{
@@ -554,6 +566,8 @@ namespace Settings
 
 		const char* midiformatNames[] = { "gus", "sf2" };
 		iniWriter::comment("Sound");
+		iniWriter::write("musicVolume", s_settings.musicVolume);
+		iniWriter::write("soundVolume", s_settings.soundVolume);
 		iniWriter::write("midiformat", midiformatNames[ s_settings.midiformat ]);
 		iniWriter::write("patchloc", s_settings.patchDataLoc);
 		iniWriter::newLine();

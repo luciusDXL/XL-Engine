@@ -97,8 +97,11 @@ namespace GameLoop
 		
 		PluginManager::init();
 		s_gdev->setVirtualViewport(false, 100, settings->windowHeight-250, 320, 200);
-
 		s_desiredFrameLimit = settings->frameLimit ? 1.0 / f64(settings->frameLimit) : 0.0;
+
+		Sound::setGlobalVolume( f32(settings->soundVolume)*0.01f );
+		Midi::setVolume( settings->musicVolume );
+
 		return true;
 	}
 	

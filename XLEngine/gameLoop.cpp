@@ -85,7 +85,7 @@ namespace GameLoop
 		}
 
 		GameUI::init(startGame, stopGame);
-		s_launchGameID = Settings::get()->launchGameID;
+		s_launchGameID = settings->launchGameID;
 
 		MemoryPool::init();
 		TextSystem::init(s_gdev);
@@ -94,14 +94,12 @@ namespace GameLoop
 		Settings::initGameData();
 		Sound::init();
 		Midi::init( settings->midiformat, settings->patchDataLoc );
-		
 		PluginManager::init();
-		s_gdev->setVirtualViewport(false, 100, settings->windowHeight-250, 320, 200);
-		s_desiredFrameLimit = settings->frameLimit ? 1.0 / f64(settings->frameLimit) : 0.0;
 
 		Sound::setGlobalVolume( f32(settings->soundVolume)*0.01f );
 		Midi::setVolume( settings->musicVolume );
-
+		s_desiredFrameLimit = settings->frameLimit ? 1.0 / f64(settings->frameLimit) : 0.0;
+		
 		return true;
 	}
 	
@@ -112,9 +110,9 @@ namespace GameLoop
 		TextSystem::destroy();
 		Clock::destroy();
 		MemoryPool::destroy();
-		PluginManager::destroy();
-		Sound::free();
 		Midi::free();
+		Sound::free();
+		PluginManager::destroy();
 		GraphicsDevice::destroyDevice(s_gdev);
 		Log::close();
 	}

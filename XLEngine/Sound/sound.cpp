@@ -967,6 +967,8 @@ namespace Sound
 			if ( !s_musicPaused && !s_musicPlaying && s_musicCallback )
 			{
 				u8* chunkData = NULL;
+				alSourceStop( s_musicSource );
+				alSourceUnqueueBuffers( s_musicSource, 4, s_musicBuffers );
 
 				//get 4 buffers ready ahead of time
 				s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData);

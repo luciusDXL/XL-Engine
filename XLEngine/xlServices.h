@@ -29,6 +29,14 @@ enum XLSoundType
 	STYPE_COUNT
 };
 
+enum XLMusicType
+{
+	MUSIC_TYPE_UNKNOWN = 0,
+	MUSIC_TYPE_MIDI,
+	MUSIC_TYPE_OGG,
+	MUSIC_TYPE_COUNT
+};
+
 typedef struct ActionMapping
 {
 	char action[256];
@@ -98,6 +106,10 @@ typedef size_t (*XLFileWrite)(const void*, size_t, size_t, int);
 typedef void   (*XLFileSeek)(int, int, int);
 typedef size_t (*XLFileTell)(int);
 
+typedef int (*XLMusicIsPlaying)(void);
+typedef void (*XLMusicVoid)(void);
+typedef int (*XLMusicPlay)(const char*, int);
+
 typedef struct
 {
 	//video
@@ -150,6 +162,12 @@ typedef struct
 	XLStopSound			stopSound;
 	XLStopAllSounds		stopAllSounds;
 	XLSoundsPlaying		soundsPlaying;
+
+	XLMusicPlay			music_play;
+	XLMusicVoid			music_stop;
+	XLMusicIsPlaying	music_isPlaying;
+	XLMusicVoid			music_pause;
+	XLMusicVoid			music_resume;
 } XLEngineServices;
 
 #ifdef __cplusplus

@@ -5,6 +5,8 @@
 #include "settings.h"
 #include "input.h"
 #include "Sound/sound.h"
+#include "Sound/midi.h"
+#include "Sound/oggVorbis.h"
 #include "Graphics/graphicsDevice.h"
 #include "log.h"
 #include "filestream.h"
@@ -24,6 +26,9 @@ namespace Services
 	int s_clockTics = 0;
 	int s_clockTicsBase = 0;
 	u64 s_lastRealTime = 0;
+
+	XLMusicType s_musicType = MUSIC_TYPE_UNKNOWN;
+	static bool s_musicIsPlaying = false;
 
 	//File System
 	#define MAX_OPEN_FILES 512
@@ -250,6 +255,79 @@ namespace Services
 		return s_fileStreams[fileHandle].getLoc();
 	}
 
+	int xlMusicPlay(const char* songName, int type)
+	{
+		s_musicType = (XLMusicType)type;
+		const char* gamePath = buildGamePath(songName);
+
+		if (type == MUSIC_TYPE_MIDI)
+		{
+			if (Midi::loadMidiFile(gamePath))
+			{
+				Midi::playResume();
+				s_musicIsPlaying = true;
+			}
+		}
+		else if (type == MUSIC_TYPE_OGG)
+		{
+			if (oggVorbis::loadOGG(gamePath))
+			{
+				oggVorbis::playResume();
+				s_musicIsPlaying = true;
+			}
+		}
+
+		return s_musicIsPlaying ? 1 : 0;
+	}
+
+	void xlMusicStop(void)
+	{
+		if (s_musicType == MUSIC_TYPE_MIDI)
+		{
+			Midi::stop();
+		}
+		else if (s_musicType == MUSIC_TYPE_OGG)
+		{
+			oggVorbis::stop();
+		}
+		s_musicIsPlaying = false;
+	}
+
+	int xlMusicIsPlaying(void)
+	{
+		return s_musicIsPlaying ? 1 : 0;	
+	}
+
+	void xlMusicPause(void)
+	{
+		if (s_musicIsPlaying)
+		{
+			if (s_musicType == MUSIC_TYPE_MIDI)
+			{
+				Midi::pause();
+			}
+			else if (s_musicType == MUSIC_TYPE_OGG)
+			{
+				oggVorbis::pause();
+			}
+		}
+	}
+
+	void xlMusicResume(void)
+	{
+		if (s_musicIsPlaying)
+		{
+			if (s_musicType == MUSIC_TYPE_MIDI)
+			{
+				Midi::playResume();
+			}
+			else if (s_musicType == MUSIC_TYPE_OGG)
+			{
+				oggVorbis::playResume();
+			}
+		}
+	}
+
 	void setup(int gameWidth, int gameHeight, GraphicsDevice* gdev)
 	{
 		s_gameScreenWidth  = gameWidth;
@@ -295,6 +373,12 @@ namespace Services
 		s_services.stopSound		= Sound::stopSound;
 		s_services.stopAllSounds	= Sound::stopAllSounds;
 		s_services.soundsPlaying	= Sound::soundsPlaying;
+
+		s_services.music_play		= xlMusicPlay;
+		s_services.music_stop		= xlMusicStop;
+		s_services.music_isPlaying	= xlMusicIsPlaying;
+		s_services.music_pause		= xlMusicPause;
+		s_services.music_resume		= xlMusicResume;
 	}
 
 	void reset()

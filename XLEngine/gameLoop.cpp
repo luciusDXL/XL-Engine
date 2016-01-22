@@ -6,6 +6,7 @@
 #include "input.h"
 #include "Sound/sound.h"
 #include "Sound/midi.h"
+#include "Sound/oggVorbis.h"
 #include "Threads/thread.h"
 #include "Math/crc32.h"
 #include "Math/math.h"
@@ -94,10 +95,12 @@ namespace GameLoop
 		Settings::initGameData();
 		Sound::init();
 		Midi::init( settings->midiformat, settings->patchDataLoc );
+		oggVorbis::init();
 		PluginManager::init();
 
 		Sound::setGlobalVolume( f32(settings->soundVolume)*0.01f );
 		Midi::setVolume( settings->musicVolume );
+		oggVorbis::setVolume( settings->soundVolume );
 		s_desiredFrameLimit = settings->frameLimit ? 1.0 / f64(settings->frameLimit) : 0.0;
 		
 		return true;
@@ -111,6 +114,7 @@ namespace GameLoop
 		Clock::destroy();
 		MemoryPool::destroy();
 		Midi::free();
+		oggVorbis::free();
 		Sound::free();
 		PluginManager::destroy();
 		GraphicsDevice::destroyDevice(s_gdev);

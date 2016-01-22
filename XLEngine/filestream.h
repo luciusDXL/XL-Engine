@@ -22,6 +22,8 @@ public:
 
 	bool isOpen() const;
 	void flush();
+
+	void* getFileHandle();
 	
 	//derived functions.
 	void seek(u32 offset, Origin origin=ORIGIN_START);

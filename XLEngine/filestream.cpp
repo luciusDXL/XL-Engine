@@ -62,6 +62,11 @@ void FileStream::flush()
 	}
 }
 
+void* FileStream::getFileHandle()
+{
+	return m_file;
+}
+
 //derived from Stream
 void FileStream::seek(u32 offset, Origin origin/*=ORIGIN_START*/)
 {

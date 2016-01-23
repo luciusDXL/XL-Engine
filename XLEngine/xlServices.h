@@ -76,6 +76,7 @@ typedef void  (*XLCopyToFramebuffer)(unsigned char*);
 typedef int   (*XLGetClock)(void);
 typedef void  (*XLSetClock)(int);
 typedef void  (*XLResetClock)(void);
+typedef void  (*XLYield)(void);
 typedef int   (*XLGetScreenSize)(void);
 
 typedef void* (*XLMalloc)(size_t);
@@ -125,6 +126,7 @@ typedef struct
 	XLGetClock   getClock;
 	XLSetClock   setClock;
 	XLResetClock resetClock;
+	XLYield		 yield;
 
 	//input
 	XLKeyEvent keyEvent;

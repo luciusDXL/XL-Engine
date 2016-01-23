@@ -4,6 +4,7 @@
 #include "memoryPool.h"
 #include "settings.h"
 #include "input.h"
+#include "osUtil.h"
 #include "Sound/sound.h"
 #include "Sound/midi.h"
 #include "Sound/oggVorbis.h"
@@ -128,6 +129,17 @@ namespace Services
 		s_lastRealTime = Clock::getTime_uS();
 		s_clockTics = 0;
 		s_clockTicsBase = 0;
+	}
+
+	void xlYield(void)
+	{
+		u32 yieldMS = 0;
+		if (Settings::get()->flags & XL_FLAG_REDUCE_CPU)
+		{
+			yieldMS = 1;
+		}
+
+		OS::sleep(yieldMS);
 	}
 
 	int xlGetScreenWidth(void)
@@ -341,6 +353,7 @@ namespace Services
 		s_services.getClock   = xlGetClock;
 		s_services.setClock   = xlSetClock;
 		s_services.resetClock = xlResetClock;
+		s_services.yield	  = xlYield;
 
 		s_services.getScreenWidth  = xlGetScreenWidth;
 		s_services.getScreenHeight = xlGetScreenHeight;

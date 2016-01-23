@@ -242,6 +242,17 @@ namespace Settings
 				s_settings.flags &= ~XL_FLAG_VSYNC;
 			}
 		}
+		else if (stricmp(key, "reduceCPU") == 0)
+		{
+			if (readBool(value))
+			{
+				s_settings.flags |= XL_FLAG_REDUCE_CPU;
+			}
+			else
+			{
+				s_settings.flags &= ~XL_FLAG_REDUCE_CPU;
+			}
+		}
 		else if (stricmp(key, "launchGame") == 0)
 		{
 			s_settings.launchGameID = -1;
@@ -551,6 +562,7 @@ namespace Settings
 		iniWriter::write("uiGlow",		  bool( (s_settings.flags&XL_FLAG_UI_GLOW)!=0 ));
 		iniWriter::write("colorCorrect",  bool( (s_settings.flags&XL_FLAG_COLOR_CORRECT)!=0 ));
 		iniWriter::write("vsync",		  bool( (s_settings.flags&XL_FLAG_VSYNC)!=0 ));
+		iniWriter::write("reduceCPU",	  bool( (s_settings.flags&XL_FLAG_REDUCE_CPU)!=0 ));
 		iniWriter::newLine();
 
 		iniWriter::comment("Video");

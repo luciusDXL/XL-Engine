@@ -4,10 +4,6 @@
 #include <string>
 
 static DynamicLibrary* s_fluidsynthDLL = NULL;
-static u8* s_fluidBuffer = NULL;
-static u32 s_fluidSize = 0;
-static u32 s_fluidSizeUnread = 0;
-static u32 s_fluidReadOffset = 0;
 
 xl_new_fluid_settings_def		xl_new_fluid_settings;
 xl_fluid_settings_setstr_def	xl_fluid_settings_setstr;
@@ -63,9 +59,6 @@ void unloadFluidsynthDLL()
 {
 	delete s_fluidsynthDLL;
 	s_fluidsynthDLL = NULL;
-
-	delete[] s_fluidBuffer;
-	s_fluidBuffer = NULL;
 }
 
 s32 fillFluidBuffer(u32 requestedChunkSize, u8* chunkData, f64 sampleRate, fluid_synth_t* synth, fluid_player_t* player)
@@ -75,37 +68,12 @@ s32 fillFluidBuffer(u32 requestedChunkSize, u8* chunkData, f64 sampleRate, fluid
 		return 0;
 	}
 
-	if (s_fluidSize < u32(sampleRate)*4)
+	s32 res = fluid_synth_write_s16(synth, requestedChunkSize/4, chunkData, 0, 2, chunkData, 1, 2);
+	if (res != FLUID_OK)
 	{
-		s_fluidSize = u32(sampleRate)*4;
-		delete[] s_fluidBuffer;
-		s_fluidBuffer = new u8[s_fluidSize];
-		s_fluidSizeUnread = 0;
+		LOG( LOG_WARNING, "error during midi synthesis: %d", res );
+		return 0;
 	}
 
-	u32 chunkOffset = 0;
-	while (requestedChunkSize > 0)
-	{
-		if (s_fluidSizeUnread == 0)
-		{
-			s_fluidSizeUnread = u32(sampleRate)*4;
-			s_fluidReadOffset = 0;
-			s32 res = fluid_synth_write_s16(synth, (int)sampleRate, s_fluidBuffer, 0, 2, s_fluidBuffer, 1, 2);
-			if (res != FLUID_OK)
-			{
-				LOG( LOG_WARNING, "error during midi synthesis: %d", res );
-				break;
-			}
-		}
-		u32 sizeToRead = std::min(requestedChunkSize, s_fluidSizeUnread);
-		memcpy(&chunkData[chunkOffset], &s_fluidBuffer[s_fluidReadOffset], sizeToRead);
-
-		requestedChunkSize -= sizeToRead;
-		s_fluidSizeUnread  -= sizeToRead;
-
-		chunkOffset += sizeToRead;
-		s_fluidReadOffset += sizeToRead;
-	}
-
-	return chunkOffset;
+	return requestedChunkSize;
 }

@@ -14,7 +14,7 @@ namespace Midi
 {
 	#define LOCK()	 s_mutex->lock()
 	#define UNLOCK() s_mutex->unlock()
-	const  f32 c_volumeScale = 0.5f;
+	const  f32 c_volumeScale[] = { 0.5f, 1.0f };
 
 	static MidiFormat s_midiFormat;
 
@@ -29,7 +29,7 @@ namespace Midi
 	static Mutex* s_mutex = NULL;
 		
 	static f64 s_sampleRate = 0.0;
-	static f32 s_volume = c_volumeScale;
+	static f32 s_volume = c_volumeScale[0];
 
 	void midiStreamCallback(void* userData, u32 requestedChunkSize, u8* chunkData);
 		
@@ -41,6 +41,7 @@ namespace Midi
 
 		if (s_midiFormat == MFMT_GUS_PATCH)
 		{
+			s_volume = c_volumeScale[0];
 			s_sampleRate = 32072.0;
 			if (WildMidi_Init(patchLoc, 32072, WM_MO_ENHANCED_RESAMPLING) >= 0)
 			{
@@ -52,6 +53,7 @@ namespace Midi
 		}
 		else if (s_midiFormat == MFMT_SOUND_FONT)
 		{
+			s_volume = c_volumeScale[1];
 			if (!loadFluidsythDLL())
 			{
 				LOG( LOG_ERROR, "cannot find or load the \"libfluidsynth\" dynamic library." );
@@ -61,7 +63,7 @@ namespace Midi
 			s_fluidSettings = new_fluid_settings();
 			fluid_settings_setstr(s_fluidSettings, "player.timing-source", "sample");
 			fluid_settings_setstr(s_fluidSettings, "synth.lock-memory", 0);
-			//fluid_settings_setstr(s_fluidSettings, "synth.gain", "1.0");
+			fluid_settings_setstr(s_fluidSettings, "synth.chorus-active", "0");
 
 			s_fluidSynth = new_fluid_synth(s_fluidSettings);
 			if (fluid_synth_sfload(s_fluidSynth, patchLoc, 1) < 0)
@@ -109,7 +111,7 @@ namespace Midi
 	
 	void setVolume(u32 volume)
 	{
-		s_volume = f32(volume)*0.01f * c_volumeScale;
+		s_volume = f32(volume)*0.01f * c_volumeScale[ s_midiFormat ];
 	}
 
 	void playResume()

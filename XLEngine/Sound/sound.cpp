@@ -317,7 +317,6 @@ namespace Sound
 			alSourcef( s_sources[sourceID], AL_GAIN, gain );
 		}
 #endif
-		
 		s_currentFrame++;
 		s_mutex->unlock();
 	}
@@ -334,8 +333,11 @@ namespace Sound
 			//change the volume of all the currently playing sounds.
 			for (s32 s=0; s<s_maxSimulSounds; s++)
 			{
-				const f32 gain = std::min(s_sourceVolume[s] * volume, 1.0f);
-				alSourcef( s, AL_GAIN, gain );
+				if (checkActiveFlag(s, SOUND_PLAYING))
+				{
+					const f32 gain = std::min(s_sourceVolume[s] * volume, 1.0f);
+					alSourcef( s, AL_GAIN, gain );
+				}
 			}
 			
 			s_globalVolume = volume;
@@ -444,6 +446,7 @@ namespace Sound
 			}
 
 			alBufferData( buffer->oalBuffer, bufferFmt, rawData, rawSize, samplingRate );
+
 			ALenum error = alGetError();
 			if (error != AL_NO_ERROR)
 			{
@@ -711,6 +714,10 @@ namespace Sound
 
 		s_mutex->lock();
 			alSourceStop(s_musicSource);
+			if (s_musicPlaying)
+			{
+				alSourceUnqueueBuffers( s_musicSource, 4, s_musicBuffers );
+			}
 			s_musicPlaying  = false;
 			s_musicCallback = NULL;
 			s_musicUserData = NULL;
@@ -901,7 +908,7 @@ namespace Sound
 
 		s_buffers[bufferID].lastUsed = s_currentFrame;
 		s_buffers[bufferID].refCount++;
-
+		
 		return true;
 	}
 
@@ -956,7 +963,7 @@ namespace Sound
 	/////////////////////////////////////////////////
 	// Music Streaming Update Thread
 	/////////////////////////////////////////////////
-	const u32  c_musicChunkSize = 4096;
+	const u32  c_musicChunkSize = 44100;
 	static u8  s_chunkData[c_musicChunkSize];
 	
 	u32 XL_STDCALL streamMusic(void* userData)
@@ -968,7 +975,6 @@ namespace Sound
 			{
 				u8* chunkData = NULL;
 				alSourceStop( s_musicSource );
-				alSourceUnqueueBuffers( s_musicSource, 4, s_musicBuffers );
 
 				//get 4 buffers ready ahead of time
 				s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData);
@@ -1010,6 +1016,11 @@ namespace Sound
 			{
 				s32 buffersProcessed = 0;
 				alGetSourcei( s_musicSource, AL_BUFFERS_PROCESSED, &buffersProcessed );
+				ALenum error = alGetError();
+				if (error != AL_NO_ERROR)
+				{
+					LOG( LOG_WARNING, "OpenAL error: %x", error );
+				}
 
 				while (buffersProcessed > 0)
 				{

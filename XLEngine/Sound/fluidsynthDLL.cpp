@@ -38,21 +38,21 @@ bool loadFluidsythDLL()
 	}
 
 	new_fluid_settings					= (xl_new_fluid_settings_def)s_fluidsynthDLL->getSymbol("new_fluid_settings");
-	fluid_settings_setstr				= (xl_fluid_settings_setstr_def)s_fluidsynthDLL->getSymbol("fluid_settings_setstr");
 	new_fluid_synth						= (xl_new_fluid_synth_def)s_fluidsynthDLL->getSymbol("new_fluid_synth");
 	new_fluid_sequencer2				= (xl_new_fluid_sequencer2_def)s_fluidsynthDLL->getSymbol("new_fluid_sequencer2");
-	fluid_settings_getnum				= (xl_fluid_settings_getnum_def)s_fluidsynthDLL->getSymbol("fluid_settings_getnum");
-	fluid_synth_sfload					= (xl_fluid_synth_sfload_def)s_fluidsynthDLL->getSymbol("fluid_synth_sfload");
-	fluid_sequencer_register_fluidsynth = (xl_fluid_sequencer_register_fluidsynth_def)s_fluidsynthDLL->getSymbol("fluid_sequencer_register_fluidsynth");
 	new_fluid_player					= (xl_new_fluid_player_def)s_fluidsynthDLL->getSymbol("new_fluid_player");
 	delete_fluid_settings				= (xl_delete_fluid_settings_def)s_fluidsynthDLL->getSymbol("delete_fluid_settings");
 	delete_fluid_synth					= (xl_delete_fluid_synth_def)s_fluidsynthDLL->getSymbol("delete_fluid_synth");
 	delete_fluid_sequencer				= (xl_delete_fluid_sequencer_def)s_fluidsynthDLL->getSymbol("delete_fluid_sequencer");
 	delete_fluid_player					= (xl_delete_fluid_player_def)s_fluidsynthDLL->getSymbol("delete_fluid_player");
+	fluid_settings_setstr				= (xl_fluid_settings_setstr_def)s_fluidsynthDLL->getSymbol("fluid_settings_setstr");
+	fluid_settings_getnum				= (xl_fluid_settings_getnum_def)s_fluidsynthDLL->getSymbol("fluid_settings_getnum");
+	fluid_synth_sfload					= (xl_fluid_synth_sfload_def)s_fluidsynthDLL->getSymbol("fluid_synth_sfload");
+	fluid_synth_write_s16				= (xl_fluid_synth_write_s16_def)s_fluidsynthDLL->getSymbol("fluid_synth_write_s16");
+	fluid_sequencer_register_fluidsynth = (xl_fluid_sequencer_register_fluidsynth_def)s_fluidsynthDLL->getSymbol("fluid_sequencer_register_fluidsynth");
 	fluid_player_stop					= (xl_fluid_player_stop_def)s_fluidsynthDLL->getSymbol("fluid_player_stop");
 	fluid_player_add					= (xl_fluid_player_add_def)s_fluidsynthDLL->getSymbol("fluid_player_add");
 	fluid_player_get_status				= (xl_fluid_player_get_status_def)s_fluidsynthDLL->getSymbol("fluid_player_get_status");
-	fluid_synth_write_s16				= (xl_fluid_synth_write_s16_def)s_fluidsynthDLL->getSymbol("fluid_synth_write_s16");
 	fluid_player_play					= (xl_fluid_player_play_def)s_fluidsynthDLL->getSymbol("fluid_player_play");
 	fluid_player_set_loop				= (xl_fluid_player_set_loop_def)s_fluidsynthDLL->getSymbol("fluid_player_set_loop");
 
@@ -86,7 +86,7 @@ s32 fillFluidBuffer(u32 requestedChunkSize, u8* chunkData, f64 sampleRate, fluid
 	u32 chunkOffset = 0;
 	while (requestedChunkSize > 0)
 	{
-		if (s_fluidSizeUnread < requestedChunkSize)
+		if (s_fluidSizeUnread == 0)
 		{
 			s_fluidSizeUnread = u32(sampleRate)*4;
 			s_fluidReadOffset = 0;

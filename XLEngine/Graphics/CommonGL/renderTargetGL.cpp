@@ -1,10 +1,8 @@
 #include <stdlib.h>
 #include "renderTargetGL.h"
+#include "../graphicsGL_Inc.h"
 #include "../../log.h"
 
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
 
 RenderTargetGL::RenderTargetGL(RenderTargetHandle handle, TextureGL* texture)
 {

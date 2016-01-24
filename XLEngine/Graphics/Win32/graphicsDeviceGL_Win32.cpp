@@ -248,3 +248,8 @@ void GraphicsDeviceGL_Win32::enableVSync(bool enable)
 
 	m_vsyncEnabled = enable;
 }
+
+bool GraphicsDeviceGL_Win32::queryExtension(const char* name)
+{
+	return glewGetExtension(name)!=0;
+}

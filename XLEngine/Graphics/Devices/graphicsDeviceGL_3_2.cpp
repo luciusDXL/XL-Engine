@@ -5,10 +5,7 @@
 #include <stdlib.h>
 #include "graphicsDeviceGL_3_2.h"
 #include "../../log.h"
-
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include "../graphicsGL_Inc.h"
 
 
 GraphicsDeviceGL_3_2::GraphicsDeviceGL_3_2(GraphicsDevicePlatform* platform) : GraphicsDeviceGL(platform)

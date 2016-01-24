@@ -77,6 +77,7 @@ namespace Midi
 			fluid_sequencer_register_fluidsynth(s_fluidSeq, s_fluidSynth);
 			fluid_settings_getnum(s_fluidSettings, "synth.sample-rate", &s_sampleRate);
 
+			s_initialized = true;
 			s_fluidPlayer = new_fluid_player(s_fluidSynth);
 			return true;
 		}

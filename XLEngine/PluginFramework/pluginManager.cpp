@@ -1,5 +1,5 @@
-#include "PluginManager.h"
-#include "DynamicLibrary.h"
+#include "pluginManager.h"
+#include "dynamicLibrary.h"
 #include "../types.h"
 
 DynamicLibrary *PluginManager::m_gameLib;
@@ -25,7 +25,7 @@ XL_RunFunc PluginManager::initGame(const string& path)
 	//load the game lib.
 	string errorString;
 	m_gameLib = DynamicLibrary::load(path, errorString);
-    if (!m_gameLib) // not a dynamic library? 
+    if (!m_gameLib) // not a dynamic library?
 	{
 		return NULL;
 	}

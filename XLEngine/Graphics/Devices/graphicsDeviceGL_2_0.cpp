@@ -5,7 +5,7 @@
 // better, handling dynamic vertex data better (its super basic
 // and slow right now), etc.
 // Due to these issues this currently runs the UI at 1/2 the
-// framerate as the OpenGL 1.3 device - though the 
+// framerate as the OpenGL 1.3 device - though the
 // actual game view runs at the same speed.
 ////////////////////////////////////////////////////////////////////
 #include <stdlib.h>
@@ -18,10 +18,7 @@
 #include "../CommonGL/vertexBufferGL.h"
 #include "../CommonGL/indexBufferGL.h"
 #include "../CommonGL/streamingVertexBuffer.h"
-
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include "../graphicsGL_Inc.h"
 
 //Temporary, to get basic rendering working.
 #define MAX_QUADS 16384
@@ -152,8 +149,8 @@ bool GraphicsDeviceGL_2_0::init(int w, int h, int& vw, int& vh)
 
 	m_windowWidth  = w;
 	m_windowHeight = h;
-	
-	//frame size - this is the 32 bit version of the framebuffer. The 8 bit framebuffer, rendered by the software renderer, 
+
+	//frame size - this is the 32 bit version of the framebuffer. The 8 bit framebuffer, rendered by the software renderer,
 	//is converted to 32 bit (using the current palette) - this buffer - before being uploaded to the video card.
 	m_frameWidth  = vw;
 	m_frameHeight = vh;
@@ -172,7 +169,7 @@ bool GraphicsDeviceGL_2_0::init(int w, int h, int& vw, int& vh)
 	};
 	m_videoFrameBuffer = createTextureRGBA_Internal(m_frameWidth, m_frameHeight, NULL, samplerState);
 	enableTexturing(true);
-	
+
 	glFlush();
 
 	return true;

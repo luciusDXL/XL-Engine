@@ -2,7 +2,13 @@
 #include "../types.h"
 #include <string.h>
 
-typedef u32 (XL_STDCALL *ThreadFunc)(void*);
+#ifdef _WIN32
+    #define XL_THREADRET u32
+#else
+    #define XL_THREADRET void*
+#endif
+
+typedef XL_THREADRET (XL_STDCALL *ThreadFunc)(void*);
 
 class Thread
 {
@@ -14,7 +20,7 @@ public:
 	virtual void resume() = 0;
 
 protected:
-	Thread(const char* name, ThreadFunc func, void* userData) 
+	Thread(const char* name, ThreadFunc func, void* userData)
 	{
 		m_func = func;
 		m_userData = userData;

@@ -2,12 +2,10 @@
 #include "textureGL.h"
 #include "../../log.h"
 #include "../../Math/math.h"
-
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include "../graphicsGL_Inc.h"
 
 #include <assert.h>
+#include <memory.h>
 
 TextureGL::TextureGL(TextureHandle handle, bool dynamic)
 {
@@ -107,7 +105,7 @@ void TextureGL::update(u32 srcWidth, u32 srcHeight, const u32* data)
 	u32 srcStride = std::min(srcWidth, m_width) * 4;
 
 	allocateUpdateBuffer(m_width, m_height);
-	
+
 	u32* buffer = m_updateBuffer;
 	for (u32 y=0; y<std::min(srcHeight, m_height); y++)
 	{

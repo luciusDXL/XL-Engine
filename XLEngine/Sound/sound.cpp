@@ -6,6 +6,7 @@
 #include <al.h>
 #include <alc.h>
 #include <assert.h>
+#include <math.h>
 #include <string>
 #include <map>
 
@@ -72,7 +73,7 @@ namespace Sound
 	static SoundBuffer*	s_buffers;
 	static ALuint*		s_sources;
 	static f32*			s_sourceVolume;
-	
+
 	//music - for now only support a single track.
 	static ALuint		s_musicBuffers[c_musicBufferCount];
 	static ALuint		s_musicSource;
@@ -94,14 +95,13 @@ namespace Sound
 	//music
 	static bool s_musicPlaying = false;
 	static f32  s_musicVolume = 1.0f;
-	static s32  s_musicBuffersProcessed = 0;
 	static Thread* s_musicThread = NULL;
 	static MusicCallback s_musicCallback = NULL;
 	static void* s_musicUserData = NULL;
 	static ALenum s_musicFormat;
 	static u32 s_musicSamplingRate;
 	static bool s_musicPaused = false;
-		
+
 	//////////////////////////////////////////////////////////////////
 	//Forward function declarations.
 	//////////////////////////////////////////////////////////////////
@@ -111,8 +111,8 @@ namespace Sound
 	bool playSoundInternal(SoundHandle sound, f32 volume, f32 pan, Bool loop, Bool is3D);
 	const void* getRawSoundData(const void* data, u32 size, u32 type, u32& rawSize);
 	const f32* calculatePan(f32 pan);
-	u32 XL_STDCALL streamMusic(void* userData);
-	
+	XL_THREADRET XL_STDCALL streamMusic(void* userData);
+
 	//////////////////////////////////////////////////////////////////
 	//API implementation
 	//////////////////////////////////////////////////////////////////
@@ -201,7 +201,7 @@ namespace Sound
 		s_currentFrame = 1;
 		s_globalVolume = s_globalVolumeRangeScale;
 		LOG( LOG_MESSAGE, "Sound System initialized." );
-				
+
 		return true;
 	}
 
@@ -256,9 +256,9 @@ namespace Sound
 			s_buffers[b].lastUsed = 0;
 		}
 
-		s_mutex->unlock(); 
+		s_mutex->unlock();
 	}
-		
+
 	void setCallback( XLSoundCallback callback )
 	{
 		s_callback = callback;
@@ -269,9 +269,11 @@ namespace Sound
 		if (!s_init) { return; }
 		s_mutex->lock();
 
-		f32 totalVolume = 0.0f;
-		s32 activeSources[32] = {0};
+	#if 0
+        f32 totalVolume = 0.0f;
 		s32 activeCount = 0;
+        s32 activeSources[32] = {0};
+	#endif
 
 		for (s32 s=0; s<s_maxSimulSounds; s++)
 		{
@@ -284,9 +286,9 @@ namespace Sound
 					//was this playing up until now? - fire off the callback...
 					if (s_callback && checkActiveFlag(s, SOUND_PLAYING))
 					{
-						if (s_userValue[s] != XL_SOUND_NO_CALLBACK) 
-						{ 
-							s_callback( s_userValue[s] ); 
+						if (s_userValue[s] != XL_SOUND_NO_CALLBACK)
+						{
+							s_callback( s_userValue[s] );
 						}
 					}
 
@@ -298,8 +300,10 @@ namespace Sound
 				}
 				else if ( state != AL_PAUSED )
 				{
+				#if 0
 					totalVolume += s_sourceVolume[s];
 					activeSources[ activeCount++ ] = s;
+				#endif
 					clearActiveFlag(s, SOUND_PAUSED);
 				}
 			}
@@ -339,13 +343,13 @@ namespace Sound
 					alSourcef( s, AL_GAIN, gain );
 				}
 			}
-			
+
 			s_globalVolume = volume;
 
 			s_mutex->unlock();
 		}
 	}
-	
+
 	Bool isActive(SoundHandle handle)
 	{
 		if (!s_init || handle == INVALID_SOUND_HANDLE) { return false; }
@@ -372,20 +376,20 @@ namespace Sound
 	Bool isLooping(SoundHandle handle)
 	{
 		if (!s_init || handle == INVALID_SOUND_HANDLE) { return false; }
-		
+
 		s_mutex->lock();
 			const u32 sourceID = getHandleSource(handle);
 			const bool soundIsLooping = ( isActiveNoLock(handle) && checkActiveFlag(sourceID, SOUND_LOOPING) );
 		s_mutex->unlock();
-		
+
 		return soundIsLooping;
 	}
-	
+
 	SoundHandle playSound2D(const char* name, const void* data, u32 size, u32 type, SoundInfo* info, Bool looping)
 	{
-		if (!s_init || name==NULL || data==NULL || info==NULL) 
-		{ 
-			return INVALID_SOUND_HANDLE; 
+		if (!s_init || name==NULL || data==NULL || info==NULL)
+		{
+			return INVALID_SOUND_HANDLE;
 		}
 
 		s_mutex->lock();
@@ -497,14 +501,14 @@ namespace Sound
 		if (!s_init || handle == INVALID_SOUND_HANDLE) { return; }
 
 		s_mutex->lock();
-		
+
 		if (!isActiveNoLock(handle)) { s_mutex->unlock(); return; }
 		const u32 sourceID = getHandleSource(handle);
 
 		//if the sound is not playing then it doesn't need to be stopped.
 		if (!checkActiveFlag(sourceID, SOUND_PLAYING))
 		{
-			s_mutex->unlock(); 
+			s_mutex->unlock();
 			return;
 		}
 
@@ -521,7 +525,7 @@ namespace Sound
 		s_buffers[bufferID].refCount--;
 		assert(s_buffers[bufferID].refCount >= 0);
 
-		s_mutex->unlock(); 
+		s_mutex->unlock();
 	}
 
 	void stopAllSounds()
@@ -546,7 +550,7 @@ namespace Sound
 			s_buffers[b].refCount = 0;
 		}
 
-		s_mutex->unlock(); 
+		s_mutex->unlock();
 	}
 
 	s32 soundsPlaying()
@@ -566,7 +570,7 @@ namespace Sound
 				numSoundsPlaying++;
 			}
 		}
-		s_mutex->unlock(); 
+		s_mutex->unlock();
 
 		return numSoundsPlaying;
 	}
@@ -721,7 +725,7 @@ namespace Sound
 			s_musicPlaying  = false;
 			s_musicCallback = NULL;
 			s_musicUserData = NULL;
-		s_mutex->unlock(); 
+		s_mutex->unlock();
 	}
 
 	// Pause the music, it can be resumed from the same spot.
@@ -732,7 +736,7 @@ namespace Sound
 		s_mutex->lock();
 			s_musicPaused = true;
 			alSourcePause(s_musicSource);
-		s_mutex->unlock(); 
+		s_mutex->unlock();
 	}
 
 	// Resume paused music.
@@ -743,7 +747,7 @@ namespace Sound
 		s_mutex->lock();
 			s_musicPaused = false;
 			alSourcePlay(s_musicSource);
-		s_mutex->unlock(); 
+		s_mutex->unlock();
 	}
 
 	//////////////////////////////////////////////////////////////////
@@ -820,7 +824,7 @@ namespace Sound
 			s_bufferMap[name] = oldestIndex;
 
 			buffer->name = name;
-			
+
 			//return it.
 			return buffer;
 		}
@@ -856,7 +860,7 @@ namespace Sound
 		clearActiveFlag(soundID, SOUND_PLAYING);
 		clearActiveFlag(soundID, SOUND_LOOPING);
 		setActiveFlag(soundID, SOUND_ACTIVE);
-		
+
 		//create a sound handle.
 		return SoundHandle( bufferID | (soundID<<8) | (allocID<<13) );
 	}
@@ -877,7 +881,7 @@ namespace Sound
 			alSourcei( oalSource, AL_SOURCE_RELATIVE, AL_TRUE );
 			alSourcef( oalSource, AL_REFERENCE_DISTANCE, 15.0f );
 			alSourcef( oalSource, AL_MAX_DISTANCE, 200.0f );
-			
+
 			alSourcefv( oalSource, AL_POSITION, calculatePan(pan) );
 		}
 		else
@@ -908,7 +912,7 @@ namespace Sound
 
 		s_buffers[bufferID].lastUsed = s_currentFrame;
 		s_buffers[bufferID].refCount++;
-		
+
 		return true;
 	}
 
@@ -963,17 +967,16 @@ namespace Sound
 	/////////////////////////////////////////////////
 	// Music Streaming Update Thread
 	/////////////////////////////////////////////////
-	const u32  c_musicChunkSize = 44100;
-	static u8  s_chunkData[c_musicChunkSize];
-	
-	u32 XL_STDCALL streamMusic(void* userData)
+	const u32 c_musicChunkSize = 44100;	//the chunk size must be divisible by 4 or some of the music players won't work properly (such as fluidsynth).
+	static u8 s_chunkData[c_musicChunkSize];
+
+	XL_THREADRET XL_STDCALL streamMusic(void* userData)
 	{
 		while (1)
 		{
 			s_mutex->lock();
 			if ( !s_musicPaused && !s_musicPlaying && s_musicCallback )
 			{
-				u8* chunkData = NULL;
 				alSourceStop( s_musicSource );
 
 				//get 4 buffers ready ahead of time
@@ -988,10 +991,10 @@ namespace Sound
 
 				s_musicCallback(s_musicUserData, c_musicChunkSize, s_chunkData);
 				alBufferData( s_musicBuffers[3], s_musicFormat, s_chunkData, c_musicChunkSize, s_musicSamplingRate );
-				
+
 				//buffer the data and queue them up for playing
 				alSourceQueueBuffers(s_musicSource, 4, s_musicBuffers);
-				
+
 				//play the music as a 2D sound
 				const f32 zero[] = { 0.0f, 0.0f, 0.0f };
 				alSourceStop(s_musicSource);
@@ -1039,6 +1042,6 @@ namespace Sound
 			OS::sleep(1);
 		};
 
-		return 0;
+		return (XL_THREADRET)0;
 	}
 }

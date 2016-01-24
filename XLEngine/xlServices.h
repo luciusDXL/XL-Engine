@@ -84,7 +84,7 @@ typedef void* (*XLCalloc)(size_t, size_t);
 typedef void* (*XLRealloc)(void*, size_t);
 typedef void  (*XLFree)(void*);
 
-typedef void  (*XLDebugMessage)(char*, ...);
+typedef void  (*XLDebugMessage)(const char*, ...);
 typedef void  (*XLKeyEvent)(int, int, int);
 typedef void  (*XLGetMouseDelta)(int*, int*);
 typedef void  (*XLGetMouseButtons)(int*);

@@ -1,15 +1,13 @@
 #include <stdlib.h>
 #include "shaderGL.h"
 #include "vertexBufferGL.h"
+#include "../graphicsGL_Inc.h"
 #include "../../log.h"
 #include "../../filestream.h"
 #include "../../Math/crc32.h"
 
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-
 #include <assert.h>
+#include <memory.h>
 
 #define MAX_PARAMETER_COUNT 64
 
@@ -145,57 +143,57 @@ void ShaderGL::uploadData(GraphicsDevice* device)
 			switch (param.type)
 			{
 				case GL_FLOAT:
-					glProgramUniform1fv( m_glShaderID, param.glID, 1, (f32*)param.data );
+					glUniform1fv( param.glID, 1, (f32*)param.data );
 					break;
 				case GL_FLOAT_VEC2:
-					glProgramUniform2fv( m_glShaderID, param.glID, 1, (f32*)param.data );
+					glUniform2fv( param.glID, 1, (f32*)param.data );
 					break;
 				case GL_FLOAT_VEC3:
-					glProgramUniform3fv( m_glShaderID, param.glID, 1, (f32*)param.data );
+					glUniform3fv( param.glID, 1, (f32*)param.data );
 					break;
-				case GL_FLOAT_VEC4: 
-					glProgramUniform4fv( m_glShaderID, param.glID, 1, (f32*)param.data );
+				case GL_FLOAT_VEC4:
+					glUniform4fv( param.glID, 1, (f32*)param.data );
 					break;
 				case GL_INT:
-					glProgramUniform1iv( m_glShaderID, param.glID, 1, (s32*)param.data );
+					glUniform1iv( param.glID, 1, (s32*)param.data );
 					break;
 				case GL_INT_VEC2:
-					glProgramUniform2iv( m_glShaderID, param.glID, 1, (s32*)param.data );
+					glUniform2iv( param.glID, 1, (s32*)param.data );
 					break;
-				case GL_INT_VEC3: 
-					glProgramUniform3iv( m_glShaderID, param.glID, 1, (s32*)param.data );
+				case GL_INT_VEC3:
+					glUniform3iv( param.glID, 1, (s32*)param.data );
 					break;
-				case GL_INT_VEC4: 
-					glProgramUniform4iv( m_glShaderID, param.glID, 1, (s32*)param.data );
+				case GL_INT_VEC4:
+					glUniform4iv( param.glID, 1, (s32*)param.data );
 					break;
 				case GL_BOOL:
-					glProgramUniform1iv( m_glShaderID, param.glID, 1, (s32*)param.data );
+					glUniform1iv( param.glID, 1, (s32*)param.data );
 					break;
 				case GL_BOOL_VEC2:
-					glProgramUniform2iv( m_glShaderID, param.glID, 1, (s32*)param.data );
+					glUniform2iv( param.glID, 1, (s32*)param.data );
 					break;
 				case GL_BOOL_VEC3:
-					glProgramUniform3iv( m_glShaderID, param.glID, 1, (s32*)param.data );
+					glUniform3iv( param.glID, 1, (s32*)param.data );
 					break;
 				case GL_BOOL_VEC4:
-					glProgramUniform4iv( m_glShaderID, param.glID, 1, (s32*)param.data );
+					glUniform4iv( param.glID, 1, (s32*)param.data );
 					break;
 				case GL_FLOAT_MAT2:
-					glProgramUniformMatrix2fv( m_glShaderID, param.glID, 1, false, (f32*)param.data );
+					glUniformMatrix2fv( param.glID, 1, false, (f32*)param.data );
 					break;
 				case GL_FLOAT_MAT3:
-					glProgramUniformMatrix3fv( m_glShaderID, param.glID, 1, false, (f32*)param.data );
+					glUniformMatrix3fv( param.glID, 1, false, (f32*)param.data );
 					break;
 				case GL_FLOAT_MAT4:
-					glProgramUniformMatrix4fv( m_glShaderID, param.glID, 1, false, (f32*)param.data );
+					glUniformMatrix4fv( param.glID, 1, false, (f32*)param.data );
 					break;
 				case GL_SAMPLER_2D:
-					glProgramUniform1iv( m_glShaderID, param.glID, 1, (s32*)param.data );
+					glUniform1iv( param.glID, 1, (s32*)param.data );
 					//A cast is required to the base OpenGL graphics device since that is as highest class in the hierarchy that can "friend" ShaderGL
 					((GraphicsDeviceGL*)device)->setTexture( param.texHandle, *((s32*)param.data) );
 					break;
 				case GL_SAMPLER_CUBE:
-					glProgramUniform1iv( m_glShaderID, param.glID, 1, (s32*)param.data );
+					glUniform1iv( param.glID, 1, (s32*)param.data );
 					//A cast is required to the base OpenGL graphics device since that is as highest class in the hierarchy that can "friend" ShaderGL
 					((GraphicsDeviceGL*)device)->setTexture( param.texHandle, *((s32*)param.data) );
 					break;
@@ -290,7 +288,7 @@ bool ShaderGL::compileShader(const char* vsShader, const char* psShader)
 		const s32 origLoc = glGetAttribLocation(m_glShaderID, VertexBufferGL::c_vertexAttrib[attr]);
 		if (origLoc >= 0)
 		{
-			glBindAttribLocation(m_glShaderID, attr, VertexBufferGL::c_vertexAttrib[attr]); 
+			glBindAttribLocation(m_glShaderID, attr, VertexBufferGL::c_vertexAttrib[attr]);
 			m_requiredVtxAttrib |= (1<<attr);
 		}
 	}
@@ -304,7 +302,7 @@ bool ShaderGL::compileShader(const char* vsShader, const char* psShader)
 	{
 		return false;
 	}
-		
+
 	return success;
 }
 
@@ -378,7 +376,7 @@ u32 getParameterSize(u32 type)
 		case GL_FLOAT_VEC3:
 			return sizeof(f32)*3;
 			break;
-		case GL_FLOAT_VEC4: 
+		case GL_FLOAT_VEC4:
 			return sizeof(f32)*4;
 			break;
 		case GL_INT:
@@ -387,10 +385,10 @@ u32 getParameterSize(u32 type)
 		case GL_INT_VEC2:
 			return sizeof(s32)*2;
 			break;
-		case GL_INT_VEC3: 
+		case GL_INT_VEC3:
 			return sizeof(s32)*3;
 			break;
-		case GL_INT_VEC4: 
+		case GL_INT_VEC4:
 			return sizeof(s32)*4;
 			break;
 		case GL_BOOL:

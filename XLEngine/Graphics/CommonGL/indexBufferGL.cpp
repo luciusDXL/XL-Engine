@@ -1,11 +1,8 @@
 #include <stdlib.h>
 #include <memory.h>
 #include "indexBufferGL.h"
+#include "../graphicsGL_Inc.h"
 #include "../../log.h"
-
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
 
 #include <algorithm>
 

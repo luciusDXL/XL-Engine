@@ -1,4 +1,3 @@
-#pragma once
 #include "crc32.h"
 #include <assert.h>
 
@@ -12,7 +11,7 @@ namespace CRC32
 		s32 result = 0;
 		for (s32 bit = 0; bit < bits; bit++)
 		{
-			if(val & 1) result |= 1 << (bits - 1 - bit); 
+			if(val & 1) result |= 1 << (bits - 1 - bit);
 			val >>= 1;
 		}
 
@@ -49,7 +48,7 @@ namespace CRC32
 		const u8* dataEnd = &data[size];
 		while (data < dataEnd)
 		{
-			crc = (crc >> 8) ^ s_crcTable[(crc & 0xFF) ^ *data++];        
+			crc = (crc >> 8) ^ s_crcTable[(crc & 0xFF) ^ *data++];
 		}
 
 		return ~crc;

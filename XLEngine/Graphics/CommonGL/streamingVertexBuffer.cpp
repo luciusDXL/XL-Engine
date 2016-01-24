@@ -1,7 +1,9 @@
-#include <stdlib.h>
 #include "streamingVertexBuffer.h"
 #include "vertexBufferGL.h"
 #include "../../log.h"
+
+#include <stdlib.h>
+#include <memory.h>
 
 StreamingVertexBuffer::StreamingVertexBuffer(const VertexElement* vertexDecl, u32 declCount, u32 stride, u32 maxVertexCount)
 {

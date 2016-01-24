@@ -8,8 +8,8 @@ public:
 	MutexWin32();
 	virtual ~MutexWin32();
 
-	virtual s32 lock() const;
-	virtual s32 unlock() const;
+	virtual s32 lock();
+	virtual s32 unlock();
 
 private:
 	mutable CRITICAL_SECTION C;

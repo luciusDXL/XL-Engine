@@ -81,7 +81,7 @@ namespace Services
 		s_lastRealTime = time;
 	}
 
-	void xlDebugMessage(char* msg, ...)
+	void xlDebugMessage(const char* msg, ...)
 	{
 		static char outMsg[4096];
 
@@ -163,14 +163,14 @@ namespace Services
 		buttons[1] = Input::getMouseButtonState( Input::MouseMiddle ) ? 1 : 0;
 		buttons[2] = Input::getMouseButtonState( Input::MouseRight )  ? 1 : 0;
 	}
-	
+
 	const char* buildGamePath(const char* inpath)
 	{
 		static char filepath[4096];
 		const s32 gameID = Settings::getGameID();
 
 		assert(gameID >= 0);
-		GameInfo* info = Settings::getGameInfo( gameID );	
+		GameInfo* info = Settings::getGameInfo( gameID );
 		sprintf(filepath, "%s/%s", info->path, inpath);
 
 		return filepath;
@@ -307,7 +307,7 @@ namespace Services
 
 	int xlMusicIsPlaying(void)
 	{
-		return s_musicIsPlaying ? 1 : 0;	
+		return s_musicIsPlaying ? 1 : 0;
 	}
 
 	void xlMusicPause(void)

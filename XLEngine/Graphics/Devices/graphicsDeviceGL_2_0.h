@@ -6,6 +6,7 @@ class GraphicsShadersGL_2_0;
 class StreamingVertexBuffer;
 class VertexBufferGL;
 class IndexBufferGL;
+class ShaderGL;
 
 class GraphicsDeviceGL_2_0 : public GraphicsDeviceGL
 {

@@ -6,8 +6,8 @@
 typedef u32 FontHandle;
 
 #define INVALID_FONT_HANDLE 0xffffffff
-#define PACK_RGBA_TEX(r, g, b, a) (b) | ((g)<<8) | ((r)<<16) | ((a)<<24)
-#define PACK_RGBA(r, g, b, a) (r) | ((g)<<8) | ((b)<<16) | ((a)<<24)
+#define PACK_RGBA_TEX(r, g, b, a) ( (b) | ((g)<<8) | ((r)<<16) | ((a)<<24) )
+#define PACK_RGBA(r, g, b, a) ( (r) | ((g)<<8) | ((b)<<16) | ((a)<<24) )
 
 namespace TextSystem
 {

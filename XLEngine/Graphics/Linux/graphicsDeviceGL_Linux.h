@@ -3,11 +3,11 @@
 #include "../graphicsDevice_Platform.h"
 #include "../graphicsDeviceList.h"
 
-class GraphicsDeviceGL_Win32 : public GraphicsDevicePlatform
+class GraphicsDeviceGL_Linux : public GraphicsDevicePlatform
 {
     public:
-        GraphicsDeviceGL_Win32();
-        virtual ~GraphicsDeviceGL_Win32();
+        GraphicsDeviceGL_Linux();
+        virtual ~GraphicsDeviceGL_Linux();
 
         void setWindowData(int nParam, void **param, GraphicsDeviceID deviceID, bool exclFullscreen=false);
 		bool init();

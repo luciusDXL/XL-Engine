@@ -1,13 +1,10 @@
 #include <stdlib.h>
 #include "../../log.h"
 #include "graphicsDeviceGL.h"
+#include "../graphicsGL_Inc.h"
 #include "textureGL.h"
 #include "renderTargetGL.h"
 #include "shaderGL.h"
-
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
 
 #include <assert.h>
 
@@ -52,13 +49,13 @@ void GraphicsDeviceGL::present()
 
 void GraphicsDeviceGL::queryExtensions()
 {
-	if (!(m_caps.flags&CAP_RENDER_TARGET) && glewGetExtension("GL_EXT_framebuffer_object"))
+	if (!(m_caps.flags&CAP_RENDER_TARGET) && m_platform->queryExtension("GL_EXT_framebuffer_object"))
 	{
 		m_caps.flags |= CAP_RENDER_TARGET;
 		LOG( LOG_MESSAGE, "glExtension enabled: \"GL_EXT_framebuffer_object\"" );
 	}
 
-	if (!(m_caps.flags&CAP_NON_POWER_2_TEX) && glewGetExtension("GL_ARB_texture_non_power_of_two"))
+	if (!(m_caps.flags&CAP_NON_POWER_2_TEX) && m_platform->queryExtension("GL_ARB_texture_non_power_of_two"))
 	{
 		m_caps.flags |= CAP_NON_POWER_2_TEX;
 		LOG( LOG_MESSAGE, "glExtension enabled: \"GL_ARB_texture_non_power_of_two\"" );

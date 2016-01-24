@@ -1,5 +1,5 @@
-#pragma once
 #include "filestream.h"
+#include <stdio.h>
 #include <assert.h>
 
 //Work buffers for handling special cases like std::string without allocating memory (beyond what the strings needs itself).
@@ -38,9 +38,9 @@ void FileStream::close()
 {
 	if (m_file)
 	{
-		if (m_mode == MODE_WRITE || m_mode == MODE_READWRITE) 
-		{ 
-			fflush(m_file); 
+		if (m_mode == MODE_WRITE || m_mode == MODE_READWRITE)
+		{
+			fflush(m_file);
 		}
 
 		fclose(m_file);
@@ -113,8 +113,7 @@ void FileStream::writeBuffer(const void* ptr, u32 size, u32 count)
 }
 
 //internal
-template <>	//template specialization for the string type since it has to be handled differently.
-void FileStream::readType<std::string>(std::string* ptr, u32 count)
+void FileStream::readTypeString(std::string* ptr, u32 count)
 {
 	assert(m_mode == MODE_READ || m_mode == MODE_READWRITE);
 	assert(count <= 256);
@@ -131,15 +130,7 @@ void FileStream::readType<std::string>(std::string* ptr, u32 count)
 	}
 }
 
-template <typename T>
-void FileStream::readType(T* ptr, u32 count)
-{
-	assert(m_mode == MODE_READ || m_mode == MODE_READWRITE);
-	fread(ptr, sizeof(T), count, m_file);
-}
-
-template <>	//template specialization for the string type since it has to be handled differently.
-void FileStream::writeType<std::string>(const std::string* ptr, u32 count)
+void FileStream::writeTypeString(const std::string* ptr, u32 count)
 {
 	assert(m_mode == MODE_WRITE || m_mode == MODE_READWRITE);
 	assert(count <= 256);
@@ -157,9 +148,3 @@ void FileStream::writeType<std::string>(const std::string* ptr, u32 count)
 	}
 }
 
-template <typename T>
-void FileStream::writeType(const T* ptr, u32 count)
-{
-	assert(m_mode == MODE_WRITE || m_mode == MODE_READWRITE);
-	fwrite(ptr, sizeof(T), count, m_file);
-}

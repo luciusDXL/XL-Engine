@@ -1,6 +1,7 @@
-#pragma once
 #include "iniReader.h"
 #include "filestream.h"
+
+#include <string.h>
 
 namespace iniReader
 {
@@ -202,7 +203,7 @@ namespace iniReader
 					*value++ = '\0';
 					fixupString(parg);
 					fixupString(value);
-					
+
 				}
 				else
 				{
@@ -221,7 +222,7 @@ namespace iniReader
 	////////////////////////////////////
 	// Internal Functions.
 	////////////////////////////////////
-	
+
 	bool getKey(char** fileData, char* keyName, const char* fileEnd)
 	{
 		u32 keyIndex = 0;
@@ -254,7 +255,7 @@ namespace iniReader
 			{
 				break;
 			}
-			
+
 			curPos++;
 		};
 

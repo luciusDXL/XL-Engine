@@ -10,7 +10,7 @@ namespace Services
 	XLEngineServices* get();
 
 	void setTime(u64 time);
-	void xlDebugMessage(char* msg, ...);
+	void xlDebugMessage(const char* msg, ...);
 
 	void reset();
 };

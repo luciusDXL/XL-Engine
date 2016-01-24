@@ -5,6 +5,9 @@
 #include "../Sound/sound.h"
 #include "uiSystem.h"
 #include "draw2D.h"
+
+#include <stdio.h>
+#include <string.h>
 #include <vector>
 
 using namespace std;
@@ -56,8 +59,6 @@ namespace UISystem
 	};
 
 	//imGUI
-	static bool s_enabled = false;
-
 	static s32  s_hotItem;
 	static s32  s_prevHotItem = -1;
 	static s32  s_activeItem;
@@ -174,7 +175,7 @@ namespace UISystem
 
 		delete s_logo;
 		s_logo = NULL;
-		
+
 		delete s_imageLoader;
 		s_imageLoader = NULL;
 	}
@@ -198,7 +199,7 @@ namespace UISystem
 		icon->texture = s_gdev->createTextureRGBA(s_imageLoader->getWidth(), s_imageLoader->getHeight(), (u32*)s_imageLoader->getImageData(), samplerState);
 		icon->width   = s_imageLoader->getWidth();
 		icon->height  = s_imageLoader->getHeight();
-		
+
 		s_icons.push_back(icon);
 
 		return id;
@@ -477,7 +478,7 @@ namespace UISystem
 
 		//draw the control rect with appropriate settings.
 		draw_rect_decoration(id, layer, x, y, w, h);
-		
+
 		//caption
 		if (caption)
 		{
@@ -578,8 +579,8 @@ namespace UISystem
 
 	////////////////////////////////
 
-	//Draws a rectangular decoration for the widget with id 
-	//Performs the decoration dependent on hotness and activeness. 
+	//Draws a rectangular decoration for the widget with id
+	//Performs the decoration dependent on hotness and activeness.
 	void draw_rect_decoration(s32 id, s32 layer, s32 x, s32 y, s32 w, s32 h)
 	{
 		if (s_kdbItem == id)

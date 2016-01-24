@@ -3,7 +3,11 @@
 #include "../Math/math.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
 #include <vector>
+#include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 using namespace std;
 
@@ -39,7 +43,7 @@ namespace TextSystem
 		Glyph* glyphs;
 	};
 
-	static FT_Library s_library = NULL;
+    static FT_Library s_library = NULL;
 	static vector<Font> s_fonts;
 	static GraphicsDevice* s_gdev;
 	static Font* s_curFont = NULL;
@@ -49,12 +53,12 @@ namespace TextSystem
 	bool init(GraphicsDevice* gdev)
 	{
 		s_gdev = gdev;
-		if (FT_Init_FreeType(&s_library)) 
+		if (FT_Init_FreeType(&s_library))
 		{
 			fprintf(stderr, "Could not init freetype library\n");
 			return false;
 		}
-		
+
 		const char* texName = "baseTex";
 		s_textureHash = CRC32::get( (u8*)texName, strlen(texName) );
 		return true;
@@ -70,8 +74,7 @@ namespace TextSystem
 			delete [] s_fonts[f].charMap;
 		}
 		s_fonts.clear();
-
-		FT_Done_FreeType(s_library);
+        FT_Done_FreeType(s_library);
 		s_library = NULL;
 	}
 
@@ -86,7 +89,7 @@ namespace TextSystem
 		sprintf(fontPath, "UI/fonts/%s", name);
 
 		FT_Face face;
-		if( FT_New_Face(s_library, fontPath, 0, &face) ) 
+		if( FT_New_Face(s_library, fontPath, 0, &face) )
 		{
 			fprintf(stderr, "Could not open font\n");
 			return INVALID_FONT_HANDLE;
@@ -102,7 +105,7 @@ namespace TextSystem
 		for (int c=0; c<128; c++) { map[c] = -1; }
 		for (int c=0; c<128; c++)
 		{
-			if (FT_Load_Char(face, (char)c, FT_LOAD_RENDER)) 
+			if (FT_Load_Char(face, (char)c, FT_LOAD_RENDER))
 			{
 				continue;
 			}
@@ -225,7 +228,7 @@ namespace TextSystem
 		const char* text = msg;
 		for (; *text != 0; text++)
 		{
-			const char c = *text;
+			const int c = int(*text);
 			if (c < 0) { continue; }
 
 			const int m = curFont->charMap[c];
@@ -246,7 +249,7 @@ namespace TextSystem
 		static char outMsg[4096];
 		va_list arg;
 		va_start(arg, msg);
-		int res = vsprintf(outMsg, msg, arg);
+		vsprintf(outMsg, msg, arg);
 		va_end(arg);
 
 		//set the texture.
@@ -256,7 +259,7 @@ namespace TextSystem
 		const char* text = outMsg;
 		for (; *text != 0; text++)
 		{
-			const char c = *text;
+			const int c = int(*text);
 			if (c < 0) { continue; }
 
 			const int m = s_curFont->charMap[c];
@@ -294,7 +297,7 @@ namespace TextSystem
 		static char outMsg[4096];
 		va_list arg;
 		va_start(arg, msg);
-		int res = vsprintf(outMsg, msg, arg);
+		vsprintf(outMsg, msg, arg);
 		va_end(arg);
 
 		//set the texture.
@@ -304,7 +307,7 @@ namespace TextSystem
 		const char* text = outMsg;
 		for (; *text != 0; text++)
 		{
-			const char c = *text;
+			const int c = int(*text);
 			if (c < 0) { continue; }
 
 			const int m = s_curFont->charMap[c];

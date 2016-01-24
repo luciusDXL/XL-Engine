@@ -6,8 +6,8 @@ class Mutex
 public:
 	virtual ~Mutex() {};
 
-	virtual s32 lock() const = 0;
-	virtual s32 unlock() const = 0;
+	virtual s32 lock() = 0;
+	virtual s32 unlock() = 0;
 
 protected:
 	Mutex() {};

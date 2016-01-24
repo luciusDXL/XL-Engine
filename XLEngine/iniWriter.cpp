@@ -1,6 +1,8 @@
-#pragma once
 #include "iniReader.h"
 #include "filestream.h"
+
+#include <stdio.h>
+#include <string.h>
 
 namespace iniWriter
 {

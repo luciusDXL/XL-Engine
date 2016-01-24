@@ -1,4 +1,3 @@
-#pragma once
 #include "memoryPool.h"
 #include "log.h"
 #include <stdlib.h>
@@ -47,7 +46,7 @@ namespace MemoryPool
 	#define SET_SIZE_USED(s, n) (s)->size = ( (n) | c_topBit )
 	#define GET_POINTER(p) (void*)(  (u8*)p + c_headerSize);
 	#define GET_HEADER(p)  (Header*)((u8*)p - c_headerSize);
-		
+
 	///////////////////////////////////////////////
 	// Internal Variables
 	///////////////////////////////////////////////
@@ -134,7 +133,7 @@ namespace MemoryPool
 			Header* alloc = getAllocation( newPool, size );
 			out = GET_POINTER(alloc);
 		}
-		
+
 		return out;
 	}
 
@@ -198,9 +197,8 @@ namespace MemoryPool
 
 			return ptr;
 		}
-		
+
 		void* newPtr = xlMalloc(size);
-		Header* newHeader = GET_HEADER(newPtr);
 		memcpy(newPtr, ptr, GET_SIZE(header));
 
 		xlFree(ptr);
@@ -254,12 +252,11 @@ namespace MemoryPool
 	{
 		void* ptr0 = xlMalloc( 295 );
 		void* ptr1 = xlMalloc( 3095 );
-		void* ptr2 = xlMalloc( 4965 );
 		xlFree(ptr1);
 		ptr1 = xlMalloc(3056);
 		ptr0 = xlRealloc(ptr0, 406);
 	}
-		
+
 	/////////////////////////////////////
 	// Internal
 	/////////////////////////////////////
@@ -306,7 +303,7 @@ namespace MemoryPool
 					SET_USED(alloc);
 					s_memUsed += GET_SIZE(alloc);
 
-					//Log memory usage every 1MB 
+					//Log memory usage every 1MB
 					if ( s_memUsed >= s_lastReported+(1<<20) )
 					{
 						LOG( LOG_MESSAGE, "Memory watermark - used = %d bytes", s_memUsed );

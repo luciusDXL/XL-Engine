@@ -1,9 +1,9 @@
 /******************************************************************************************************
  Platform specific implementation for the Graphics Device.
- With APIs such as OpenGL, most of the functionality can be  shared between platforms, implementations 
+ With APIs such as OpenGL, most of the functionality can be  shared between platforms, implementations
  of this interface handle the few details that are platform dependent.
 
- The implementation will be "composited" with the  device implementation reducing the permutations 
+ The implementation will be "composited" with the  device implementation reducing the permutations
  between feature sets, APIs and platforms.
  ******************************************************************************************************/
 #pragma once
@@ -21,6 +21,7 @@ class GraphicsDevicePlatform
         virtual void present()=0;
 
 		virtual GraphicsDeviceID autodetect(int nParam, void **param)=0;
-
 		virtual void enableVSync(bool enable)=0;
+
+		virtual bool queryExtension(const char* name)=0;
 };

@@ -10,13 +10,13 @@ MutexWin32::~MutexWin32()
 	DeleteCriticalSection(&C); 
 }
 
-s32 MutexWin32::lock() const
+s32 MutexWin32::lock()
 { 
 	EnterCriticalSection(&C); 
 	return 0; 
 }
 
-s32 MutexWin32::unlock() const
+s32 MutexWin32::unlock()
 { 
 	LeaveCriticalSection(&C); 
 	return 0; 

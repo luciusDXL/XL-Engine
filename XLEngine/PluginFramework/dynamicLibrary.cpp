@@ -4,17 +4,17 @@
   #include <dlfcn.h>
 #endif
 
-#include "DynamicLibrary.h"
+#include "dynamicLibrary.h"
 #include "../log.h"
 #include <sstream>
 #include <iostream>
 
 #if _OSX
 	static string dynamicLibraryExtension("dylib");
-#elif _LINUX
-	static string dynamicLibraryExtension("so");
 #elif _WIN32
-	static string dynamicLibraryExtension("dll");
+    static string dynamicLibraryExtension("dll");
+#else
+	static string dynamicLibraryExtension("so");
 #endif
 
 DynamicLibrary::DynamicLibrary(void *handle)
@@ -36,7 +36,7 @@ DynamicLibrary::~DynamicLibrary()
 
 DynamicLibrary *DynamicLibrary::load(const string& name, string& errorString)
 {
-	if (name.empty()) 
+	if (name.empty())
 	{
 		LOG( LOG_ERROR, "DynamicLibrary: Empty path." );
 		return NULL;
@@ -55,7 +55,7 @@ DynamicLibrary *DynamicLibrary::load(const string& name, string& errorString)
 	}
 #else
 	handle = dlopen( path.c_str(), RTLD_NOW );
-	if (!handle) 
+	if (!handle)
 	{
 		string dlErrorString;
 		const char *zErrorString = dlerror();

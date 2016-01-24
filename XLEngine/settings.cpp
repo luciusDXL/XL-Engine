@@ -9,6 +9,10 @@
 #include <stdio.h>
 #include <assert.h>
 
+#ifdef _WIN32
+#define strcasecmp stricmp
+#endif
+
 namespace Settings
 {
 	#define MAX_GAME_COUNT 256
@@ -21,7 +25,7 @@ namespace Settings
 	static u32  s_xlEngineBuild = 0;				//Build number which will be filled in when the settings are read.
 
 	//default values.
-	static XLSettings s_settings = 
+	static XLSettings s_settings =
 	{
 		XL_FLAG_SHOW_ALL_GAMES | XL_FLAG_UI_GLOW,
 		-1,
@@ -40,7 +44,7 @@ namespace Settings
 		100,
 		100,
 	};
-	
+
 	static s32 s_gameCount  = 0;
 	static s32 s_gameID     = -1;
 	static s32 s_keyMapping = -1;
@@ -54,7 +58,7 @@ namespace Settings
 	{
 		return s_xlEngineVersion;
 	}
-	
+
 	s32 getGameCount()
 	{
 		return s_gameCount;
@@ -63,9 +67,9 @@ namespace Settings
 	GameInfo* getGameInfo(s32 id)
 	{
 		assert(id >= 0 && id < s_gameCount);
-		if (id < 0 || id >= s_gameCount) 
-		{ 
-			return NULL; 
+		if (id < 0 || id >= s_gameCount)
+		{
+			return NULL;
 		}
 
 		return &s_games[id];
@@ -81,7 +85,7 @@ namespace Settings
 	{
 		return s_gameID;
 	}
-	
+
 	GraphicsDeviceID getGraphicsDeviceID()
 	{
 		return s_graphicsDeviceID;
@@ -138,7 +142,7 @@ namespace Settings
 
 	bool readBool(const char* value)
 	{
-		if (stricmp(value, "false") == 0 || stricmp(value, "0") == 0)
+		if (strcasecmp(value, "false") == 0 || strcasecmp(value, "0") == 0)
 		{
 			return false;
 		}
@@ -176,7 +180,7 @@ namespace Settings
 
 	bool readCallback(const char* key, const char* value)
 	{
-		if (stricmp(key, "fullscreen") == 0)
+		if (strcasecmp(key, "fullscreen") == 0)
 		{
 			if (readBool(value))
 			{
@@ -187,7 +191,7 @@ namespace Settings
 				s_settings.flags &= ~XL_FLAG_FULLSCREEN;
 			}
 		}
-		else if (stricmp(key, "immediateExit") == 0)
+		else if (strcasecmp(key, "immediateExit") == 0)
 		{
 			if (readBool(value))
 			{
@@ -198,7 +202,7 @@ namespace Settings
 				s_settings.flags &= ~XL_FLAG_IMMEDIATE_EXIT;
 			}
 		}
-		else if (stricmp(key, "showAllGames") == 0)
+		else if (strcasecmp(key, "showAllGames") == 0)
 		{
 			if (readBool(value))
 			{
@@ -209,7 +213,7 @@ namespace Settings
 				s_settings.flags &= ~XL_FLAG_SHOW_ALL_GAMES;
 			}
 		}
-		else if (stricmp(key, "uiGlow") == 0)
+		else if (strcasecmp(key, "uiGlow") == 0)
 		{
 			if (readBool(value))
 			{
@@ -220,7 +224,7 @@ namespace Settings
 				s_settings.flags &= ~XL_FLAG_UI_GLOW;
 			}
 		}
-		else if (stricmp(key, "colorCorrect") == 0)
+		else if (strcasecmp(key, "colorCorrect") == 0)
 		{
 			if (readBool(value))
 			{
@@ -231,7 +235,7 @@ namespace Settings
 				s_settings.flags &= ~XL_FLAG_COLOR_CORRECT;
 			}
 		}
-		else if (stricmp(key, "vsync") == 0)
+		else if (strcasecmp(key, "vsync") == 0)
 		{
 			if (readBool(value))
 			{
@@ -242,7 +246,7 @@ namespace Settings
 				s_settings.flags &= ~XL_FLAG_VSYNC;
 			}
 		}
-		else if (stricmp(key, "reduceCPU") == 0)
+		else if (strcasecmp(key, "reduceCPU") == 0)
 		{
 			if (readBool(value))
 			{
@@ -253,85 +257,85 @@ namespace Settings
 				s_settings.flags &= ~XL_FLAG_REDUCE_CPU;
 			}
 		}
-		else if (stricmp(key, "launchGame") == 0)
+		else if (strcasecmp(key, "launchGame") == 0)
 		{
 			s_settings.launchGameID = -1;
 			for (int g=0; g<s_gameCount; g++)
 			{
-				if (stricmp(value, s_games[g].name) == 0)
+				if (strcasecmp(value, s_games[g].name) == 0)
 				{
 					s_settings.launchGameID = g;
 					break;
 				}
 			}
 		}
-		else if (stricmp(key, "frameLimit") == 0)
+		else if (strcasecmp(key, "frameLimit") == 0)
 		{
 			char* endPtr = NULL;
 			s_settings.frameLimit = strtol(value, &endPtr, 10);
 		}
-		else if (stricmp(key, "brightness") == 0)
+		else if (strcasecmp(key, "brightness") == 0)
 		{
 			char* endPtr = NULL;
 			s_settings.colorCorrect[0] = (f32)strtod(value, &endPtr) * 0.01f;	//convert from percent to float
 		}
-		else if (stricmp(key, "saturation") == 0)
+		else if (strcasecmp(key, "saturation") == 0)
 		{
 			char* endPtr = NULL;
 			s_settings.colorCorrect[1] = (f32)strtod(value, &endPtr) * 0.01f;	//convert from percent to float
 		}
-		else if (stricmp(key, "contrast") == 0)
+		else if (strcasecmp(key, "contrast") == 0)
 		{
 			char* endPtr = NULL;
 			s_settings.colorCorrect[2] = (f32)strtod(value, &endPtr) * 0.01f;	//convert from percent to float
 		}
-		else if (stricmp(key, "gamma") == 0)
+		else if (strcasecmp(key, "gamma") == 0)
 		{
 			char* endPtr = NULL;
 			s_settings.colorCorrect[3] = (f32)strtod(value, &endPtr) * 0.01f;	//convert from percent to float
 		}
-		else if (stricmp(key, "musicVolume") == 0)
+		else if (strcasecmp(key, "musicVolume") == 0)
 		{
 			char* endPtr = NULL;
 			s_settings.musicVolume = (u32)strtol(value, &endPtr, 10);	//convert from percent to float
 		}
-		else if (stricmp(key, "soundVolume") == 0)
+		else if (strcasecmp(key, "soundVolume") == 0)
 		{
 			char* endPtr = NULL;
 			s_settings.soundVolume = (u32)strtol(value, &endPtr, 10);	//convert from percent to float
 		}
-		else if (stricmp(key, "midiformat") == 0)
+		else if (strcasecmp(key, "midiformat") == 0)
 		{
-			if (stricmp(value, "gus") == 0 || stricmp(value, "gravis") == 0)
+			if (strcasecmp(value, "gus") == 0 || strcasecmp(value, "gravis") == 0)
 			{
 				s_settings.midiformat = MFMT_GUS_PATCH;
 			}
-			else if (stricmp(value, "sf2") == 0)
+			else if (strcasecmp(value, "sf2") == 0)
 			{
 				s_settings.midiformat = MFMT_SOUND_FONT;
 			}
 		}
-		else if (stricmp(key, "patchloc") == 0)
+		else if (strcasecmp(key, "patchloc") == 0)
 		{
 			strcpy(s_settings.patchDataLoc, value);
 		}
-		else if (stricmp(key, "graphicsDevice") == 0)
+		else if (strcasecmp(key, "graphicsDevice") == 0)
 		{
-			if (stricmp(value, "openGL 1.3") == 0 || stricmp(value, "openGL1.3") == 0)
+			if (strcasecmp(value, "openGL 1.3") == 0 || strcasecmp(value, "openGL1.3") == 0)
 			{
 				s_graphicsDeviceID = GDEV_OPENGL_1_3;
 			}
-			else if (stricmp(value, "openGL 2.0") == 0 || stricmp(value, "openGL2.0") == 0)
+			else if (strcasecmp(value, "openGL 2.0") == 0 || strcasecmp(value, "openGL2.0") == 0)
 			{
 				s_graphicsDeviceID = GDEV_OPENGL_2_0;
 			}
-			else if (stricmp(value, "openGL 3.2") == 0 || stricmp(value, "openGL3.2") == 0)
+			else if (strcasecmp(value, "openGL 3.2") == 0 || strcasecmp(value, "openGL3.2") == 0)
 			{
 				//s_graphicsDeviceID = GDEV_OPENGL_3_2;
 				//hack just set to 2.0 until the 3.2 device is implemented.
 				s_graphicsDeviceID = GDEV_OPENGL_2_0;
 			}
-			else if (stricmp(value, "autodetect") == 0)
+			else if (strcasecmp(value, "autodetect") == 0)
 			{
 				s_graphicsDeviceID = GDEV_INVALID;
 			}
@@ -340,22 +344,22 @@ namespace Settings
 				LOG( LOG_ERROR, "Invalid Graphics Device specified \"%s\" - currently the following are available: \"openGL 1.3\", \"openGL 2.0\", \"openGL 3.2\" or \"autodetect\"", value);
 			}
 		}
-		else if (stricmp(key, "windowScale") == 0)
+		else if (strcasecmp(key, "windowScale") == 0)
 		{
 			char* endPtr = NULL;
 			s_settings.windowScale = strtol(value, &endPtr, 10);
 		}
-		else if (stricmp(key, "gameScale") == 0)
+		else if (strcasecmp(key, "gameScale") == 0)
 		{
 			char* endPtr = NULL;
 			s_settings.gameScale = strtol(value, &endPtr, 10);
 		}
-		else if (stricmp(key, "gameCount") == 0)
+		else if (strcasecmp(key, "gameCount") == 0)
 		{
 			char* endPtr = NULL;
 			s_gameCount = strtol(value, &endPtr, 10);
 		}
-		else if (stricmp(key, "keyMapping") == 0)
+		else if (strcasecmp(key, "keyMapping") == 0)
 		{
 			char* endPtr = NULL;
 			s_keyMapping = strtol(value, &endPtr, 10);
@@ -378,7 +382,7 @@ namespace Settings
 			s32 actionID = -1;
 			for (s32 a=0; a<info->actionCount; a++)
 			{
-				if ( stricmp(info->actionMapping[a].action, key) == 0 )
+				if ( strcasecmp(info->actionMapping[a].action, key) == 0 )
 				{
 					actionID = a;
 					break;
@@ -411,19 +415,19 @@ namespace Settings
 				sprintf(iconKey, "game%dIcon", g);
 				sprintf(pathKey, "game%dPath", g);
 
-				if (stricmp(key, nameKey) == 0)
+				if (strcasecmp(key, nameKey) == 0)
 				{
 					strcpy(s_games[g].name, value);
 				}
-				else if (stricmp(key, libKey) == 0)
+				else if (strcasecmp(key, libKey) == 0)
 				{
 					strcpy(s_games[g].lib, value);
 				}
-				else if (stricmp(key, iconKey) == 0)
+				else if (strcasecmp(key, iconKey) == 0)
 				{
 					strcpy(s_games[g].iconFile, value);
 				}
-				else if (stricmp(key, pathKey) == 0)
+				else if (strcasecmp(key, pathKey) == 0)
 				{
 					strcpy(s_games[g].path, value);
 				}
@@ -550,7 +554,7 @@ namespace Settings
 
 		return true;
 	}
-	
+
 	void write()
 	{
 		iniWriter::open("xlsettings.ini");
@@ -623,7 +627,7 @@ namespace Settings
 			}
 			iniWriter::newLine();
 		}
-		
+
 		iniWriter::close();
 	}
 

@@ -1,10 +1,9 @@
-#include <stdlib.h>
 #include "vertexBufferGL.h"
 #include "../../log.h"
+#include "../graphicsGL_Inc.h"
 
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <stdlib.h>
+#include <memory.h>
 
 const char* VertexBufferGL::c_vertexAttrib[]=
 {

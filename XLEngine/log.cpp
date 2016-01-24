@@ -1,8 +1,9 @@
-#pragma once
 #include "log.h"
 #include "filestream.h"
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <stdarg.h>
 
 #ifdef _WIN32
@@ -25,7 +26,7 @@ namespace Log
 	static FileStream s_logFile;
 	static char s_tmpBuffer[4096];
 	static char s_printString[4096];
-	
+
 	bool open(const char* filename)
 	{
 	#if XL_LOGGING_ENABLED
@@ -50,7 +51,7 @@ namespace Log
 		//first build up the string.
 		va_list arg;
 		va_start(arg, msg);
-		int res = vsprintf(s_tmpBuffer, msg, arg);
+		vsprintf(s_tmpBuffer, msg, arg);
 		va_end(arg);
 	#endif
 

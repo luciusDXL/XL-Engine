@@ -10,13 +10,17 @@
 #include "Threads/thread.h"
 #include "Math/crc32.h"
 #include "Math/math.h"
-#include "PluginFramework/PluginManager.h"
+#include "PluginFramework/pluginManager.h"
 #include "clock.h"
 #include "osUtil.h"
 #include "log.h"
 
+#include <stdio.h>
+
 #ifdef _WIN32
 	#include "Graphics/Win32/graphicsDeviceGL_Win32.h"
+#else
+    #include "Graphics/Linux/graphicsDeviceGL_Linux.h"
 #endif
 
 namespace GameLoop
@@ -33,28 +37,34 @@ namespace GameLoop
 	static f64 s_desiredFrameLimit = 0.0;
 	static f64 s_avePresentTime    = 1.0;		//1.0ms
 	static f64 s_presentAdapt      = 0.1;		//how fast the present time adjusts
-	
+
 	static Thread* s_gameThread = NULL;
 	static GraphicsDevice* s_gdev;
 
-	u32 XL_STDCALL gameLoop(void* param);
+	XL_THREADRET XL_STDCALL gameLoop(void* param);
 	void exitGame();
 
 
 	bool init(void* win_param[], GraphicsDeviceID deviceID)
 	{
 		XLSettings* settings = Settings::get();
-		
+
 		Clock::init();
 		Input::init(win_param[0]);
 
+        //choose the Device "platform" based on OS, the rest of the code here is platorm idependent.
 		#ifdef _WIN32
+            s32 winParamCount = 1;
 			GraphicsDevicePlatform* platform = new GraphicsDeviceGL_Win32();
+        #else
+            s32 winParamCount = 3;
+			GraphicsDevicePlatform* platform = new GraphicsDeviceGL_Linux();
 		#endif
+
 		//if no deviceID is specified, autodetect
 		if (deviceID == GDEV_INVALID)
 		{
-			deviceID = platform->autodetect(1, win_param);
+			deviceID = platform->autodetect(winParamCount, win_param);
 			//a proper device was not found... abort.
 			if (deviceID == GDEV_INVALID)
 			{
@@ -71,7 +81,7 @@ namespace GameLoop
 			return false;
 		}
 
-		s_gdev->setWindowData(1, win_param);
+		s_gdev->setWindowData(winParamCount, win_param);
 		if (!s_gdev->init(settings->windowWidth, settings->windowHeight, settings->gameWidth, settings->gameHeight))
 		{
 			GraphicsDevice::destroyDevice( s_gdev );
@@ -102,10 +112,13 @@ namespace GameLoop
 		Midi::setVolume( settings->musicVolume );
 		oggVorbis::setVolume( settings->soundVolume );
 		s_desiredFrameLimit = settings->frameLimit ? 1.0 / f64(settings->frameLimit) : 0.0;
-		
+
+		//Midi::loadMidiFile("DaggerfallMidi/02.MID");
+		//Midi::playResume();
+
 		return true;
 	}
-	
+
 	void destroy()
 	{
 		UISystem::destroy();
@@ -133,7 +146,7 @@ namespace GameLoop
 		Services::setTime( Clock::getTime_uS() );
 		GameUI::enableCursor(false);
 
-		s_gameThread = Thread::create(info->name, gameLoop, (void*)gameID);
+		s_gameThread = Thread::create(info->name, gameLoop, (void*)((size_t)gameID));   //double cast to avoid warnings on x64 (GCC).
 		s_gameThread->run();
 
 		return true;
@@ -157,7 +170,7 @@ namespace GameLoop
 		if (s_exitGame)
 		{
 			exitGame();
-			
+
 			//do we exit from the application if a game is closed?
 			return (Settings::get()->flags&XL_FLAG_IMMEDIATE_EXIT)!=0;
 		}
@@ -272,7 +285,7 @@ namespace GameLoop
 	{
 		XLSettings* settings = Settings::get();
 		Sound::update();
-		
+
 		//launch a game immediately?
 		if (s_launchGameID >= 0)
 		{
@@ -327,7 +340,7 @@ namespace GameLoop
 				accum = Clock::getDeltaTime_f64();
 			};
 		}
-		
+
 		Clock::startTimer();
 		s_gdev->present();
 		Input::finish();
@@ -355,10 +368,10 @@ namespace GameLoop
 
 		Sound::reset();
 	}
-	
-	u32 XL_STDCALL gameLoop(void* param)
+
+	XL_THREADRET XL_STDCALL gameLoop(void* param)
 	{
-		const s32 gameID = s32( param );
+		const s32 gameID = s32( (size_t)param );    //double cast to avoid errors in GCC on x64.
 		Services::xlDebugMessage("GameLoop for game %d started...", gameID);
 
 		const XLSettings* settings = Settings::get();
@@ -368,7 +381,7 @@ namespace GameLoop
 		if (!info)
 		{
 			LOG( LOG_ERROR, "Game ID=%d is not valid and cannot be run.", gameID );
-			return 1;
+			return (XL_THREADRET)1;
 		}
 
 		char* argv[]=
@@ -385,11 +398,11 @@ namespace GameLoop
 		if (!runGame)
 		{
 			LOG( LOG_ERROR, "The game library \"%s\" is not valid, game \"%s\" cannot be run.", libPath, info->name );
-			return 1;
+			return (XL_THREADRET)1;
 		}
 		runGame( arraysize(argv), argv, Services::get() );
 
 		s_exitGame = true;
-		return 1;
+		return (XL_THREADRET)1;
 	}
 };

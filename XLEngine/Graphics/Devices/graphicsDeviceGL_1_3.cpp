@@ -2,10 +2,7 @@
 #include "graphicsDeviceGL_1_3.h"
 #include "../CommonGL/textureGL.h"
 #include "../../log.h"
-
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include "../graphicsGL_Inc.h"
 
 GraphicsDeviceGL_1_3::GraphicsDeviceGL_1_3(GraphicsDevicePlatform* platform) : GraphicsDeviceGL(platform)
 {
@@ -70,7 +67,7 @@ bool GraphicsDeviceGL_1_3::init(int w, int h, int& vw, int& vh)
 		vw >>= 1;
 		vh >>= 1;
 	}
-	
+
     glDisable(GL_DEPTH_TEST); /* enable depth buffering */
 
 	glMatrixMode(GL_MODELVIEW);
@@ -102,8 +99,8 @@ bool GraphicsDeviceGL_1_3::init(int w, int h, int& vw, int& vh)
 
 	m_windowWidth  = w;
 	m_windowHeight = h;
-	
-	//frame size - this is the 32 bit version of the framebuffer. The 8 bit framebuffer, rendered by the software renderer, 
+
+	//frame size - this is the 32 bit version of the framebuffer. The 8 bit framebuffer, rendered by the software renderer,
 	//is converted to 32 bit (using the current palette) - this buffer - before being uploaded to the video card.
 	m_frameWidth  = vw;
 	m_frameHeight = vh;
@@ -119,7 +116,7 @@ bool GraphicsDeviceGL_1_3::init(int w, int h, int& vw, int& vh)
 	};
 	m_videoFrameBuffer = createTextureRGBA_Internal(m_frameWidth, m_frameHeight, NULL, samplerState);
 	enableTexturing(true);
-	
+
 	glFlush();
 
 	return true;

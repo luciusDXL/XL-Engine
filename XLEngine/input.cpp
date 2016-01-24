@@ -1,4 +1,3 @@
-#pragma once
 #include "input.h"
 #include "settings.h"
 #include <stdlib.h>

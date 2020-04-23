@@ -1,3 +1,13 @@
+# Depracation & Replacement
+I am sure the few people who have looked at this repository have noticed that I have not made any commits in quite some time. The XL Engine, as it was previously known, has been retired. Development of the XL Engine had dropped off due to other "real life" commitments and a lack of time (and sometimes ability) to continue. Fortunately Daggerfall and Blood have high quality ports/projects that have carried on and given people a much improved experience, similar to what the XL Engine was trying to achieve.
+
+To be clear, this project has not been updated in years and will not be updated in the future - though some of the code will find its way elsewhere.
+
+Since those days (years ago now), things have changed drastically. The original idea behind DarkXL, which eventually led to the XL Engine, was never completely abandoned and a new project has been in development for a while that is more focused and better designed to achieve my original goals. I'm being intentionally vague because I want to deliver rather than promise and the project is likely still a few months out from a formal unveiling (and yes it will be open source from day 1).
+
+I notice that some people still star this repository and fork it from time to time, even now. That is what prompted me to post this update so people don't waste their time. I will leave the original text in place for 'historical' value.
+
+
 # XL-Engine
 The XL Engine provides support for first person DOS-era games running on modern operating systems such as Windows 10. The first Beta release will support the following games:
 ```
@@ -12,6 +22,7 @@ The XL Engine is designed to be easy to use, easy to play the supported games on
 However this is only an engine, no games are bundled with the application. Games need to be legally acquired before they can be played using the XL Engine. The good news is that Daggerfall is now free and can be downloaded from Bethesda or using Daggerfall Setup. Blood and Dark Forces are available for purchase from GOG.com and Steam.
 
 # Availability
+This project has been depracated.
 Beta 1 is still in progress and is not yet available for download. Older builds are avaiable on the XL Engine website, however they are incomplete and buggy. I would suggest waiting for the Beta 1 release before downloading.
 
 
